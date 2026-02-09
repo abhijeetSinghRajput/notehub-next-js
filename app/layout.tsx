@@ -2,6 +2,34 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import "katex/dist/katex.min.css";
+import "@/styles/katex-overrides.css";
+// import "@/styles/theme.css";
+import "@/styles/tiptap.css";
+import "@/styles/hljs.css";
+
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeShortcut } from "@/components/theme-shortcut";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { CollaboratorManagerProvider } from "@/contex/CollaboratorManagerContext";
+import { CollaboratorsDialog } from "@/components/CollaboratorsDialog";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import DashboardHeader from "@/components/DashboardHeader";
+import { Separator } from "@/components/ui/separator";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import AppSidebar from "@/components/dashboard/AppSidebar";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -19,15 +47,33 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider
+          defaultTheme="system"
+          enableSystem
+          storageKey="theme" // ✅ FIXED
+        >
+          <ThemeShortcut />
+          <CollaboratorManagerProvider>
+            <TooltipProvider>
+              <CollaboratorsDialog />
+              <SidebarProvider>
+                 <AppSidebar />
+                <SidebarInset>
+                  <DashboardHeader />
+                  {children}
+                </SidebarInset>
+              </SidebarProvider>
+            </TooltipProvider>
+          </CollaboratorManagerProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

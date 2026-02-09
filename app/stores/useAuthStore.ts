@@ -1,0 +1,470 @@
+import { create } from "zustand";
+import { toast } from "sonner";
+import { axiosInstance } from "@/lib/axios";
+
+import { IUser } from "@/types"; // assuming you have IUser from your mongoose user schema
+
+export interface AuthStore {
+  authUser: IUser | null;
+  isCheckingAuth: boolean;
+  isSigningUp: boolean;
+  isLoggingIn: boolean;
+  isLoggingOut: boolean;
+  isVerifyingEmail: boolean;
+  emailStatus: string;
+  isUploadingAvatar: boolean;
+  isUploadingCover: boolean;
+  isRemovingAvatar: boolean;
+  isRemovingCover: boolean;
+  isSendingOtp: boolean;
+  isResettingPassword: boolean;
+  isUpdatingEmail: boolean;
+  onlineUsers: IUser[];
+
+  requestEmailUpdateOtp: (email: string) => Promise<void>;
+  confirmEmailUpdate: (data: { email: string; otp: string }) => Promise<void>;
+  requestResetPasswordOtp: (identifier: string) => Promise<void>;
+  isEmailAvailable: (email: string) => Promise<boolean>;
+  resetPassword: (data: { identifier: string; newPassword: string; otp: string }) => Promise<void>;
+  updatePassword: (data: { currentPassword: string; newPassword: string }) => Promise<void>;
+  getUser: (identifier: string) => Promise<IUser | null>;
+  getAllUsers: (options?: Record<string, any>) => Promise<IUser[]>;
+  searchUsers: (query: string) => Promise<IUser[]>;
+  searchNotes: (query: string) => Promise<any[]>; // replace `any` with your note type
+  checkAuth: () => Promise<void>;
+  signup: (data: Record<string, any>) => Promise<void>;
+  sendSignupOtp: (email: string) => Promise<void>;
+  login: (data: Record<string, any>) => Promise<void>;
+  googleLogin: (data: { code: string; codeVerifier: string; redirectUri: string }) => Promise<void>;
+  logout: () => Promise<void>;
+  verifyEmail: (data: Record<string, any>) => Promise<void>;
+  resendEmailOTP: () => Promise<void>;
+  updateUserField: (apiEndPoint: string, data: Record<string, any>) => Promise<void>;
+  uploadUserAvatar: (file: File) => Promise<void>;
+  removeUserAvatar: () => Promise<void>;
+  uploadUserCover: (file: File) => Promise<void>;
+  removeUserCover: () => Promise<void>;
+  checkEmailStatus: () => Promise<void>;
+}
+
+export const useAuthStore = create<AuthStore>((set, get) => ({
+  authUser: null,
+  isCheckingAuth: true,
+  isSigningUp: false,
+  isLoggingIn: false,
+  isLoggingOut: false,
+  isVerifyingEmail: false,
+  emailStatus: "",
+  isUploadingAvatar: false,
+  isUploadingCover: false,
+  isRemovingAvatar: false,
+  isRemovingCover: false,
+  isSendingOtp: false,
+  isResettingPassword: false,
+  isUpdatingEmail: false,
+  onlineUsers: [],
+
+  requestEmailUpdateOtp: async (email) => {
+    set({ isSendingOtp: true });
+    try {
+      const response = await axiosInstance.post(
+        "/user/request-update-email-otp",
+        {
+          email,
+        },
+      );
+      toast.success(response.data.message || "OTP sent successfully!");
+      return response.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send OTP");
+      console.error("Request update email OTP error:", error);
+      return null;
+    } finally {
+      set({ isSendingOtp: false });
+    }
+  },
+
+  confirmEmailUpdate: async ({ email, otp }) => {
+    set({ isUpdatingEmail: true });
+    try {
+      const response = await axiosInstance.post("/user/update-email", {
+        email,
+        otp,
+      });
+      toast.success(response.data.message || "email update successfully!");
+      if(response.data.user) {
+        set({authUser: response.data.user})
+      }
+      
+      return response.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update email");
+      console.error("Update email error:", error);
+      return null;
+    } finally {
+      set({ isUpdatingEmail: false });
+    }
+  },
+
+  requestResetPasswordOtp: async (identifier) => {
+    set({ isSendingOtp: true });
+    try {
+      const response = await axiosInstance.post(
+        "/password/request-reset-password-otp",
+        {
+          identifier,
+        },
+      );
+      toast.success(response.data.message || "OTP sent successfully!");
+      return response.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send OTP");
+      console.error("Request reset password OTP error:", error);
+      return null;
+    } finally {
+      set({ isSendingOtp: false });
+    }
+  },
+
+  isEmailAvailable: async (email) => {
+    try {
+      const response = await axiosInstance.get(`/user/check-email/${email}`);
+      return response.data.available;
+    } catch (error) {
+      console.error("Email check failed:", error);
+      return false;
+    }
+  },
+
+  resetPassword: async ({ identifier, newPassword, otp }) => {
+    set({ isResettingPassword: true });
+    try {
+      const response = await axiosInstance.post("/password/reset-password", {
+        identifier,
+        newPassword,
+        otp,
+      });
+      toast.success(response.data.message || "Password reset successfully!");
+      return response.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to reset password");
+      console.error("Reset password error:", error);
+      return null;
+    } finally {
+      set({ isResettingPassword: false });
+    }
+  },
+
+  updatePassword: async ({ currentPassword, newPassword }) => {
+    try {
+      set({ isResettingPassword: true });
+      const response = await axiosInstance.put("/password/update", {
+        currentPassword,
+        newPassword,
+      });
+      toast.success(response.data.message || "Password updated successfully!");
+      return response.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update password");
+      console.error("Update password error:", error);
+      return null;
+    } finally {
+      set({ isResettingPassword: false });
+    }
+  },
+
+  getUser: async (identifier) => {
+    try {
+      const response = await axiosInstance.get(`/user/${identifier}`);
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  },
+  getAllUsers: async ({
+    page = 1,
+    limit = 10,
+    search = "",
+    filter = "all",
+  }) => {
+    try {
+      const response = await axiosInstance.get("/user", {
+        params: { page, limit, search, filter },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return {
+        users: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          totalUsers: 0,
+          usersPerPage: limit,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+        counts: {
+          all: 0,
+          online: 0,
+          oauth: 0,
+        },
+      };
+    }
+  },
+  searchUsers: async (query) => {
+    try {
+      const response = await axiosInstance.get(`/search/users`, {
+        params: { query },
+      });
+      return response.data;
+    } catch (error) {
+      return [];
+    }
+  },
+  searchNotes: async (query) => {
+    try {
+      const response = await axiosInstance.get(`/search/notes`, {
+        params: { query },
+      });
+      return response.data;
+    } catch (error) {
+      return [];
+    }
+  },
+
+  checkAuth: async () => {
+    set({ isCheckingAuth: true });
+    try {
+      const res = await axiosInstance.get("/user/me");
+      set({ authUser: res.data });
+    } catch (error) {
+      set({ authUser: null });
+      console.error(error);
+    } finally {
+      set({ isCheckingAuth: false });
+    }
+  },
+
+  signup: async (data) => {
+    set({ isSigningUp: true });
+    try {
+      const res = await axiosInstance.post("/auth/signup", data);
+      const { message, user } = res.data;
+      set({ authUser: user });
+      toast.success(message);
+      return { success: true };
+    } catch (error) {
+      toast.error(error.response.data.message);
+      return { success: false };
+    } finally {
+      set({ isSigningUp: false });
+    }
+  },
+
+  sendSignupOtp: async (email) => {
+    set({ isSendingOtp: true });
+    try {
+      const response = await axiosInstance.post("/auth/send-signup-otp", {
+        email,
+      });
+      toast.success(response.data.message || "OTP sent successfully!");
+      return response.data;
+    } catch (error) {
+      if (error.status === 429) {
+        toast.error("Too many requests. Please try again later.");
+        return null;
+      }
+      toast.error(error.response?.data?.message || "Failed to send email");
+      console.error("Send OTP error:", error);
+      return null;
+    } finally {
+      set({ isSendingOtp: false });
+    }
+  },
+
+  login: async (data) => {
+    set({ isLoggingIn: true });
+    try {
+      const res = await axiosInstance.post("/auth/login", data);
+      const { user } = res.data;
+      set({ authUser: user });
+      toast.success("Log in successful");
+      return true;
+    } catch (error) {
+      set({ authUser: null });
+      console.error(error);
+      toast.error(error.response.data.message || "error while logging in");
+      return false;
+    } finally {
+      set({ isLoggingIn: false });
+    }
+  },
+
+  // 📂 client/src/stores/useAuthStore.js
+  googleLogin: async ({ code, codeVerifier, redirectUri }) => {
+    set({ isLoggingIn: true });
+    try {
+      const res = await axiosInstance.post("auth/google-login", {
+        code,
+        codeVerifier,
+        redirectUri,
+      });
+      set({ authUser: res.data.user });
+      toast.success("Log in successful");
+      return true;
+    } catch (error) {
+      set({ authUser: null });
+      toast.error(error.response?.data?.message || "OAuth Login Failed");
+      return null;
+    } finally {
+      set({ isLoggingIn: false });
+    }
+  },
+
+  logout: async () => {
+    set({ isLoggingOut: true });
+    try {
+      const res = await axiosInstance.post("/auth/logout");
+      set({ authUser: null });
+      toast.success(res.data.message);
+    } catch (error) {
+      set({ authUser: null });
+      toast.error(error.response.data.message);
+    } finally {
+      set({ isLoggingOut: false });
+    }
+  },
+
+  verifyEmail: async (data) => {
+    set({ isVerifyingEmail: true });
+    try {
+      const res = await axiosInstance.post("/email/verify-otp", data);
+      set({ authUser: res.data.user });
+      toast.success(res.data.message);
+    } catch (error) {
+      set({ authUser: null });
+      toast.error(error.response.data.message);
+      console.error(error);
+    } finally {
+      set({ isVerifyingEmail: false });
+    }
+  },
+
+  resendEmailOTP: async () => {
+    try {
+      const res = await axiosInstance("/email/resend-otp");
+      toast.success(res.data.message);
+      return { success: true };
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response.data.message);
+      return { success: false };
+    }
+  },
+  updateUserField: async (apiEndPoint, data) => {
+    try {
+      let res;
+      if (data.email) {
+        res = await axiosInstance.post(apiEndPoint, data);
+      } else {
+        res = await axiosInstance.put(apiEndPoint, data);
+      }
+      set({ authUser: res.data.user });
+      toast.success(res.data.message);
+      return true;
+    } catch (error) {
+      toast.error(error.response.data.message || error.message);
+      console.error(error.response?.data?.message || error.message);
+      console.error(error);
+      return false;
+    }
+  },
+
+  uploadUserAvatar: async (file) => {
+    set({ isUploadingAvatar: true });
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await axiosInstance.post("/user/upload-avatar", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      set({ authUser: res.data.user });
+      toast.success(res.data.message);
+      return res.data.user;
+    } catch (error) {
+      toast.error(error.response.data.message);
+      console.error(error);
+      return null;
+    } finally {
+      set({ isUploadingAvatar: false });
+    }
+  },
+
+  removeUserAvatar: async () => {
+    set({ isRemovingAvatar: true });
+    try {
+      const res = await axiosInstance.delete("/user/remove-avatar");
+      set({ authUser: res.data.user });
+      toast.success(res.data.message);
+      return res.data.user;
+    } catch (error) {
+      toast.error(error.response.data.message);
+      console.error(error);
+      return null;
+    } finally {
+      set({ isRemovingAvatar: false });
+    }
+  },
+
+  uploadUserCover: async (file) => {
+    set({ isUploadingCover: true });
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await axiosInstance.post("/user/upload-cover", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      set({ authUser: res.data.user });
+      toast.success(res.data.message);
+      return res.data.user;
+    } catch (error) {
+      toast.error(error.response.data.message);
+      console.error(error);
+      return null;
+    } finally {
+      set({ isUploadingCover: false });
+    }
+  },
+
+  removeUserCover: async () => {
+    set({ isRemovingCover: true });
+    try {
+      const res = await axiosInstance.delete("/user/remove-cover");
+      set({ authUser: res.data.user });
+      toast.success(res.data.message);
+      return res.data.user;
+    } catch (error) {
+      toast.error(error.response.data.message);
+      console.error(error);
+      return null;
+    } finally {
+      set({ isRemovingCover: false });
+    }
+  },
+
+  checkEmailStatus: async () => {
+    try {
+      const res = await axiosInstance.get("email/check-status");
+      set({ emailStatus: res.data.status });
+      return get().emailStatus;
+    } catch (error) {
+      console.error(error.response.data.message);
+      set({ emailStatus: "" });
+    }
+  },
+}));
