@@ -20,17 +20,20 @@ import GithubIcon from "@/components/icons/githubIcon";
 import { useGithubStore } from "@/app/stores/useGithubStore";
 import Link from "next/link";
 import AppBreadcrumbs from "./AppBreadCrumb";
+import { useRouter } from "next/navigation";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
-  const { isSidebarOpen, isMobile } = useSidebar();
+  const { open, isMobile } = useSidebar();
   const githubStarCount = useGithubStore((s) => s.starCount);  
-  
+  const router = useRouter();
+
   return (
     <header className="z-50 flex border-b sticky top-0 bg-background  justify-between h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
       <div className="max-w-screen-2xl w-full mx-auto flex justify-between">
         <div className="flex items-center gap-2 px-4 min-w-0 flex-1">
-          {!isSidebarOpen && authUser && (
+          {!open && authUser && (
             <>
               <TooltipWrapper message={"Open Sidebar Ctrl M"}>
                 <SidebarOpenTrigger className="-ml-1 bg-muted/50 size-11 rounded-full border sm:border-none sm:size-8 sm:bg-transparent sm:rounded-md" />
@@ -42,7 +45,7 @@ const DashboardHeader = () => {
           <AppBreadcrumbs/>
         </div>
 
-        <div className="flex-shrink-0 mr-4 flex items-center gap-2">
+        <div className="shrink-0 mr-4 flex items-center gap-2">
           <SearchButton />
 
           {!isMobile && (

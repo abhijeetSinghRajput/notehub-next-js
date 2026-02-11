@@ -1,4 +1,5 @@
 // src/pages/Security.tsx
+"use client"
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {  Loader2,  } from "lucide-react";
@@ -10,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LabledInput } from "@/components//labeled-input";
+import { LabeledInput } from "@/components//labeled-input";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
 
@@ -107,7 +108,7 @@ function PasswordUpdateSection({ updatePassword, isResettingPassword }) {
       <Label>Change Password</Label>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Current Password */}
-        <LabledInput
+        <LabeledInput
           id="currentPassword"
           label="Current Password"
           placeholder="Enter password"
@@ -121,7 +122,7 @@ function PasswordUpdateSection({ updatePassword, isResettingPassword }) {
         />
 
         {/* New Password */}
-        <LabledInput
+        <LabeledInput
           id="newPassword"
           label="New Password"
           placeholder="Enter password"
@@ -135,7 +136,7 @@ function PasswordUpdateSection({ updatePassword, isResettingPassword }) {
         />
 
         {/* Confirm New Password */}
-        <LabledInput
+        <LabeledInput
           id="confirmPassword"
           label="Confirm New Password"
           placeholder="Enter password"
@@ -172,3 +173,4 @@ function PasswordUpdateSection({ updatePassword, isResettingPassword }) {
 }
 
 export default Security;
+

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { PanelLeft, PanelLeftIcon } from "lucide-react"
+import { PanelLeft, PanelLeftIcon, PanelRight } from "lucide-react"
 import { Slot } from "radix-ui"
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -27,7 +27,7 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
+const SIDEBAR_WIDTH = "20rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
@@ -280,18 +280,18 @@ function SidebarTrigger({
 }
 
 const SidebarOpenTrigger = React.forwardRef(
-  ({ className, onClick, ...props }, ref) => {
-    const { openSidebar } = useSidebar();
+  ({ className, onClick, ...props }: React.ComponentProps<typeof Button>, ref: React.RefObject<HTMLButtonElement>) => {
+    const { setOpen } = useSidebar();
     return (
       <Button
-        ref={ref}
+        ref={ref as React.RefObject<HTMLButtonElement>}
         data-sidebar="trigger"
         variant="ghost"
         size="icon"
         className={cn("h-8 w-8", className)}
         onClick={(event) => {
           onClick?.(event);
-          openSidebar();
+          setOpen(true);
         }}
         {...props}
       >
@@ -304,18 +304,18 @@ const SidebarOpenTrigger = React.forwardRef(
 SidebarTrigger.displayName = "SidebarOpenTrigger";
 
 const SidebarCloseTrigger = React.forwardRef(
-  ({ className, onClick, ...props }, ref) => {
-    const { closeSidebar } = useSidebar();
+  ({ className, onClick, ...props }: React.ComponentProps<typeof Button>, ref: React.RefObject<HTMLButtonElement>) => {
+    const { setOpen } = useSidebar();
     return (
       <Button
-        ref={ref}
+        ref={ref as React.RefObject<HTMLButtonElement>}
         data-sidebar="trigger"
         variant="ghost"
         size="icon"
         className={cn("h-8 w-8", className)}
         onClick={(event) => {
           onClick?.(event);
-          closeSidebar();
+          setOpen(false);
         }}
         {...props}
       >

@@ -3,14 +3,22 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-const Footer = ({className}) => {
+const Footer = ({ className }) => {
   const footerLinks = [
     { href: "/privacy-policy", label: "Privacy Policy" },
-    { href: "https://github.com/abhijeetSinghRajput/NoteHub-Production/issues/new", label: "Report an issue" },
+    {
+      href: "https://github.com/abhijeetSinghRajput/NoteHub-Production/issues/new",
+      label: "Report an issue",
+    },
   ];
 
   return (
-    <footer className={cn("py-10 flex w-full flex-col items-center justify-center gap-6", className)}>
+    <footer
+      className={cn(
+        "py-10 flex w-full flex-col items-center justify-center gap-6",
+        className,
+      )}
+    >
       {/* Separator */}
       <Separator className="w-full max-w-6xl" />
 
@@ -42,13 +50,16 @@ const Footer = ({className}) => {
       {/* Creator Credit */}
       <div className="group flex items-center gap-3">
         <img
+          src="/owner.jpg"
           alt="Abhijeet Singh Rajput"
-          loading="lazy"
           width="48"
           height="48"
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
           className="hidden size-12 rounded-2xl border-2 border-muted transition-all duration-300 group-hover:border-primary md:block"
-          src="/owner.jpg"
         />
+
         <div className="text-center md:text-left">
           <p className="text-sm text-muted-foreground">
             Built with ❤️ by{" "}

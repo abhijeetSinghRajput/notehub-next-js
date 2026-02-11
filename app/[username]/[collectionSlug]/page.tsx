@@ -10,7 +10,7 @@ import SortSelector from "@/components/SortSelector";
 
 import { CollectionHeader } from "@/components/CollectionHeader";
 import { ICollection } from "@/types/model";
-import { NoteCard } from "@/components/NoteCard";
+import NoteCard from "@/components/NoteCard";
 
 const CollectionPage = () => {
   const { username, collectionSlug: rawSlug } = useParams();
@@ -82,7 +82,7 @@ const CollectionPage = () => {
         setErrorStatus(null);
 
         if (!isOwner) {
-          const response = await axiosInstance.get(`/user/${username}`);
+          const response = await axiosInstance.get(`user/${username}`);
           const collectionsData = await getCollection({
             userId: response.data?._id,
             slug: collectionSlug,

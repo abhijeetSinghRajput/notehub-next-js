@@ -1,13 +1,14 @@
+"use client";
 import React, { useEffect } from "react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const OAuthCallback = () => {
-  const redirectUri = `${window.location.origin}/oauth/callback`;
   const router = useRouter();
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const { googleLogin } = useAuthStore();
+  const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!;
 
   useEffect(() => {
     const handleAuth = async () => {
@@ -15,26 +16,37 @@ const OAuthCallback = () => {
       const error = searchParams.get("error");
 
       if (error) {
-        console.error("OAuth Error:", error);
-        router.push("/login");
+        router.push(`/login?error=${encodeURIComponent(error)}`);
         return;
       }
 
       if (code) {
         const codeVerifier = sessionStorage.getItem("code_verifier");
+        console.log({codeVerifier});
         try {
-          const result = await googleLogin({ code, codeVerifier, redirectUri });
-          router.push(result? "/" : "/login");
-        } catch (err) {
-          router.push("/login");
+          const result = await googleLogin({
+            code,
+            codeVerifier,
+            redirectUri,
+          });
+          console.log({result});
+
+          if (!result) {
+            router.push("/login?error=Authentication failed");
+            return;
+          }
+
+          router.push("/");
+        } catch {
+          router.push("/login?error=Something went wrong");
         }
       } else {
-        router.push("/login");
+        router.push("/login?error=Authorization code missing");
       }
     };
 
-    handleAuth(); 
-  }, []);
+    handleAuth();
+  }, [searchParams, router, googleLogin, redirectUri]);
 
   return (
     <div className="h-screen flex items-center justify-center">

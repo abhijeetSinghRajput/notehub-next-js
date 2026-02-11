@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 
-import { LabledInput } from "@/components//labeled-input";
+import { LabeledInput } from "@/components//labeled-input";
 
 import { isEmail, isEmpty, isLength, isNumeric } from "@/lib/validator";
 import Link from "next/link";
@@ -237,7 +237,7 @@ const SignupPage = () => {
             <form onSubmit={handleFormSubmit}>
               <div className="flex flex-col gap-5">
                 {/* Name Field */}
-                <LabledInput
+                <LabeledInput
                   id="fullName"
                   label="Full Name"
                   type="text"
@@ -250,7 +250,7 @@ const SignupPage = () => {
                 />
 
                 {/* Email Field */}
-                <LabledInput
+                <LabeledInput
                   id="email"
                   label="Email Address"
                   type="email"
@@ -269,7 +269,7 @@ const SignupPage = () => {
                 />
 
                 {/* Password Field */}
-                <LabledInput
+                <LabeledInput
                   id="password"
                   label="Password"
                   type="password"

@@ -13,6 +13,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import FolderPlusIcon from "../icons/FolderPlusIcon";
 
 const ChooseCollection = ({ setActiveTab, setSelectedCollection }) => {
   const { collections } = useNoteStore();
@@ -78,13 +79,7 @@ const ChooseCollection = ({ setActiveTab, setSelectedCollection }) => {
               onSelect={() => handleCollectionSelect(collection)}
               className="group flex cursor-pointer items-center gap-4 border-b p-4 transition-all hover:bg-muted/50 hover:shadow-sm"
             >
-              <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10">
-                <img
-                  src="/folder.svg"
-                  alt="folder"
-                  className="size-8 dark:invert grayscale"
-                />
-              </div>
+              <FolderPlusIcon className="size-12 opacity-70" />
 
               <div className="flex-1">
                 <h4 className="font-semibold group-hover:text-primary">

@@ -8,7 +8,12 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,10 +34,14 @@ export default function AppBreadcrumbs() {
   useEffect(() => {
     const updateVisible = () => {
       const width = window.innerWidth;
-      if (width >= 1536) setVisibleBreadcrumbs(5); // 2xl
-      else if (width >= 1280) setVisibleBreadcrumbs(4); // xl
-      else if (width >= 1024) setVisibleBreadcrumbs(3); // lg
-      else if (width >= 768) setVisibleBreadcrumbs(2); // md
+      if (width >= 1536)
+        setVisibleBreadcrumbs(5); // 2xl
+      else if (width >= 1280)
+        setVisibleBreadcrumbs(4); // xl
+      else if (width >= 1024)
+        setVisibleBreadcrumbs(3); // lg
+      else if (width >= 768)
+        setVisibleBreadcrumbs(2); // md
       else setVisibleBreadcrumbs(1); // sm
     };
     updateVisible();
@@ -137,12 +146,16 @@ export default function AppBreadcrumbs() {
                 className={cn(
                   "truncate flex items-center gap-2 min-w-0",
                   idx === visible.length - 1 ? "text-foreground" : "",
-                  route.path === "/" ? "logo" : ""
+                  route.path === "/" ? "logo" : "",
                 )}
               >
                 {route.path === "/" && (
                   <div className="size-6 bg-[#171717] rounded-full">
-                    <img src="/n.svg" alt="NoteHub Logo" className="w-full h-full object-contain" />
+                    <img
+                      src="/n.svg"
+                      alt="NoteHub Logo"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                 )}
                 <span className="truncate">{route.name}</span>

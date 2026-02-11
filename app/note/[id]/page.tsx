@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import {
@@ -8,6 +9,7 @@ import {
   Copy,
   CopyCheck,
   Globe,
+  Inbox,
   Lock,
   LucideChevronsLeft,
   Minus,
@@ -19,7 +21,6 @@ import {
 import React, { useEffect, useState } from "react";
 import parse from "html-react-parser";
 import NoteSkeleton from "@/components/sekeletons/NoteSkeleton";
-const router = useRouter();
 import hljs from "highlight.js";
 import { createRoot } from "react-dom/client";
 import { toast } from "sonner";
@@ -56,7 +57,7 @@ import EditorTypographyControls from "@/components/editor/EditorTypographyContro
 import ShareNotePopover from "@/components/ShareNotePopover";
 
 import BadgeIcon from "@/components/icons/BadgeIcon";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 const NotePage = () => {
@@ -96,7 +97,7 @@ const NotePage = () => {
       if (noteId) {
         let note = await getNoteContent(noteId);
         setNote(note);
-        setContent(note?.content || "");
+        setContent(note?.content || null);
       }
     };
 
@@ -258,11 +259,9 @@ const NotePage = () => {
         >
           <Pencil /> Write
         </Button>
-        <img
-          className="size-[200px] mx-auto mt-4 grayscale-[100] opacity-50"
-          src="/empty-note-state.svg"
-          alt=""
-        />
+        <div className="size-16 bg-muted rounded-full flex items-center justify-center">
+          <Inbox />
+        </div>
         <div>No content</div>
       </div>
     );
@@ -270,11 +269,16 @@ const NotePage = () => {
 
   if (noteNotFound) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <img
-          src="/404-not-found.svg"
-          className="p-4 rounded-lg max-w-[500px]"
-        ></img>
+      <div className="w-full h-full flex mt-40 justify-center">
+        <div className="flex flex-col items-center text-center max-w-md">
+          <div className="size-20 bg-muted rounded-full flex items-center justify-center">
+            <Inbox className="size-12 text-muted-foreground" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold">Note Note Found</h3>
+            <p className="text-muted-foreground">Lorem ipsum dolor sit amet, consectetur adipisicing elit</p>
+          </div>
+        </div>
       </div>
     );
   }

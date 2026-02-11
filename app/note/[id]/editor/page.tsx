@@ -14,6 +14,7 @@ import NoteSkeleton from "@/components/sekeletons/NoteSkeleton";
 import EditorBubbleMenu from "@/components/editor/EditorBubbleMenu";
 import { MenuBar } from "@/components/editor/MenuBar";
 import { extensions } from "@/components/editor/config/extensions.config";
+import { Inbox } from "lucide-react";
 
 const Tiptap = () => {
   const { id: noteId } = useParams();
@@ -85,10 +86,15 @@ const Tiptap = () => {
   if (notFound) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <img
-          src="/404-not-found.svg"
-          className="p-4 rounded-lg max-w-[500px]"
-        />
+        <div className="flex flex-col items-center text-center max-w-md">
+          <div className="size-20 bg-muted rounded-full flex items-center justify-center">
+            <Inbox className="size-12 text-muted-foreground" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold">Note Note Found</h3>
+            <p className="text-muted-foreground">Lorem ipsum dolor sit amet, consectetur adipisicing elit</p>
+          </div>
+        </div>
       </div>
     );
   }

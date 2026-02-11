@@ -13,7 +13,7 @@ export const Forbidden = () => {
           it.
         </p>
         <Button asChild variant="outline">
-          <Link to="/">Go to Home</Link>
+          <Link href="/">Go to Home</Link>
         </Button>
       </div>
     </div>
@@ -31,7 +31,7 @@ export const NotFound = () => {
           removed.
         </p>
         <Button asChild variant="outline">
-          <Link to="/">Go to Home</Link>
+          <Link href="/">Go to Home</Link>
         </Button>
       </div>
     </div>

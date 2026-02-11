@@ -21,6 +21,7 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import { Separator } from "../ui/separator";
 import BadgeIcon from "../icons/BadgeIcon";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const NavUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { LabledInput } from "@/components//labeled-input";
+import { LabeledInput } from "@/components//labeled-input";
 
 import {
   InputOTP,
@@ -19,6 +19,7 @@ import { Label } from "./ui/label";
 import BadgeIcon from "./icons/BadgeIcon";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import { isEmail } from "@/lib/validator";
+import Image from "next/image";
 
 const UpdateEmailCard = () => {
   const {
@@ -126,7 +127,13 @@ const UpdateEmailCard = () => {
               referrerPolicy="no-referrer"
             />
             <AvatarFallback className="bg-transparent">
-              <img src="./avatar.svg" alt="" />
+              <Image
+                src="/avatar.svg"
+                alt="Default avatar"
+                fill
+                className="object-cover"
+                priority
+              />
             </AvatarFallback>
           </Avatar>
           <div className="text-sm">
@@ -140,7 +147,7 @@ const UpdateEmailCard = () => {
           </div>
         </div>
 
-        <LabledInput
+        <LabeledInput
           label="New Email"
           placeholder="you@example.com"
           inputClassName={cn(

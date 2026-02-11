@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Audiowide,
+  Merriweather,
+  Roboto,
+  Source_Serif_4,
+} from "next/font/google";
 import "./globals.css";
 
 import "katex/dist/katex.min.css";
 import "@/styles/katex-overrides.css";
-// import "@/styles/theme.css";
 import "@/styles/tiptap.css";
 import "@/styles/hljs.css";
 
@@ -13,31 +17,33 @@ import { ThemeShortcut } from "@/components/theme-shortcut";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CollaboratorManagerProvider } from "@/contex/CollaboratorManagerContext";
 import { CollaboratorsDialog } from "@/components/CollaboratorsDialog";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DashboardHeader from "@/components/DashboardHeader";
-import { Separator } from "@/components/ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import AppSidebar from "@/components/dashboard/AppSidebar";
+import { AuthProvider } from "@/components/providers/auth-provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+import { Toaster } from "sonner";
+
+// Google Fonts
+const audiowide = Audiowide({
   subsets: ["latin"],
+  weight: "400",
+  variable: "--font-audiowide",
 });
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const merriweather = Merriweather({
   subsets: ["latin"],
+  weight: ["300", "400", "700"],
+  variable: "--font-merriweather",
+});
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["100", "400", "700"],
+  variable: "--font-roboto",
+});
+const sourceSerif4 = Source_Serif_4({
+  subsets: ["latin"],
+  weight: ["200", "400", "700"],
+  variable: "--font-source-serif-4",
 });
 
 export const metadata: Metadata = {
@@ -53,27 +59,33 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`
+          ${audiowide.variable} 
+          ${merriweather.variable} 
+          ${roboto.variable} 
+          ${sourceSerif4.variable} 
+          antialiased
+        `}
       >
-        <ThemeProvider
-          defaultTheme="system"
-          enableSystem
-          storageKey="theme" // ✅ FIXED
-        >
-          <ThemeShortcut />
-          <CollaboratorManagerProvider>
-            <TooltipProvider>
-              <CollaboratorsDialog />
-              <SidebarProvider>
-                 <AppSidebar />
-                <SidebarInset>
-                  <DashboardHeader />
-                  {children}
-                </SidebarInset>
-              </SidebarProvider>
-            </TooltipProvider>
-          </CollaboratorManagerProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider defaultTheme="system" storageKey="theme">
+            <ThemeShortcut />
+            <CollaboratorManagerProvider>
+              <TooltipProvider>
+                <CollaboratorsDialog />
+                <SidebarProvider>
+                  <AppSidebar />
+                  <SidebarInset>
+                    <DashboardHeader />
+                    {children}
+                  </SidebarInset>
+                </SidebarProvider>
+              </TooltipProvider>
+            </CollaboratorManagerProvider>
+            
+            <Toaster/>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

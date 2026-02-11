@@ -40,6 +40,7 @@ import { useCollaboratorManager } from "@/contex/CollaboratorManagerContext";
 import { cn } from "@/lib/utils";
 import AvatarStack from "./CollaboratorAvatars";
 import { Badge } from "./ui/badge";
+import FolderIcon from "./icons/FolderIcon";
 
 const NotesOption = React.memo(
   ({ trigger, note, setIsRenaming, className }) => {
@@ -60,7 +61,7 @@ const NotesOption = React.memo(
         await moveTo({ collectionId, noteId: note._id });
         setIsMoveDialogOpen(false);
       },
-      [moveTo, note._id]
+      [moveTo, note._id],
     );
 
     const handleDelete = useCallback(() => {
@@ -112,8 +113,8 @@ const NotesOption = React.memo(
           icon: <UserPlus2 className="size-4 text-muted-foreground" />,
           label: "Collaborators",
           onClick: () => {
-            openDialog(note?.collaborators || [], note?._id, "note"),
-              setDropdownOpen(false);
+            (openDialog(note?.collaborators || [], note?._id, "note"),
+              setDropdownOpen(false));
           },
         },
         {
@@ -135,7 +136,7 @@ const NotesOption = React.memo(
         openDialog,
         toggleVisibility,
         setIsRenaming,
-      ]
+      ],
     );
 
     return (
@@ -158,13 +159,7 @@ const NotesOption = React.memo(
                         onSelect={() => handleMove(collection._id)}
                         className="group flex cursor-pointer items-center gap-4 border-b p-3 rounded-none transition-all hover:bg-muted/50 hover:shadow-sm"
                       >
-                        <div className="flex size-10 p-1 items-center justify-center rounded-xl bg-primary/10">
-                          <img
-                            src="/folder.svg"
-                            alt="folder"
-                            className="h-full w-full object-contain dark:invert grayscale"
-                          />
-                        </div>
+                        <FolderIcon className="size-12" />
 
                         <div className="flex-1">
                           <h4 className="font-semibold group-hover:text-primary">
@@ -172,7 +167,10 @@ const NotesOption = React.memo(
                           </h4>
                           <div className="mt-1 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-xs text-muted-foreground">
+                              <Badge
+                                variant="outline"
+                                className="text-xs text-muted-foreground"
+                              >
                                 {collection.notes.length} notes
                               </Badge>
                               {collection.visibility === "private" && (
@@ -233,8 +231,8 @@ const NotesOption = React.memo(
               variant="ghost"
               aria-label="Open note options menu"
               className={cn(
-                "flex-shrink-0 p-1 size-6 text-muted-foreground hover:text-foreground",
-                className
+                "shrink-0 p-1 size-6 text-muted-foreground hover:text-foreground",
+                className,
               )}
             >
               {trigger}
@@ -267,7 +265,7 @@ const NotesOption = React.memo(
         </DropdownMenu>
       </>
     );
-  }
+  },
 );
 
 export default NotesOption;

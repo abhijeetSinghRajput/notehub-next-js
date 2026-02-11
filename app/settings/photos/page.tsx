@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Loader2, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import imageCompression from "browser-image-compression";
+import Image from "next/image";
 
 const Photos = () => {
   const {
@@ -77,20 +79,14 @@ const Photos = () => {
         <div className="space-y-4">
           <Label>Your Photo</Label>
           <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
-            <Avatar className="relative aspect-square shadow-md size-28 sm:size-44 shrink-0 border-background rounded-full">
-              <AvatarImage
-                size={176} 
-                className="w-full h-full object-cover rounded-full bg-background"
-                src={previewavatar || authUser?.avatar}
-                alt={authUser?.fullName || "User Profile Photo"}
+            <Avatar className="relative size-44 shrink-0">
+              <Image
+                src={previewavatar || authUser?.avatar || "/avatar.svg"}
+                alt="User Avatar"
+                fill
+                sizes="176px"
+                className="rounded-full object-cover"
               />
-              <AvatarFallback className="text-4xl">
-                <img
-                  className="w-full h-full object-cover dark:brightness-[0.2]"
-                  src="/avatar.svg"
-                  alt="user-profile"
-                />
-              </AvatarFallback>
             </Avatar>
 
             <div className="space-y-6">
@@ -156,15 +152,19 @@ const Photos = () => {
           <Label>Profile Page Cover</Label>
           <div className="flex flex-col sm:flex-col gap-8 items-start">
             {/* relative aspect-video shadow-md h-44 sm:h-auto sm:w-44 shrink-0 */}
-            <div className="rounded-xl overflow-hidden">
-              <img
-                className="w-full h-full object-cover bg-background"
+            import Image from "next/image";
+            <div className="relative w-full h-48 rounded-xl overflow-hidden">
+              <Image
                 src={previewCover || authUser?.cover || "/profile-cover.svg"}
                 alt="background-cover-image"
+                fill
+                className="object-cover bg-background"
+                sizes="100vw"
                 onError={(e) => {
-                  e.currentTarget.src = "/profile-cover.svg";
-                  e.currentTarget.classList.add("dark:brightness-[0.2]");
+                  const target = e.currentTarget as HTMLImageElement;
+                  target.src = "/profile-cover.svg";
                 }}
+                priority
               />
             </div>
             <div className="space-y-6">

@@ -24,7 +24,7 @@ const CustomPopover = ({ trigger, children }) => {
             {/* Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex-shrink-0 p-1 size-6 text-muted-foreground hover:text-primary hover:bg-transparent"
+                className="shrink-0 p-1 size-6 text-muted-foreground hover:text-primary hover:bg-transparent"
             >
                 {trigger}
             </button>

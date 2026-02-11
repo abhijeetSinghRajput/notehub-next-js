@@ -1,15 +1,18 @@
-import { formatDate, formatTime } from "@/lib/utils";
-import { EllipsisVertical, File } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import NotesOption from "./NotesOption";
-import Link from "next/link";
-import { Input } from "./ui/input";
+"use client"
+
+import AvatarStack from "@/components/CollaboratorAvatars";
+import NotesOption from "@/components/NotesOption";
+import TooltipWrapper from "@/components/TooltipWrapper";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardFooter, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useNoteStore } from "@/app/stores/useNoteStore";
+import { Calendar, EllipsisVertical, File, Lock } from "lucide-react";
+import Link from "next/link";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { format } from "@/lib/utils";
 
-
-
-export const NoteCard = ({ note, collectionName }) => {
+const NoteCard = ({ note, isOwner, username, collectionSlug }) => {
   const inputRef = useRef(null);
   const [isRenaming, setIsRenaming] = useState(false);
   const { renameNote } = useNoteStore();
@@ -24,7 +27,7 @@ export const NoteCard = ({ note, collectionName }) => {
     }
   }, [isRenaming]);
 
-  const handleSaveRename = () => {
+  const handleSaveRename = useCallback(() => {
     const newName = inputRef.current?.value.trim();
     if (newName && newName !== note.name) {
       renameNote({
@@ -33,67 +36,89 @@ export const NoteCard = ({ note, collectionName }) => {
       });
     }
     setIsRenaming(false);
-  };
+  }, [note.name, note._id, renameNote]);
 
-  const handleKeyDown = (e) => {
-    e.stopPropagation();
-    if (e.key === "Enter") {
-      handleSaveRename();
-    } else if (e.key === "Escape") {
-      if (inputRef.current) {
-        inputRef.current.value = note.name;
+  const handleKeyDown = useCallback(
+    (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter") {
+        handleSaveRename();
+      } else if (e.key === "Escape") {
+        if (inputRef.current) {
+          inputRef.current.value = note.name;
+        }
+        setIsRenaming(false);
       }
-      setIsRenaming(false);
-    }
-  };
+    },
+    [handleSaveRename, note.name]
+  );
 
   return (
-    <div className="flex gap-2 bg-input/30 items-start p-4 border rounded-lg hover:bg-accent/50 transition-colors group/notecard">
-      <div className="overflow-hidden pt-1 w-full">
+    <Card className={"h-full flex flex-col hover:shadow-md transition-shadow"}>
+      <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start gap-2">
-          <div className="min-w-0 text-foreground flex items-center gap-1">
-            <File className="flex-shrink-0 size-4" />
+          <div className="flex items-center gap-2">
             {isRenaming ? (
               <Input
                 ref={inputRef}
                 defaultValue={note.name}
-                className="font-bold h-8 flex-1"
+                className="font-medium h-8 flex-1"
                 onBlur={handleSaveRename}
                 onKeyDown={handleKeyDown}
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <Link
-                href={`/note/${note._id}`}
-                className="font-bold text-sm truncate hover:underline flex-1"
-              >
-                {note.name}
-              </Link>
+              <>
+                <File className="size-4 text-muted-foreground flex-shrink-0" />
+                <TooltipWrapper message={note.name}>
+                  <Link
+                    href={`/${username}/${collectionSlug}/${note.slug}`}
+                    className="font-medium text-sm line-clamp-1 hover:underline flex-1"
+                  >
+                    {note.name}
+                  </Link>
+                </TooltipWrapper>
+              </>
             )}
           </div>
-
-          <div className="opacity-1 group-hover/notecard:opacity-100 transition-opacity">
+          {isOwner && (
             <NotesOption
               trigger={<EllipsisVertical className="size-4" />}
               note={note}
               setIsRenaming={setIsRenaming}
             />
+          )}
+        </div>
+      </CardHeader>
+
+      <CardFooter className="mt-auto p-4 pt-0 ">
+        <div className="flex items-center justify-between w-full text-xs">
+          <div className="flex gap-1 items-center text-muted-foreground">
+            <Calendar className="size-3" />
+            <span>{format(new Date(note.createdAt), "MMM d, yyyy")}</span>
+          </div>
+          <div className="flex justify-between items-center gap-4">
+            {Array.isArray(note.collaborators) && (
+              <AvatarStack
+                collaborators={note.collaborators}
+                maxVisible={2}
+                size="sm"
+              />
+            )}
+            {isOwner && note.visibility === "private" && (
+              <Badge
+                variant={"destructive"}
+                className="flex items-center gap-1 h-auto"
+              >
+                <Lock className="size-3.5" />
+                {note.visibility}
+              </Badge>
+            )}
           </div>
         </div>
-        {(collectionName) &&
-          (<Badge
-            variant="secondary"
-            className="mb-2 hover:bg-secondary text-xs font-normal mt-1"
-          >
-            {collectionName}
-          </Badge>)
-        }
-
-        <div className="flex gap-2 items-center text-muted-foreground text-xs justify-between">
-          <p>{formatDate(note.createdAt)}</p>
-          <p>{formatTime(note.createdAt)}</p>
-        </div>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 };
+
+export default NoteCard;

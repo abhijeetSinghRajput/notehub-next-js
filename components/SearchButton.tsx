@@ -265,7 +265,7 @@ export function SearchButton() {
                   setIsTyping(true);
                 }}
                 autoFocus
-                className="py-3 pr-14 border-0 h-auto shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="bg-transparent! py-3 pr-14 border-0 h-auto shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
               <Button
                 disabled={searchQuery.trim() === ""}
@@ -299,11 +299,11 @@ export function SearchButton() {
             </div>
           </DialogHeader>
 
-          <Tabs defaultValue="notes">
-            <TabsList className="h-auto p-0 grid grid-cols-2 gap-4 border-b border-muted">
+          <Tabs defaultValue="notes" className="gap-0">
+            <TabsList className="h-auto! grid grid-cols-2 w-full">
               <TabsTrigger
                 value="notes"
-                className="w-full h-12 gap-3 rounded-none text-base border-b-[3px] border-transparent !shadow-none data-[state=active]:bg-primary/5 data-[state=active]:border-primary/50"
+                className="w-full h-12 gap-3 rounded-none text-base border-none border-b-[3px] border-transparent !shadow-none data-[state=active]:bg-primary/5 data-[state=active]:border-primary/50"
               >
                 Notes
                 {pagination.notes.totalItems > 0 && (
@@ -314,7 +314,7 @@ export function SearchButton() {
               </TabsTrigger>
               <TabsTrigger
                 value="users"
-                className="w-full h-12 gap-3 rounded-none text-base border-b-[3px] border-transparent !shadow-none data-[state=active]:bg-primary/5 data-[state=active]:border-primary/50"
+                className="w-full h-12 gap-3 rounded-none text-base border-none border-b-[3px] border-transparent !shadow-none data-[state=active]:bg-primary/5 data-[state=active]:border-primary/50"
               >
                 Users
                 {pagination.users.totalItems > 0 && (
@@ -329,7 +329,11 @@ export function SearchButton() {
               <div className="max-h-[70vh] overflow-y-auto">
                 {searchResults.notes.length === 0 ? (
                   searchQuery && !isTyping ? (
-                    <NotFound searchQuery={searchQuery} type="notes" />
+                    isSearching ? (
+                      <Searching searchQuery={searchQuery} type="notes" />
+                    ) : (
+                      <NotFound searchQuery={searchQuery} type="notes" />
+                    )
                   ) : (
                     <EmptyState />
                   )
@@ -413,7 +417,11 @@ export function SearchButton() {
               <div className="max-h-[80vh] overflow-y-auto">
                 {searchResults.users.length === 0 ? (
                   searchQuery && !isTyping ? (
-                    <NotFound searchQuery={searchQuery} type="users" />
+                    isSearching ? (
+                      <Searching searchQuery={searchQuery} type="users" />
+                    ) : (
+                      <NotFound searchQuery={searchQuery} type="users" />
+                    )
                   ) : searchHistory.length === 0 ? (
                     <EmptyState type="users" />
                   ) : null
@@ -645,10 +653,31 @@ function CustomPagination({ currentPage, totalPages, onPageChange }) {
   );
 }
 
+export function Searching({ searchQuery = "", type = "users" }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-4 gap-6 animate-pulse">
+      <div className="bg-primary/20 rounded-full p-5">
+        <Search className="h-10 w-10 stroke-1.5 text-muted-foreground/80" />
+      </div>
+
+      <div className="text-center space-y-1 max-w-md px-4">
+        <h3 className="text-xl font-medium tracking-tight">
+          {`Searching for ${type}`}
+        </h3>
+        <p className="text-muted-foreground">{searchQuery}</p>
+      </div>
+
+      <div className="text-sm text-muted-foreground/60">
+        <p>Try different keywords or check spelling</p>
+      </div>
+    </div>
+  );
+}
+
 export function NotFound({ searchQuery = "", type = "users" }) {
   return (
     <div className="flex flex-col items-center justify-center py-4 gap-6">
-      <div className="bg-accent rounded-full p-5 animate-pulse">
+      <div className="bg-primary/20 rounded-full p-5 animate-pulse">
         <Ghost className="h-10 w-10 stroke-1.5 text-muted-foreground/80" />
       </div>
 

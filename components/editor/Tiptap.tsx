@@ -13,6 +13,7 @@ import { migrateMathStrings } from "@tiptap/extension-mathematics";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import EditorBubbleMenu from "./EditorBubbleMenu";
 import { useParams } from "next/navigation";
+import { Inbox } from "lucide-react";
 
 const Tiptap = () => {
   const { id: noteId } = useParams();
@@ -83,11 +84,16 @@ const Tiptap = () => {
 
   if (notFound) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <img
-          src="/404-not-found.svg"
-          className="p-4 rounded-lg max-w-[500px]"
-        />
+      <div className="w-full h-full flex mt-40 justify-center">
+        <div className="flex flex-col items-center text-center max-w-md">
+          <div className="size-20 bg-muted rounded-full flex items-center justify-center">
+            <Inbox className="size-12 text-muted-foreground" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold">Note Note Found</h3>
+            <p className="text-muted-foreground">Lorem ipsum dolor sit amet, consectetur adipisicing elit</p>
+          </div>
+        </div>
       </div>
     );
   }

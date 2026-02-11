@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useRef } from "react";
 
 // UI components
@@ -8,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LabledInput } from "@/components//labeled-input";
+import { LabeledInput } from "@/components//labeled-input";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
 
@@ -153,7 +154,7 @@ function Field({ label, field, apiEndPoint }) {
 
   return (
     <div className="relative">
-      <LabledInput
+      <LabeledInput
         ref={inputRef}
         id={field}
         label={label}

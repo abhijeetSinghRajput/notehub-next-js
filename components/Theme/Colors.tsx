@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useEffect } from "react";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
@@ -21,8 +23,9 @@ const colors = [
 ];
 
 const Colors = () => {
-  const { theme, setTheme } = useLocalStorage();
-  const { updateVariable } = useThemeStore();
+  const theme = useLocalStorage((state) => state.theme);
+  const setTheme = useLocalStorage((state) => state.setTheme);
+  const updateVariable = useThemeStore((state) => state.updateVariable);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -43,14 +46,12 @@ const Colors = () => {
             onClick={() => setTheme(name)}
           >
             <span
-              className="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded-full relative"
+              className="h-5 w-5 shrink-0 flex items-center justify-center rounded-full relative"
               style={{ background: color }}
             >
               {theme === name && <Check />}
             </span>
-            <span className="hidden xs:inline">
-              {name[0].toUpperCase() + name.slice(1)}
-            </span>
+            {name}
           </Button>
         ))}
       </div>

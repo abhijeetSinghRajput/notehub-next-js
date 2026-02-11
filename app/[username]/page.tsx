@@ -314,37 +314,30 @@ const ProfilePage = () => {
           isLoading && "animate-pulse",
         )}
       >
-        <Avatar
-          className="relative rounded-none max-h-48 h-full w-full overflow-hidden cursor-pointer"
-          style={{ aspectRatio: "3/1" }}
-          onClick={() => {
-            setCurrentImageType("cover");
-            setIsImageDialogOpen(true);
-          }}
-        >
+        <Avatar className="w-full relative h-48 sm:h-64 rounded-none overflow-hidden">
           <AvatarImage
-            src={user?.cover}
-            alt="User cover Photo"
-            unoptimized={true} // keep original URL without Next/Image optimization
-            loading="eager" // ⚠️ important for LCP
-            fetchpriority="high" // ⚠️ important for LCP
+            src={user?.cover || "/placeholder.svg"}
+            alt="User cover photo"
+            unoptimized={true} // keep original URL
+            loading="eager" // important for LCP
+            fetchPriority="high" // important for LCP
             decoding="async"
-            className="w-full h-full max-h-48 object-cover"
+            className="w-full h-full object-cover"
             style={{ aspectRatio: "3 / 1" }}
           />
-          <AvatarFallback className="rounded-none brightness-[0.2]">
+          <AvatarFallback className="w-full h-full brightness-[0.2]">
             <img
               src="/placeholder.svg"
               alt="placeholder"
               className="w-full h-full object-cover"
-              style={{ aspectRatio: "3/1" }}
+              style={{ aspectRatio: "3 / 1" }}
             />
           </AvatarFallback>
         </Avatar>
         <CardContent>
           <div className="flex flex-col sm:flex-row items-start sm:gap-8 gap-2 sm:items-center">
             <Avatar
-              className="relative shadow-md size-28 sm:size-48 shrink-0 border-4 sm:border-8 border-background -mt-14 rounded-full cursor-pointer"
+              className="relative shadow-md w-28 h-28 sm:w-48 sm:h-48 shrink-0 border-4 sm:border-8 border-background -mt-14 rounded-full cursor-pointer"
               onClick={() => {
                 setCurrentImageType("avatar");
                 setIsImageDialogOpen(true);
@@ -353,22 +346,23 @@ const ProfilePage = () => {
               aria-label="View profile photo"
             >
               <AvatarImage
-                src={user?.avatar}
-                size={384}
+                src={user?.avatar || "/avatar.svg"}
+                alt="User avatar"
+                unoptimized={true} // optional: keep original URL
                 loading="lazy"
-                fetchpriority="low"
+                fetchPriority="low"
+                className="w-full h-full object-cover"
               />
-
               <AvatarFallback
-                className="text-4xl flex items-center justify-center bg-muted"
+                className="text-4xl flex items-center justify-center bg-muted dark:brightness-[0.2]"
                 aria-hidden="true"
               >
                 <img
                   src="/avatar.svg"
-                  alt=""
+                  alt="fallback avatar"
+                  className="w-full h-full object-cover"
                   loading="eager"
                   decoding="async"
-                  className="w-full h-full object-cover dark:brightness-[0.2]"
                 />
               </AvatarFallback>
             </Avatar>

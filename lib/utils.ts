@@ -1,11 +1,11 @@
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 
-export function cn(...inputs) {
-  return twMerge(clsx(inputs));
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
-export const formatTime = (isoString) => {
+export const formatTime = (isoString: string) => {
   const date = new Date(isoString);
 
   // Get time components
@@ -21,8 +21,10 @@ export const formatTime = (isoString) => {
 };
 
 // Time formatter
-export const formatTimeAgo = (date) => {
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+export const formatTimeAgo = (date: string) => {
+  const seconds = Math.floor(
+    (new Date().getTime() - new Date(date).getTime()) / 1000
+  );
   const intervals = {
     year: 31536000,
     month: 2592000,
@@ -43,7 +45,7 @@ export const formatTimeAgo = (date) => {
 };
 
 
-export const formatDate = (isoString) => {
+export const formatDate = (isoString: string) => {
   const date = new Date(isoString);
 
   // Get date components
@@ -57,33 +59,52 @@ export const formatDate = (isoString) => {
   return formattedDate;
 };
 
-export function format(date, pattern) {
-  const d = new Date(date);
-
-  const map = {
-    MMM: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()],
-    d: d.getDate(),
-    yyyy: d.getFullYear(),
-  };
-
-  return pattern.replace(/MMM|d|yyyy/g, m => map[m]);
-}
-
-export const formatDeviceInfo = (device) => {
+export const formatDeviceInfo = (device: { browser: { name: string }, os: { name: string } }) => {
   if (!device) return "Unknown device";
   return `${device.browser?.name || "Unknown browser"} on ${
     device.os?.name || "Unknown OS"
   }`;
 };
 
-export const formatLocation = (location) => {
+export function format(date: Date, pattern: string) {
+  const d = new Date(date);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  
+  const map = {
+    yyyy: d.getFullYear(),
+    yy: String(d.getFullYear()).slice(-2),
+    MMMM: ["January","February","March","April","May","June","July","August","September","October","November","December"][d.getMonth()],
+    MMM: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()],
+    MM: pad(d.getMonth() + 1),
+    M: d.getMonth() + 1,
+    dd: pad(d.getDate()),
+    d: d.getDate(),
+    HH: pad(d.getHours()),
+    H: d.getHours(),
+    hh: pad(d.getHours() % 12 || 12),
+    h: d.getHours() % 12 || 12,
+    mm: pad(d.getMinutes()),
+    m: d.getMinutes(),
+    ss: pad(d.getSeconds()),
+    s: d.getSeconds(),
+    a: d.getHours() >= 12 ? 'PM' : 'AM',
+  };
+  
+  // Sort by length (longest first) to avoid partial matches
+  return pattern.replace(
+    /yyyy|yy|MMMM|MMM|MM|M|dd|d|HH|H|hh|h|mm|m|ss|s|a/g,
+    (m) => (map as Record<string, string | number>)[m]?.toString() ?? m
+  );
+}
+
+export const formatLocation = (location: { city: string, country: string }) => {
   if (!location) return "Unknown location";
   return `${location.city || ""}${
     location.city && location.country ? ", " : ""
   }${location.country || ""}`;
 };
 
-export const formatCompactNumber = (num) => {
+export const formatCompactNumber = (num: number) => {
   if (num >= 1_000_000_000) {
     return `${(num / 1_000_000_000).toFixed(1)}b`;
   } else if (num >= 1_000_000) {
@@ -95,7 +116,7 @@ export const formatCompactNumber = (num) => {
   }
 };
 
-export const stripLatex = (text) =>
+export const stripLatex = (text: string) =>
   text
     .replace(/\$\$[\s\S]*?\$\$/g, " ") // $$ block
     .replace(/\$[^$]*\$/g, " ")       // $ inline
@@ -105,7 +126,7 @@ export const stripLatex = (text) =>
     .trim();
 
 
-export const noteTransformer = (htmlContent, options = {}) => {
+export const noteTransformer = (htmlContent: string, options: { headings: boolean, images: boolean, description: boolean } = { headings: false, images: false, description: false }) => {
   if (!htmlContent || typeof htmlContent !== "string") {
     return {
       headings: [],

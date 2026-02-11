@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { ChevronLeft, Globe, Loader2, Lock } from "lucide-react";
-import {LabledInput} from "@/components/labeled-input"
+import {LabeledInput} from "@/components/labeled-input"
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { useNoteStore } from "@/app/stores/useNoteStore";
@@ -81,7 +81,7 @@ const AddNote = ({
 
       <div className="px-6 py-6">
         <div className="space-y-4">
-          <LabledInput
+          <LabeledInput
             inputClassName="bg-muted/30"
             label="Note Name"
             placeholder="Enter note title"

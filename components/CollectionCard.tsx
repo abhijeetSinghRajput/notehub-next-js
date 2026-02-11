@@ -11,10 +11,13 @@ import { Card } from "./ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "@/lib/utils";
 import AvatarStack from "./CollaboratorAvatars";
+import { usePathname } from "next/navigation";
+import FolderIcon from "./icons/FolderIcon";
 
 function CollectionCard({ collection, isOwner, pinnedCollections }) {
   const [isCollectionRenaming, setIsCollectionRenaming] = useState(false);
   const inputRef = useRef(null);
+  const pathname = usePathname();
   const { renameCollection } = useNoteStore();
 
   const handleRenameStart = () => {
@@ -74,13 +77,8 @@ function CollectionCard({ collection, isOwner, pinnedCollections }) {
                 )}
               />
             )}
-            <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10">
-              <img
-                src="/folder.svg"
-                alt="folder"
-                className="size-8 dark:invert grayscale"
-              />
-            </div>
+
+            <FolderIcon className="size-12 opacity-70" />
           </div>
           <div className="w-full space-y-2">
             <div className="flex items-center justify-between gap-2 w-full">
@@ -97,7 +95,7 @@ function CollectionCard({ collection, isOwner, pinnedCollections }) {
                 ) : (
                   <TooltipWrapper message={collection.name}>
                     <Link
-                      href={`${collection.slug}`}
+                      href={`${pathname}/${collection.slug}`}
                       className="hover:underline font-medium line-clamp-2"
                     >
                       {collection.name}

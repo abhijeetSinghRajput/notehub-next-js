@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { ChevronLeft, Globe, Loader2, Lock } from "lucide-react";
-import FolderIcon from "../icons/FolderIcon";
+import FolderPlusIcon from "../icons/FolderPlusIcon";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { useNoteStore } from "@/app/stores/useNoteStore";
-import {LabledInput} from "@/components/labeled-input"
+import {LabeledInput} from "@/components/labeled-input"
 
 const CreateCollection = ({ setSelectedCollection, setActiveTab }) => {
   const [collectionName, setCollectionName] = useState("");
@@ -48,7 +48,7 @@ const CreateCollection = ({ setSelectedCollection, setActiveTab }) => {
               <ChevronLeft />
             </Button>
           <div className="flex gap-2 items-center">
-            <FolderIcon className="size-12 opacity-70" />
+            <FolderPlusIcon className="size-12 opacity-70" />
             <div>
               <h3 className="text-lg font-semibold">Create Collection</h3>
               <p className="text-sm text-muted-foreground">
@@ -61,7 +61,7 @@ const CreateCollection = ({ setSelectedCollection, setActiveTab }) => {
 
       <div className="px-6 py-6">
         <div className="space-y-4">
-          <LabledInput
+          <LabeledInput
             inputClassName="bg-muted/30"
             label="Collection Name"
             placeholder="Enter collection name"
