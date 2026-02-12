@@ -138,6 +138,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
         {FORMATTING_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
             tooltip={tooltip}
+            aria-label={tooltip}
             key={index}
             size="icon"
             onClick={() => (editor.chain().focus() as any)[command]().run()}
@@ -150,6 +151,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
         {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
             tooltip={tooltip}
+            aria-label={tooltip}
             key={index}
             size="icon"
             onClick={() => (editor.chain().focus() as any)[command]().run()}
@@ -165,6 +167,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
         {LIST_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
             tooltip={tooltip}
+            aria-label={tooltip}
             key={index}
             size="icon"
             onClick={() => (editor.chain().focus() as any)[command]().run()}
@@ -177,6 +180,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
         {LIST_CONTROL_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
             tooltip={tooltip}
+            aria-label={tooltip}
             key={index}
             size="icon"
             variant="ghost"
@@ -198,6 +202,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
         {CONTROL_BUTTONS.map(({ icon, command, tooltip }, index) => (
           <Button
             tooltip={tooltip}
+            aria-label={tooltip}
             key={index}
             size="icon"
             variant="ghost"
@@ -211,6 +216,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
         {ALIGNMENT_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
             tooltip={tooltip}
+            aria-label={tooltip}
             key={index}
             size="icon"
             onClick={() => (editor.chain().focus() as any)[command](name).run()}

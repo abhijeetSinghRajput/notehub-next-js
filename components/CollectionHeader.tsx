@@ -92,6 +92,7 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
                         "collection",
                       )
                     }
+                    aria-label="Add collaborators"
                   >
                     {hasCollaborators ? (
                       <Pencil className="h-4 w-4" />

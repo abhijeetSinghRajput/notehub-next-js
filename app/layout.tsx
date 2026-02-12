@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import {
-  Audiowide,
   Merriweather,
   Roboto,
   Source_Serif_4,
@@ -28,12 +27,6 @@ import { Toaster } from "sonner";
 const baseUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.trim() || "http://localhost:3000";
 
-// Google Fonts
-const audiowide = Audiowide({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-audiowide",
-});
 const merriweather = Merriweather({
   subsets: ["latin"],
   weight: ["300", "400", "700"],
@@ -110,7 +103,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`
-          ${audiowide.variable} 
           ${merriweather.variable} 
           ${roboto.variable} 
           ${sourceSerif4.variable} 

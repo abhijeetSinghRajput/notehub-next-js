@@ -53,15 +53,13 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
       <SidebarHeader className="py-2 px-4 h-16 justify-center">
         {showSearch ? (
           <div className="flex gap-2 items-center">
-            <SidebarSearch
-              inputRef={searchRef}
-              onSearch={setSearchQuery}
-            />
+            <SidebarSearch inputRef={searchRef} onSearch={setSearchQuery} />
             <Button
               tooltip="Close Searchbar"
               variant="ghost"
               className="size-8"
               onClick={handleCloseSearch}
+              aria-label="close searchbar"
             >
               <X />
             </Button>
@@ -69,11 +67,14 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
         ) : (
           <div className="flex items-center justify-between">
             <div className="flex gap-2 items-center">
-              <SidebarCloseTrigger tooltip={"Close Sidebar Ctrl M"} />
+              <SidebarCloseTrigger
+                tooltip={"Ctrl + M"}
+                aria-label="close sidebar"
+              />
               <Link
                 onClick={() => isMobile && setOpen(false)}
                 href="/"
-                className="logo truncate font flex gap-2 items-center"
+                className="truncate font flex gap-2 items-center"
               >
                 <LogoIcon />
               </Link>
@@ -85,6 +86,7 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
                 tooltip="Settings"
                 className="size-8 text-sidebar-accent-foreground/70"
                 variant="ghost"
+                aria-label="go to settings"
               >
                 <Link href="/settings">
                   <Settings />
@@ -95,6 +97,7 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
                 className="size-8 text-sidebar-accent-foreground/70"
                 variant="ghost"
                 onClick={collapseAll}
+                aria-label="collapse all folder"
               >
                 <CopyMinus />
               </Button>
@@ -103,12 +106,13 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
                 className={"text-accent-foreground/70"}
               />
               <Button
-                tooltip="Search File"
+                tooltip="Search Notes"
                 className="size-8 text-sidebar-accent-foreground/70"
                 variant="ghost"
                 onClick={() => {
                   setShowSearch(true);
                 }}
+                aria-label="search notes"
               >
                 <Search />
               </Button>

@@ -635,6 +635,7 @@ const FloatingActionButtons = memo<FloatingActionButtonsProps>(
             size="icon"
             tooltip="Edit Content"
             className="size-11 rounded-full"
+            aria-label="Edit content"
           >
             <Pencil />
           </Button>

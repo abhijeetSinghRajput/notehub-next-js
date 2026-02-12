@@ -151,6 +151,7 @@ export default function MathDialog({ editor }: { editor: Editor }) {
       <DialogTrigger asChild>
         <Button
           tooltip="Equation"
+          aria-label="open equation dialog"
           size="icon"
           variant="outline"
           onClick={() => {

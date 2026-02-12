@@ -73,6 +73,7 @@ export function LinkDialog({ editor }: { editor: Editor }) {
           variant="outline"
           onClick={() => openDialog("openLinkDialog")}
           disabled={!editor.can().setLink({ href: "" })}
+          aria-label="Insert Link"
         >
           <LinkIcon />
         </Button>
@@ -95,6 +96,7 @@ export function LinkDialog({ editor }: { editor: Editor }) {
           <div className="flex gap-1">
             <Button
               tooltip="Open Link"
+              aria-label="Open Link"
               variant="secondary"
               size="icon"
               onClick={handleOpenLink}
@@ -104,6 +106,7 @@ export function LinkDialog({ editor }: { editor: Editor }) {
             </Button>
             <Button
               tooltip="Remove Link"
+              aria-label="Remove Link"
               variant="secondary"
               size="icon"
               onClick={handleRemoveLink}

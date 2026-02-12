@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import * as React from "react";
 import { Moon, Sun, Monitor } from "lucide-react";
@@ -52,7 +52,13 @@ export function ModeToggle() {
   );
 }
 
-export function ModeToggleMini({ className, ...props }: { className?: string; [key: string]: any }) {
+export function ModeToggleMini({
+  className,
+  ...props
+}: {
+  className?: string;
+  [key: string]: any;
+}) {
   const { toggleTheme } = useTheme();
 
   return (
@@ -61,6 +67,7 @@ export function ModeToggleMini({ className, ...props }: { className?: string; [k
       variant="ghost"
       className={cn("size-8 relative", className)}
       onClick={toggleTheme}
+      aria-label="toggle theme"
       {...props}
     >
       <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

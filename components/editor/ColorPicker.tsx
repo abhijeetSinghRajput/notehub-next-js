@@ -35,6 +35,7 @@ export const ColorPicker = ({
           style={{
             backgroundColor: activeColor || "transparent",
           }}
+          aria-label="select color"
         >
           {Icon}
         </Button>

@@ -44,7 +44,8 @@ const socialMedia = [
   {
     name: "Telegram",
     icon: TelegramIcon,
-    url: (link: string) => `https://t.me/share/url?url=${encodeURIComponent(link)}`,
+    url: (link: string) =>
+      `https://t.me/share/url?url=${encodeURIComponent(link)}`,
   },
   {
     name: "LinkedIn",
@@ -57,7 +58,7 @@ const socialMedia = [
 ];
 
 // /user/abhijeetsingh/daa-design-and-analysis/all-pairs-shortest-path-floyd-s
-export function ShareNotePopover({ shareLink }: {shareLink: string}) {
+export function ShareNotePopover({ shareLink }: { shareLink: string }) {
   const [copied, setCopied] = useState(false);
   const copyToClipboard = async () => {
     if (!shareLink) return;
@@ -70,7 +71,11 @@ export function ShareNotePopover({ shareLink }: {shareLink: string}) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button tooltip="Share" className="size-11 rounded-full">
+        <Button
+          tooltip="Share"
+          className="size-11 rounded-full"
+          aria-label="Share note"
+        >
           <ShareIcon />
         </Button>
       </DialogTrigger>
@@ -127,7 +132,7 @@ export function ShareNotePopover({ shareLink }: {shareLink: string}) {
                           window.open(item.url(shareLink), "_blank")
                         }
                       >
-                        <Icon className="size-14!"/>
+                        <Icon className="size-14!" />
                       </Button>
                       <p className="text-muted-foreground text-xs font-medium max-w-full truncate">
                         {item.name}

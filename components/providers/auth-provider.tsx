@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { Loader } from "lucide-react";
 import { ThemeProvider } from "../theme-provider";
+import Logo from "../Logo";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { checkAuth, isCheckingAuth } = useAuthStore();
@@ -27,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         storageKey="theme" // ✅ FIXED
       >
         <div className="flex flex-col gap-2 items-center justify-center h-screen">
-          <div className="logo text-xl text-foreground/70">Notehub</div>
+          <Logo className="text-xl text-foreground/70"/>
           <Loader className="animate-spin" />
         </div>
       </ThemeProvider>

@@ -68,6 +68,7 @@ const AddNote: React.FC<AddNoteProps> = ({
             size="icon"
             onClick={handleBackToCollections}
             className="h-10 w-10"
+            aria-label="back to collection"
           >
             <ChevronLeft />
           </Button>

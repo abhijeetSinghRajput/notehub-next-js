@@ -36,6 +36,7 @@ export const SelectHeading = ({ editor }: { editor: Editor }) => {
           <Button
             key={index}
             tooltip={`Heading ${level}`}
+            aria-label={`Insert Heading ${level}`}
             disabled={editor.isActive("heading", { level })}
             onClick={() =>
               editor.chain().focus().toggleHeading({ level }).run()

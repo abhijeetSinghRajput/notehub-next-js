@@ -262,6 +262,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onUserSelect, currentCollaborator
             className="text-muted-foreground absolute size-8 p-0 hover:bg-transparent right-0 top-1/2 -translate-y-1/2"
             disabled={isSearching}
             onClick={handleClearSearch}
+            aria-label="Clear Search"
           >
             {isSearching ? (
               <Loader2 className="animate-spin size-4" />

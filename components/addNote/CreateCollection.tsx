@@ -45,11 +45,12 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ setSelectedCollecti
       <div className="sticky top-0 z-10 border-b bg-background px-6 py-4">
         <div className="flex items-center gap-4">
             <Button
-            tooltip="Back"
+              tooltip="Back"
               variant="secondary"
               size="icon"
               onClick={() => setActiveTab("choose-collection")}
               className="h-10 w-10"
+              aria-label="back"
             >
               <ChevronLeft />
             </Button>

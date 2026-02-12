@@ -69,7 +69,9 @@ const DashboardHeader = () => {
             <>
               <AddNoteDrawer
                 trigger={
-                  <Button tooltip="Create Notes" className={`size-8`}>
+                  <Button tooltip="Create Notes" className={`size-8`}
+                    aria-label="Add Note Drawer trigger"
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 }

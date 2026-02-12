@@ -19,7 +19,11 @@ const EditorTypographyControls = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button tooltip="Typography" className="size-11 rounded-full">
+        <Button
+          tooltip="Typography"
+          className="size-11 rounded-full"
+          aria-label="Typography"
+        >
           <Type />
         </Button>
       </PopoverTrigger>
@@ -85,7 +89,7 @@ const EditorTypographyControls = () => {
               disabled={editorFontSizeIndex === FONT_SIZE.length - 1}
               onClick={() =>
                 setFontSize(
-                  Math.min(FONT_SIZE.length - 1, editorFontSizeIndex + 1)
+                  Math.min(FONT_SIZE.length - 1, editorFontSizeIndex + 1),
                 )
               }
             >
