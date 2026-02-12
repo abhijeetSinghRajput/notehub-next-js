@@ -14,7 +14,7 @@ const LogoIcon = React.forwardRef<SVGSVGElement, IconProps>(
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_79_2)">
+      <g clipPath="url(#clip0_79_2)">
         <circle cx="64" cy="64" r="64" fill="black" />
         <path
           opacity="0.5"

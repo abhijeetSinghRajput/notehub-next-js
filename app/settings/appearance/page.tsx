@@ -1,8 +1,8 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModeToggle } from "@/components/mode-toggle";
-import Colors from "@/components/Theme/Colors";
-import Radius from "@/components/Theme/Radius";
+import Colors from "@/components/Theme/Colors.client";
+import Radius from "@/components/Theme/Radius.client";
 
 const Appearance = () => {
   return (

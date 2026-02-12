@@ -12,7 +12,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Share, Copy, Check } from "lucide-react";
-import { useState } from "react";
 import ShareIcon from "./icons/ShareIcon";
 
 import WhatsappIcon from "./icons/social/WhatsappIcon";
@@ -57,16 +56,13 @@ const socialMedia = [
   },
 ];
 
-// /user/abhijeetsingh/daa-design-and-analysis/all-pairs-shortest-path-floyd-s
-export function ShareNotePopover({ shareLink }: { shareLink: string }) {
-  const [copied, setCopied] = useState(false);
-  const copyToClipboard = async () => {
-    if (!shareLink) return;
-    await navigator.clipboard.writeText(shareLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
+interface ShareNotePopoverProps {
+  shareLink: string;
+  copied: boolean;
+  onCopy: () => void;
+}
 
+export function ShareNotePopover({ shareLink, copied, onCopy }: ShareNotePopoverProps) {
   if (!shareLink?.trim()) return null;
   return (
     <Dialog>
@@ -99,7 +95,7 @@ export function ShareNotePopover({ shareLink }: { shareLink: string }) {
                   tooltip="Copy Link"
                   size="icon"
                   variant="ghost"
-                  onClick={copyToClipboard}
+                  onClick={onCopy}
                   disabled={copied}
                   className="absolute hover:bg-transparent top-1/2 right-0 -translate-y-1/2"
                   aria-label={
@@ -148,5 +144,3 @@ export function ShareNotePopover({ shareLink }: { shareLink: string }) {
     </Dialog>
   );
 }
-
-export default ShareNotePopover;

@@ -86,12 +86,12 @@ export const metadata: Metadata = {
       "A collaborative note-taking app with markdown, LaTeX, and contribution tracking — built for productivity and clarity.",
     images: ["/og-notehub-light.png"],
   },
-  themeColor: "#6F00FF",
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({

@@ -33,10 +33,23 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
 
   useEffect(() => {
     if (!authUser?._id) return;
+    // Fetch collections when user becomes available
     void getAllCollections({
       userId: String(authUser._id),
     });
   }, [getAllCollections, authUser?._id]);
+
+  // Also refetch if collections array is empty but user exists
+  useEffect(() => {
+    if (authUser?._id && collections.length === 0) {
+      const timer = setTimeout(() => {
+        void getAllCollections({
+          userId: String(authUser._id),
+        });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [authUser?._id, collections.length, getAllCollections]);
 
   const handleCloseSearch = () => {
     setShowSearch(false);
@@ -68,7 +81,7 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
           <div className="flex items-center justify-between">
             <div className="flex gap-2 items-center">
               <SidebarCloseTrigger
-                tooltip={"Ctrl + M"}
+                tooltip={"Ctrl + B"}
                 aria-label="close sidebar"
               />
               <Link

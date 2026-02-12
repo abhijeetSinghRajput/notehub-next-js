@@ -1,59 +1,79 @@
-"use client"
-
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Check } from "lucide-react";
-import { useLocalStorage } from "@/app/stores/useLocalStorage";
-import { useThemeStore } from "@/app/stores/useThemeStore";
+import { cn } from "@/lib/utils";
 
-const colors = [
-  { name: "zinc", color: "#52525b" },
-  { name: "slate", color: "#475569" },
-  { name: "stone", color: "#57534e" },
-  { name: "gray", color: "#4b5563" },
-  { name: "neutral", color: "#525252" },
-  { name: "red", color: "#dc2626" },
-  { name: "rose", color: "#e11d48" },
-  { name: "orange", color: "#ea580c" },
-  { name: "green", color: "#22c55e" },
-  { name: "blue", color: "#3b82f6" },
-  { name: "yellow", color: "#facc15" },
-  { name: "voilet", color: "#6d28d9" },
+const themeOptions = [
+  {
+    name: "neutral",
+    previewColors: ["#0a0a0a", "#171717", "#3c3c3c", "#404040"],
+  },
+  {
+    name: "zinc",
+    previewColors: ["#09090b", "#18181b", "#3c3c3f", "#3f3f46"],
+  },
+  {
+    name: "slate",
+    previewColors: ["#020618", "#0f172b", "#353b4c", "#314158"],
+  },
+  {
+    name: "stone",
+    previewColors: ["#0c0a09", "#1c1917", "#3e3c3c", "#44403b"],
+  },
+  {
+    name: "gray",
+    previewColors: ["#030712", "#101828", "#373c47", "#364153"],
+  },
 ];
 
-const Colors = () => {
-  const theme = useLocalStorage((state) => state.theme);
-  const setTheme = useLocalStorage((state) => state.setTheme);
-  const updateVariable = useThemeStore((state) => state.updateVariable);
+interface ColorsProps {
+  currentTheme: string;
+  onThemeChange: (theme: string) => void;
+}
 
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    updateVariable();
-  }, [theme]);
-
+const Colors = ({ currentTheme, onThemeChange }: ColorsProps) => {
   return (
     <div className="space-y-2">
       <Label>Color</Label>
-      <div className="grid grid-cols-3 gap-2">
-        {colors.map(({ name, color }) => (
-          <Button
-            key={name}
-            variant="outline"
-            className={`justify-center sm:justify-start
-               ${theme === name ? "ring-2 ring-ring ring-offset-2 ring-offset-card bg-muted" : ""}
-               `}
-            onClick={() => setTheme(name)}
-          >
-            <span
-              className="h-5 w-5 shrink-0 flex items-center justify-center rounded-full relative"
-              style={{ background: color }}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        {themeOptions.map(({ name, previewColors }) => {
+          const isSelected = currentTheme === name;
+
+          return (
+            <Button
+              key={name}
+              variant="outline"
+              className={cn(
+                "flex-col h-auto py-3 px-2 gap-2",
+                isSelected &&
+                  "ring-2 ring-ring ring-offset-2 ring-offset-card bg-muted",
+              )}
+              style={{
+                backgroundColor: previewColors[1],
+              }}
+              onClick={() => onThemeChange(name)}
             >
-              {theme === name && <Check />}
-            </span>
-            {name}
-          </Button>
-        ))}
+              {/* Theme Name with Check */}
+              <div className="flex items-center justify-center w-full gap-2">
+                <span className="text-sm capitalize font-medium">{name}</span>
+                {isSelected && <Check className="h-4 w-4 shrink-0" />}
+              </div>
+
+              {/* Color Preview Circles */}
+              <div className="flex gap-2 w-full justify-center">
+                {previewColors.map((colorHex, index) => (
+                  <span
+                    key={index}
+                    className="aspect-square max-w-8 w-full rounded-sm outline -outline-offset-1 outline-black/10 sm:rounded-md dark:outline-white/10"
+                    style={{ backgroundColor: colorHex }}
+                    aria-hidden="true"
+                  />
+                ))}
+              </div>
+            </Button>
+          );
+        })}
       </div>
     </div>
   );

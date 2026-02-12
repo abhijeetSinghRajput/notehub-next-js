@@ -36,7 +36,7 @@ import {
 import { FONT_SIZE, useEditorStore } from "@/app/stores/useEditorStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import EditorTypographyControls from "@/components/editor/EditorTypographyControls";
-import ShareNotePopover from "@/components/ShareNotePopover";
+import ShareNotePopover from "@/components/ShareNotePopover.client";
 
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import { useParams, useRouter } from "next/navigation";

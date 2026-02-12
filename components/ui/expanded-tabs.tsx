@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePathname, useRouter } from "next/navigation";
 import { LucideIcon } from "lucide-react";
+import { Button } from "./button";
 
 type TabItem =
   | {
@@ -80,31 +81,18 @@ export function ExpandedTabs({
         const showLabel = isActive || !isMobile;
 
         return (
-          <button
+          <Button
             key={tab.label}
+            tooltip={isActive || showLabel ? "" : tab.label}
             onClick={() => handleSelect(index)}
-            className={cn(
-              "relative flex items-center rounded-xl px-4 py-2 text-sm font-medium",
-              "transition-all duration-300 ease-out",
-              showLabel ? "gap-2" : "gap-0",
-              isActive
-                ? cn("bg-primary/20", activeColor)
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
+            variant={isActive ? "secondary" : "ghost"}
+            className={cn("rounded-xl", showLabel ? "gap-2" : "gap-0")}
           >
             <Icon className="h-4 w-4 shrink-0" />
-            <span
-              className={cn(
-                "overflow-hidden whitespace-nowrap",
-                "transition-all duration-300 ease-out",
-                showLabel
-                  ? "max-w-50 opacity-100 ml-1"
-                  : "max-w-0 opacity-0 ml-0",
-              )}
-            >
-              {tab.label}
-            </span>
-          </button>
+            {showLabel && (
+              <span className="whitespace-nowrap">{tab.label}</span>
+            )}
+          </Button>
         );
       })}
     </div>

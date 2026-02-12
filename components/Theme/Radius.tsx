@@ -1,21 +1,15 @@
-"use client"
-
 import { Label } from "@radix-ui/react-dropdown-menu";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Button } from "../ui/button";
 
-const Radius = () => {
-  const radius = [0, 0.3, 0.5, 0.75, 1.0];
-  const [selectedRadius, setSelectedRadius] = useState<number>(() => {
-    const stored = localStorage.getItem('radius');
-    return stored ? parseFloat(stored) : 0.5;
-  });
-  
-  useEffect(() => {
-    document.documentElement.style.setProperty('--radius', `${selectedRadius}rem`);
-    localStorage.setItem('radius', selectedRadius.toString());
-  }, [selectedRadius]);
+const radius = [0, 0.3, 0.5, 0.75, 1.0];
 
+interface RadiusProps {
+  selectedRadius: number;
+  onRadiusChange: (radius: number) => void;
+}
+
+const Radius = ({ selectedRadius, onRadiusChange }: RadiusProps) => {
   return (
     <div className="space-y-2">
       <Label>Radius</Label>
@@ -24,7 +18,7 @@ const Radius = () => {
           <Button
             variant="outline"
             key={r}
-            onClick={() => setSelectedRadius(r)}
+            onClick={() => onRadiusChange(r)}
             className={`${selectedRadius == r ? "ring-2 ring-ring ring-offset-2 ring-offset-card bg-muted" : ""}`}
           >
             <span

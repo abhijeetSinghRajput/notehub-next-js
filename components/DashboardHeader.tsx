@@ -36,7 +36,7 @@ const DashboardHeader = () => {
         <div className="flex items-center gap-2 px-4 min-w-0 flex-1">
           {!open && authUser && (
             <>
-              <TooltipWrapper message={"Open Sidebar Ctrl M"}>
+              <TooltipWrapper message={"Ctrl + B"}>
                 <SidebarOpenTrigger className="-ml-1 bg-muted/50 size-11 rounded-full border sm:border-none sm:size-8 sm:bg-transparent sm:rounded-md" />
               </TooltipWrapper>
               <Separator orientation="vertical" className="mr-2 h-4" />

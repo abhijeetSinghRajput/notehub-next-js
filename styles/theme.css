@@ -147,7 +147,7 @@
   }
 
   /* Stone */
-  :root {
+  [data-theme="stone"]:root {
     --radius: 0.625rem;
     --background: oklch(1 0 0);
     --foreground: oklch(0.147 0.004 49.25);
@@ -183,7 +183,7 @@
     --sidebar-ring: oklch(0.709 0.01 56.259);
   }
 
-  .dark {
+  [data-theme="stone"].dark {
     --background: oklch(0.147 0.004 49.25);
     --foreground: oklch(0.985 0.001 106.423);
     --card: oklch(0.216 0.006 56.043);
@@ -218,7 +218,7 @@
     --sidebar-ring: oklch(0.553 0.013 58.071);
   }
   /* Zinc */
-  :root {
+  [data-theme="zinc"]:root {
     --radius: 0.625rem;
     --background: oklch(1 0 0);
     --foreground: oklch(0.141 0.005 285.823);
@@ -254,7 +254,7 @@
     --sidebar-ring: oklch(0.705 0.015 286.067);
   }
 
-  .dark {
+  [data-theme="zinc"].dark {
     --background: oklch(0.141 0.005 285.823);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.21 0.006 285.885);
@@ -289,7 +289,7 @@
     --sidebar-ring: oklch(0.552 0.016 285.938);
   }
   /* Gray */
-  :root {
+  [data-theme="gray"]:root {
     --radius: 0.625rem;
     --background: oklch(1 0 0);
     --foreground: oklch(0.13 0.028 261.692);
@@ -325,7 +325,7 @@
     --sidebar-ring: oklch(0.707 0.022 261.325);
   }
 
-  .dark {
+  [data-theme="gray"].dark {
     --background: oklch(0.13 0.028 261.692);
     --foreground: oklch(0.985 0.002 247.839);
     --card: oklch(0.21 0.034 264.665);
@@ -360,7 +360,7 @@
     --sidebar-ring: oklch(0.551 0.027 264.364);
   }
   /* Slate */
-  :root {
+  [data-theme="slate"]:root {
     --radius: 0.625rem;
     --background: oklch(1 0 0);
     --foreground: oklch(0.129 0.042 264.695);
@@ -396,7 +396,7 @@
     --sidebar-ring: oklch(0.704 0.04 256.788);
   }
 
-  .dark {
+  [data-theme="slate"].dark {
     --background: oklch(0.129 0.042 264.695);
     --foreground: oklch(0.984 0.003 247.858);
     --card: oklch(0.208 0.042 265.755);
@@ -431,26 +431,6 @@
     --sidebar-ring: oklch(0.551 0.027 264.364);
   }
 
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus,
-  textarea:-webkit-autofill,
-  textarea:-webkit-autofill:hover,
-  textarea:-webkit-autofill:focus,
-  select:-webkit-autofill,
-  select:-webkit-autofill:hover,
-  select:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
-    box-shadow: 0 0 0px 1000px transparent inset !important;
-
-    /* Your color here */
-    -webkit-text-fill-color: var(--primary) !important;
-    color: var(--primary) !important;
-
-    caret-color: var(--primary);
-
-    transition: background-color 9999s ease-in-out 0s;
-  }
   footer {
     a {
       color: var(--primary) !important; /* replaced text-primary! */

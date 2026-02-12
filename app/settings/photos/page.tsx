@@ -108,7 +108,7 @@ const Photos = () => {
               </div>
 
               <div className="flex gap-2">
-                <Label htmlFor="profile-photo">
+                <label htmlFor="profile-photo">
                   <input
                     type="file"
                     id="profile-photo"
@@ -119,20 +119,26 @@ const Photos = () => {
                       handleUploadImage(e, setPreviewavatar, uploadUserAvatar)
                     }
                   />
-                  <div
-                    className={`button w-32 cursor-pointer ${
-                      isUploadingAvatar && "disabled"
-                    }`}
+
+                  <Button
+                    asChild
+                    variant="default"
+                    size="default"
+                    className="w-32"
+                    disabled={isUploadingAvatar}
                   >
-                    {isUploadingAvatar ? (
-                      <span className="flex items-center gap-1">
-                        Uploading... <Loader2 className="animate-spin" />
-                      </span>
-                    ) : (
-                      "Upload Photo"
-                    )}
-                  </div>
-                </Label>
+                    <span>
+                      {isUploadingAvatar ? (
+                        <span className="flex items-center gap-1">
+                          Uploading...
+                          <Loader2 className="animate-spin size-4" />
+                        </span>
+                      ) : (
+                        "Upload Photo"
+                      )}
+                    </span>
+                  </Button>
+                </label>
 
                 <Button
                   onClick={() =>
@@ -184,7 +190,7 @@ const Photos = () => {
               </div>
 
               <div className="flex gap-2">
-                <Label htmlFor="profile-cover">
+                <label htmlFor="profile-cover">
                   <input
                     type="file"
                     id="profile-cover"
@@ -195,20 +201,25 @@ const Photos = () => {
                       handleUploadImage(e, setPreviewCover, uploadUserCover)
                     }
                   />
-                  <div
-                    className={`button w-32 cursor-pointer ${
-                      isUploadingCover && "disabled"
-                    }`}
+                  <Button
+                    asChild
+                    variant="default"
+                    size="default"
+                    className="w-32 cursor-pointer"
+                    disabled={isUploadingCover}
                   >
-                    {isUploadingCover ? (
-                      <span className="flex items-center gap-1">
-                        Uploading... <Loader2 className="animate-spin" />
-                      </span>
-                    ) : (
-                      "Upload Photo"
-                    )}
-                  </div>
-                </Label>
+                    <span>
+                      {isUploadingCover ? (
+                        <span className="flex items-center gap-1">
+                          Uploading...{" "}
+                          <Loader2 className="animate-spin size-4" />
+                        </span>
+                      ) : (
+                        "Upload Photo"
+                      )}
+                    </span>
+                  </Button>
+                </label>
 
                 <Button
                   onClick={() =>

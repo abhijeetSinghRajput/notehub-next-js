@@ -47,6 +47,7 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+/* theme.css has a default NEUTRAL THEME
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -116,13 +117,13 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-}
+} */
 
 @layer base {
   html {
     background-color: var(--background);
   }
-  
+
   * {
     border-color: var(--border);
   }
@@ -131,6 +132,54 @@
     @apply bg-background text-foreground;
     background-color: var(--background);
     color: var(--foreground);
+  }
+
+  /* ✅ Transparent autofill with visible background */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    /* Remove the box-shadow entirely to allow true transparency */
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+
+    /* Use background-color with transition delay to override yellow */
+    background-color: transparent !important;
+    background-image: none !important;
+
+    /* Text color */
+    -webkit-text-fill-color: var(--foreground) !important;
+    color: var(--foreground) !important;
+
+    /* Caret color */
+    caret-color: var(--foreground);
+
+    /* Prevent yellow background from showing */
+    transition: background-color 5000s ease-in-out 0s !important;
+  }
+
+  /* Fix border and outline behavior on autofill */
+  input:-webkit-autofill,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    /* Preserve your input styling */
+    border: 1px solid var(--border) !important;
+    outline: none !important;
+  }
+
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill:focus {
+    /* Match your focus state */
+    border-color: var(--ring) !important;
+    outline: 2px solid transparent !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px var(--ring) !important;
   }
 
   /* Small scrollbar for specific elements */

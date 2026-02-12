@@ -357,7 +357,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, className = "" }) => (
       <div className="font-medium flex gap-1.5 items-center justify-between">
         {user.fullName}
         {user.role === "admin" && (
-          <BadgeIcon className="size-[14px] text-blue-500" />
+          <BadgeIcon className="size-3.5 text-blue-500" />
         )}
       </div>
       <div className="text-muted-foreground text-xs">@{user.userName}</div>
