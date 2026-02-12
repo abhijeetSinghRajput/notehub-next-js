@@ -15,15 +15,21 @@ import { Share, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import ShareIcon from "./icons/ShareIcon";
 
+import WhatsappIcon from "./icons/social/WhatsappIcon";
+import FacebookIcon from "./icons/social/FacebookIcon";
+import XIcon from "./icons/social/XIcon";
+import TelegramIcon from "./icons/social/TelegramIcon";
+import LinkedinIcon from "./icons/social/LinkedinIcon";
+
 const socialMedia = [
   {
     name: "WhatsApp",
-    icon: "/social-icons/whatsapp.svg",
+    icon: WhatsappIcon,
     url: (link: string) => `https://wa.me/?text=${encodeURIComponent(link)}`,
   },
   {
     name: "Facebook",
-    icon: "/social-icons/facebook.svg",
+    icon: FacebookIcon,
     url: (link: string) =>
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
         link,
@@ -31,18 +37,18 @@ const socialMedia = [
   },
   {
     name: "X",
-    icon: "/social-icons/x.svg",
+    icon: XIcon,
     url: (link: string) =>
       `https://twitter.com/intent/tweet?url=${encodeURIComponent(link)}`,
   },
   {
     name: "Telegram",
-    icon: "/social-icons/telegram.svg",
+    icon: TelegramIcon,
     url: (link: string) => `https://t.me/share/url?url=${encodeURIComponent(link)}`,
   },
   {
     name: "LinkedIn",
-    icon: "/social-icons/linkedin.svg",
+    icon: LinkedinIcon,
     url: (link: string) =>
       `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
         link,
@@ -107,6 +113,7 @@ export function ShareNotePopover({ shareLink }: {shareLink: string}) {
               <Label>Share to</Label>
               <div className="grid grid-cols-5 items-center gap-2">
                 {socialMedia.map((item) => {
+                  const Icon = item.icon;
                   return (
                     <div
                       key={item.name}
@@ -120,7 +127,7 @@ export function ShareNotePopover({ shareLink }: {shareLink: string}) {
                           window.open(item.url(shareLink), "_blank")
                         }
                       >
-                        <img src={item.icon} alt={item.name} />
+                        <Icon className="size-14!"/>
                       </Button>
                       <p className="text-muted-foreground text-xs font-medium max-w-full truncate">
                         {item.name}

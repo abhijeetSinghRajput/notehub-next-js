@@ -261,7 +261,7 @@ const NotePage = () => {
 
   const generateSharableLink = () => {
     const collection = collections.find((c) => c._id === note.collectionId);
-    return `https://notehub-38kp.onrender.com/user/${authUser?.userName}/${collection?.slug}/${note?.slug}`;
+    return `${process.env.NEXT_PUBLIC_BASE_URL}/${authUser?.userName}/${collection?.slug}/${note?.slug}`;
   };
 
   if (status.noteContent.state === "loading") {
@@ -453,7 +453,7 @@ const NotePage = () => {
                     <TextQuote />
                     Index <ChevronsUpDown className="text-primary-foreground" />
                   </div>
-                  <div className="bg-muted/5 p-2 py-1.5 rounded-full min-w-[50px]">
+                  <div className="bg-muted/5 p-2 py-1.5 rounded-full min-w-12.5">
                     {Number(progress || 0)}%
                   </div>
                 </Button>
@@ -465,7 +465,7 @@ const NotePage = () => {
                 className="rounded-2xl min-w-max pr-1"
               >
                 <ScrollArea>
-                  <div className="max-w-[300px] sm:max-w-sm max-h-[60vh] pr-4">
+                  <div className="max-w-75 sm:max-w-sm max-h-[60vh] pr-4">
                     <div className="space-y-2">
                       {toc.map((item) => (
                         <p

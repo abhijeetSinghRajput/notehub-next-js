@@ -29,13 +29,13 @@ import {
 
 // export const COLORS = ['#fb7185', '#fdba74', '#d9f99d', '#a7f3d0', '#a5f3fc', '#a5b4fc', '#808080'];
 export const COLORS = [
-    "hsl(var(--highlight-destructive))",
-    "hsl(var(--highlight-warn))",
-    "hsl(var(--highlight-success))",
-    "hsl(var(--highlight-teal))",
-    "hsl(var(--highlight-sky))",
-    "hsl(var(--highlight-blue))",
-    "hsl(var(--highlight-muted))",
+    "var(--highlight-destructive)",
+    "var(--highlight-warn)",
+    "var(--highlight-success)",
+    "var(--highlight-teal)",
+    "var(--highlight-sky)",
+    "var(--highlight-blue)",
+    "var(--highlight-muted)",
 ];
 
 export const FORMATTING_BUTTONS = [

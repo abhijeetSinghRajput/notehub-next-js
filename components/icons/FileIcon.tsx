@@ -1,3 +1,4 @@
+import { IconProps } from "@/types/icon";
 import React from "react";
 
 const FileIcon = ({
@@ -5,7 +6,7 @@ const FileIcon = ({
   color = "currentColor",
   strokeWidth = 2,
   ...props
-}) => {
+}:IconProps) => {
   return (
     <svg
       width={size}
