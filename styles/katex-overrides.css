@@ -67,3 +67,24 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* For KaTeX display */
+.katex-display::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.katex-display {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 0.2rem;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
