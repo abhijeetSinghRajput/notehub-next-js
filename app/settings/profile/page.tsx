@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useRef } from "react";
 
 // UI components
@@ -53,15 +53,23 @@ const Profile = () => {
   );
 };
 
-function Field({ label, field, apiEndPoint }) {
+interface FieldProps {
+  label: string;
+  field: "fullName" | "userName";
+  apiEndPoint: string;
+}
+
+function Field({ label, field, apiEndPoint }: FieldProps) {
   const { authUser, updateUserField } = useAuthStore();
+  if (!authUser) return null;
+
   const [value, setValue] = useState(authUser[field] || "");
   const [valid, setValid] = useState(false);
   const [error, setError] = useState("");
-  const inputRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const validateUsername = (val) => {
+  const validateUsername = (val: string) => {
     const v = val.trim();
 
     if (!v) {
@@ -103,7 +111,7 @@ function Field({ label, field, apiEndPoint }) {
     return true;
   };
 
-  const isValid = (val) => {
+  const isValid = (val: string) => {
     const trimmedValue = val.trim();
 
     if (!trimmedValue || trimmedValue === authUser[field]) {
@@ -121,7 +129,7 @@ function Field({ label, field, apiEndPoint }) {
     return true;
   };
 
-  const handleiInputChange = (e) => {
+  const handleiInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
     isValid(e.target.value);
   };
@@ -144,10 +152,10 @@ function Field({ label, field, apiEndPoint }) {
     setValid(false);
   };
 
-  const handleEnter = (e) => {
+  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleSave();
       e.preventDefault();
+      handleSave();
       inputRef.current?.blur();
     }
   };

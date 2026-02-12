@@ -2,7 +2,12 @@ import React from "react";
 import { Button } from "./ui/button";
 import { generatePKCE } from "@/lib/auth";
 
-const GoogleLoginButton = ({ className, ...props }) => {
+interface GoogleLoginButtonProps {
+  className?: string;
+  [key: string]: any;
+}
+
+const GoogleLoginButton = ({ className, ...props }: GoogleLoginButtonProps) => {
   const handleGoogleLogin = async () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI;

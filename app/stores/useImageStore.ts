@@ -1,68 +1,81 @@
 import { create } from "zustand";
 import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
+import type { AxiosError } from "axios";
 
-export const useImageStore = create((set, get) => {
-  const store = {
-    galleryImages: [],
-    isLoadingImages: false,
+export interface GalleryImage {
+  _id: string;
+  url: string;
+  publicId: string;
+}
 
-    getImages: async () => {
-      set({ isLoadingImages: true });
-      try {
-        const res = await axiosInstance.get("/images");
-        const { images: galleryImages } = res.data;
-        set({ galleryImages });
-      } catch (error) {
-        console.error(error);
-        throw new Error("error");
-      } finally {
-        set({ isLoadingImages: false });
-      }
-    },
+export interface ImageStoreState {
+  galleryImages: GalleryImage[];
+  isLoadingImages: boolean;
+  getImages: () => Promise<void>;
+  uploadImage: (file: File) => Promise<boolean>;
+  removeImage: (imageId: string) => Promise<boolean>;
+}
 
-    uploadImage: async (file) => {
-      const formData = new FormData();
-      formData.append("file", file);
+export const useImageStore = create<ImageStoreState>((set, get) => ({
+  galleryImages: [],
+  isLoadingImages: false,
 
-      try {
-        const res = await axiosInstance.post("/images/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        const { image, message } = res.data;
-        set({ galleryImages: [image, ...get().galleryImages] });
-        localStorage.setItem("imageCount", get().galleryImages.length);
-        toast.success(message);
-        return true;
-      } catch (error) {
-        console.error("Image upload error:\n", error);
-        toast.error("Failed to upload image");
-        return false;
-      }
-    },
+  getImages: async () => {
+    set({ isLoadingImages: true });
+    try {
+      const res = await axiosInstance.get("/images");
+      const { images } = res.data as { images: GalleryImage[] };
+      set({ galleryImages: images });
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to load images");
+    } finally {
+      set({ isLoadingImages: false });
+    }
+  },
 
-    removeImage: async (imageId) => {
-      try {
-        const res = await axiosInstance.delete(`/images/${imageId}`);
-        const { message } = res.data;
-        set((state) => ({
-          galleryImages: state.galleryImages.filter(
-            (img) => img._id !== imageId
-          ),
-        }));
-        localStorage.setItem("imageCount", get().galleryImages.length);
-        toast.success(message);
-        return true;
-      } catch (error) {
-        console.error("Image delete error:\n", error);
-        toast.error(error.response.data.message);
-        return false;
-      }
-    },
-  };
-  return {
-    ...store,
-  };
-});
+  uploadImage: async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axiosInstance.post("/images/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      const { image, message } = res.data as {
+        image: GalleryImage;
+        message?: string;
+      };
+      set({ galleryImages: [image, ...get().galleryImages] });
+      localStorage.setItem("imageCount", String(get().galleryImages.length));
+      toast.success(message || "Image uploaded");
+      return true;
+    } catch (error) {
+      const err = error as AxiosError<{ message?: string }>;
+      console.error("Image upload error:\n", error);
+      toast.error(err.response?.data?.message || "Failed to upload image");
+      return false;
+    }
+  },
+
+  removeImage: async (imageId) => {
+    try {
+      const res = await axiosInstance.delete(`/images/${imageId}`);
+      const { message } = res.data as { message?: string };
+      set((state) => ({
+        galleryImages: state.galleryImages.filter((img) => img._id !== imageId),
+      }));
+      localStorage.setItem("imageCount", String(get().galleryImages.length));
+      toast.success(message || "Image removed");
+      return true;
+    } catch (error) {
+      const err = error as AxiosError<{ message?: string }>;
+      console.error("Image delete error:\n", error);
+      toast.error(err.response?.data?.message || "Failed to delete image");
+      return false;
+    }
+  },
+}));

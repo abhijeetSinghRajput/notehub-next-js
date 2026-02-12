@@ -1,8 +1,27 @@
 import { create } from "zustand";
 import { toast } from "sonner";
 import { axiosInstance } from "@/lib/axios";
+import { AxiosError } from "axios";
 
-import { IUser } from "@/types"; // assuming you have IUser from your mongoose user schema
+import type { IUser, INote, IGetAllUsersResponse } from "@/types/model";
+import {
+  LoginFormData,
+  ResetPasswordFormData,
+  SignupFormData,
+  UpdateUserProfileData,
+} from "@/types/auth";
+
+type ApiMessageResponse = {
+  message?: string;
+  [key: string]: unknown;
+};
+
+type ApiErrorResponse = { message?: string };
+
+function getApiErrorMessage(error: unknown, fallback: string) {
+  const err = error as AxiosError<ApiErrorResponse>;
+  return err?.response?.data?.message || err?.message || fallback;
+}
 
 export interface AuthStore {
   authUser: IUser | null;
@@ -21,29 +40,50 @@ export interface AuthStore {
   isUpdatingEmail: boolean;
   onlineUsers: IUser[];
 
-  requestEmailUpdateOtp: (email: string) => Promise<void>;
-  confirmEmailUpdate: (data: { email: string; otp: string }) => Promise<void>;
-  requestResetPasswordOtp: (identifier: string) => Promise<void>;
+  requestEmailUpdateOtp: (email: string) => Promise<ApiMessageResponse | null>;
+  confirmEmailUpdate: (data: {
+    email: string;
+    otp: string;
+  }) => Promise<ApiMessageResponse | null>;
+  requestResetPasswordOtp: (
+    identifier: string,
+  ) => Promise<ApiMessageResponse | null>;
   isEmailAvailable: (email: string) => Promise<boolean>;
-  resetPassword: (data: { identifier: string; newPassword: string; otp: string }) => Promise<void>;
-  updatePassword: (data: { currentPassword: string; newPassword: string }) => Promise<void>;
+  resetPassword: (
+    data: ResetPasswordFormData,
+  ) => Promise<ApiMessageResponse | null>;
+  updatePassword: (data: {
+    currentPassword: string;
+    newPassword: string;
+  }) => Promise<ApiMessageResponse | null>;
   getUser: (identifier: string) => Promise<IUser | null>;
-  getAllUsers: (options?: Record<string, any>) => Promise<IUser[]>;
+  getAllUsers: (options?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    filter?: string;
+  }) => Promise<IGetAllUsersResponse>;
   searchUsers: (query: string) => Promise<IUser[]>;
-  searchNotes: (query: string) => Promise<any[]>; // replace `any` with your note type
+  searchNotes: (query: string) => Promise<INote[]>;
   checkAuth: () => Promise<void>;
-  signup: (data: Record<string, any>) => Promise<void>;
-  sendSignupOtp: (email: string) => Promise<void>;
-  login: (data: Record<string, any>) => Promise<void>;
-  googleLogin: (data: { code: string; codeVerifier: string; redirectUri: string }) => Promise<void>;
+  signup: (data: SignupFormData) => Promise<{ success: boolean }>;
+  sendSignupOtp: (email: string) => Promise<ApiMessageResponse | null>;
+  login: (data: LoginFormData) => Promise<boolean>;
+  googleLogin: (data: {
+    code: string;
+    codeVerifier: string;
+    redirectUri: string;
+  }) => Promise<boolean | null>;
   logout: () => Promise<void>;
-  verifyEmail: (data: Record<string, any>) => Promise<void>;
-  resendEmailOTP: () => Promise<void>;
-  updateUserField: (apiEndPoint: string, data: Record<string, any>) => Promise<void>;
-  uploadUserAvatar: (file: File) => Promise<void>;
-  removeUserAvatar: () => Promise<void>;
-  uploadUserCover: (file: File) => Promise<void>;
-  removeUserCover: () => Promise<void>;
+  resendEmailOTP: () => Promise<{ success: boolean }>;
+  updateUserField: (
+    apiEndPoint: string,
+    data: UpdateUserProfileData,
+  ) => Promise<boolean>;
+  uploadUserAvatar: (file: File) => Promise<IUser | null>;
+  removeUserAvatar: () => Promise<IUser | null>;
+  uploadUserCover: (file: File) => Promise<IUser | null>;
+  removeUserCover: () => Promise<IUser | null>;
   checkEmailStatus: () => Promise<void>;
 }
 
@@ -76,7 +116,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(response.data.message || "OTP sent successfully!");
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send OTP");
+      toast.error(getApiErrorMessage(error, "Failed to send OTP"));
       console.error("Request update email OTP error:", error);
       return null;
     } finally {
@@ -92,13 +132,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         otp,
       });
       toast.success(response.data.message || "email update successfully!");
-      if(response.data.user) {
-        set({authUser: response.data.user})
+      if (response.data.user) {
+        set({ authUser: response.data.user });
       }
-      
+
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update email");
+      toast.error(getApiErrorMessage(error, "Failed to update email"));
       console.error("Update email error:", error);
       return null;
     } finally {
@@ -118,7 +158,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(response.data.message || "OTP sent successfully!");
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send OTP");
+      toast.error(getApiErrorMessage(error, "Failed to send OTP"));
       console.error("Request reset password OTP error:", error);
       return null;
     } finally {
@@ -147,7 +187,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(response.data.message || "Password reset successfully!");
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to reset password");
+      toast.error(getApiErrorMessage(error, "Failed to reset password"));
       console.error("Reset password error:", error);
       return null;
     } finally {
@@ -165,7 +205,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(response.data.message || "Password updated successfully!");
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update password");
+      toast.error(getApiErrorMessage(error, "Failed to update password"));
       console.error("Update password error:", error);
       return null;
     } finally {
@@ -186,7 +226,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     limit = 10,
     search = "",
     filter = "all",
-  }) => {
+  } = {}) => {
     try {
       const response = await axiosInstance.get("/user", {
         params: { page, limit, search, filter },
@@ -203,11 +243,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           usersPerPage: limit,
           hasNextPage: false,
           hasPreviousPage: false,
-        },
-        counts: {
-          all: 0,
-          online: 0,
-          oauth: 0,
         },
       };
     }
@@ -255,7 +290,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(message);
       return { success: true };
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(getApiErrorMessage(error, "Signup failed"));
       return { success: false };
     } finally {
       set({ isSigningUp: false });
@@ -271,11 +306,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(response.data.message || "OTP sent successfully!");
       return response.data;
     } catch (error) {
-      if (error.status === 429) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      if (err?.response?.status === 429) {
         toast.error("Too many requests. Please try again later.");
         return null;
       }
-      toast.error(error.response?.data?.message || "Failed to send email");
+      toast.error(getApiErrorMessage(error, "Failed to send email"));
       console.error("Send OTP error:", error);
       return null;
     } finally {
@@ -294,7 +330,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     } catch (error) {
       set({ authUser: null });
       console.error(error);
-      toast.error(error.response.data.message || "error while logging in");
+      toast.error(getApiErrorMessage(error, "error while logging in"));
       return false;
     } finally {
       set({ isLoggingIn: false });
@@ -315,7 +351,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       return true;
     } catch (error) {
       set({ authUser: null });
-      toast.error(error.response?.data?.message || "OAuth Login Failed");
+      toast.error(getApiErrorMessage(error, "OAuth Login Failed"));
       return null;
     } finally {
       set({ isLoggingIn: false });
@@ -330,24 +366,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(res.data.message);
     } catch (error) {
       set({ authUser: null });
-      toast.error(error.response.data.message);
+      toast.error(getApiErrorMessage(error, "Logout failed"));
     } finally {
       set({ isLoggingOut: false });
-    }
-  },
-
-  verifyEmail: async (data) => {
-    set({ isVerifyingEmail: true });
-    try {
-      const res = await axiosInstance.post("/email/verify-otp", data);
-      set({ authUser: res.data.user });
-      toast.success(res.data.message);
-    } catch (error) {
-      set({ authUser: null });
-      toast.error(error.response.data.message);
-      console.error(error);
-    } finally {
-      set({ isVerifyingEmail: false });
     }
   },
 
@@ -358,24 +379,20 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       return { success: true };
     } catch (error) {
       console.error(error);
-      toast.error(error.response.data.message);
+      toast.error(getApiErrorMessage(error, "Failed to resend OTP"));
       return { success: false };
     }
   },
+
   updateUserField: async (apiEndPoint, data) => {
     try {
       let res;
-      if (data.email) {
-        res = await axiosInstance.post(apiEndPoint, data);
-      } else {
-        res = await axiosInstance.put(apiEndPoint, data);
-      }
+      res = await axiosInstance.put(apiEndPoint, data);
       set({ authUser: res.data.user });
       toast.success(res.data.message);
       return true;
     } catch (error) {
-      toast.error(error.response.data.message || error.message);
-      console.error(error.response?.data?.message || error.message);
+      toast.error(getApiErrorMessage(error, "Update failed"));
       console.error(error);
       return false;
     }
@@ -395,7 +412,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(res.data.message);
       return res.data.user;
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(getApiErrorMessage(error, "Avatar upload failed"));
       console.error(error);
       return null;
     } finally {
@@ -411,7 +428,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(res.data.message);
       return res.data.user;
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(getApiErrorMessage(error, "Failed to remove avatar"));
       console.error(error);
       return null;
     } finally {
@@ -433,7 +450,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(res.data.message);
       return res.data.user;
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(getApiErrorMessage(error, "Cover upload failed"));
       console.error(error);
       return null;
     } finally {
@@ -449,7 +466,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success(res.data.message);
       return res.data.user;
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(getApiErrorMessage(error, "Failed to remove cover"));
       console.error(error);
       return null;
     } finally {
@@ -461,9 +478,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       const res = await axiosInstance.get("email/check-status");
       set({ emailStatus: res.data.status });
-      return get().emailStatus;
     } catch (error) {
-      console.error(error.response.data.message);
+      console.error(error);
       set({ emailStatus: "" });
     }
   },

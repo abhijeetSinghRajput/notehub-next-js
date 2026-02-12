@@ -1,7 +1,7 @@
 // highlight-utils.jsx
 import React from 'react';
 
-export const HighlightMatch = (text, query) => {
+export const HighlightMatch = (text:string, query:string) => {
   if (!query || !text) return text;
   
   try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -20,21 +20,19 @@ export function ThemeProvider({
   defaultTheme?: Theme;
   storageKey?: string;
 }) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const getSystemTheme = () =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
-  // 1️⃣ Read localStorage + system theme AFTER mount
-  useEffect(() => {
-    const stored = localStorage.getItem(storageKey) as Theme | null;
-    const system = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-
-    const activeTheme = stored ?? defaultTheme;
-
-    setTheme(activeTheme);
-    setResolvedTheme(activeTheme === "system" ? system : activeTheme);
+  const initialTheme = useMemo<Theme>(() => {
+    if (typeof window === "undefined") return defaultTheme;
+    return (window.localStorage.getItem(storageKey) as Theme | null) ?? defaultTheme;
   }, [defaultTheme, storageKey]);
+
+  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "light";
+    return initialTheme === "system" ? getSystemTheme() : initialTheme;
+  });
 
   // 2️⃣ Apply theme to <html>
   useEffect(() => {
@@ -58,7 +56,7 @@ export function ThemeProvider({
   }, [theme]);
 
   const setThemeSafe = (newTheme: Theme) => {
-    localStorage.setItem(storageKey, newTheme);
+    window.localStorage.setItem(storageKey, newTheme);
     setTheme(newTheme);
     setResolvedTheme(
       newTheme === "system"

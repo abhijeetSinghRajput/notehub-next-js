@@ -19,9 +19,10 @@ import { useNoteStore } from "@/app/stores/useNoteStore";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Loader2, Search, X } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
+import { IUser } from "@/types/model";
 
 // Debounce hook
-const useDebounce = (value, delay) => {
+const useDebounce = <T,>(value: T, delay: number): T => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
@@ -37,24 +38,83 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-export const CollaboratorsDialog = () => {
+export const CollaboratorsDialog: React.FC = () => {
   const { currentCollaborators, targetId, type, isDialogOpen, closeDialog } =
     useCollaboratorManager();
 
   const { updateNoteCollaborators, updateCollectionCollaborators, status } =
     useNoteStore();
-  const [workingCollaborators, setWorkingCollaborators] = useState([]);
-  const [removedIds, setRemovedIds] = useState(new Set());
+  if (!isDialogOpen) return null;
 
-  // Initialize when dialog opens
-  useEffect(() => {
-    if (isDialogOpen) {
-      setWorkingCollaborators([...currentCollaborators]);
-      setRemovedIds(new Set());
-    }
-  }, [isDialogOpen, currentCollaborators]);
+  return (
+    <BaseCollaboratorsDialog
+      open={isDialogOpen}
+      onOpenChange={closeDialog}
+      currentCollaborators={currentCollaborators as IUser[]}
+      targetId={targetId as string}
+      type={type as "collection" | "note"}
+      closeDialog={closeDialog}
+      updateNoteCollaborators={updateNoteCollaborators}
+      updateCollectionCollaborators={updateCollectionCollaborators}
+      isSaving={status.collaborator.state === "saving"}
+    />
+  );
+};
 
-  const handleSave = useCallback(async () => {
+interface BaseCollaboratorsDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  currentCollaborators: IUser[];
+  targetId: string;
+  type: "collection" | "note";
+  closeDialog: () => void;
+  updateNoteCollaborators: (data: { noteId: string; collaborators: IUser[] }) => Promise<void>;
+  updateCollectionCollaborators: (data: { collectionId: string; collaborators: IUser[] }) => Promise<void>;
+  isSaving: boolean;
+}
+
+const BaseCollaboratorsDialog = ({
+  open,
+  onOpenChange,
+  currentCollaborators,
+  targetId,
+  type,
+  closeDialog,
+  updateNoteCollaborators,
+  updateCollectionCollaborators,
+  isSaving,
+}: BaseCollaboratorsDialogProps) => {
+  const [workingCollaborators, setWorkingCollaborators] = useState(() => [
+    ...currentCollaborators,
+  ]);
+  const [removedIds, setRemovedIds] = useState(() => new Set());
+
+  const onAddCollaborator = (user: IUser) => {
+    setWorkingCollaborators((prev) => [user, ...prev]);
+    setRemovedIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(user._id);
+      return newSet;
+    });
+  };
+
+  const onRemoveCollaborator = (userId: string) => {
+    setRemovedIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(userId);
+      return newSet;
+    });
+  };
+
+  const onRestoreCollaborator = (userId: string) => {
+    setRemovedIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(userId);
+      return newSet;
+    });
+  };
+
+  const onSave = useCallback(async () => {
     if (!targetId || !type) return;
 
     try {
@@ -64,13 +124,13 @@ export const CollaboratorsDialog = () => {
 
       if (type === "note") {
         await updateNoteCollaborators({
-          noteId: targetId,
-          collaborators: finalCollaborators,
+          noteId: targetId as string,
+          collaborators: finalCollaborators as unknown as IUser[],
         });
       } else {
         await updateCollectionCollaborators({
           collectionId: targetId,
-          collaborators: finalCollaborators,
+          collaborators: finalCollaborators as unknown as IUser[],
         });
       }
       closeDialog();
@@ -78,66 +138,19 @@ export const CollaboratorsDialog = () => {
       console.error("Failed to update collaborators:", error);
     }
   }, [
-    workingCollaborators,
-    removedIds,
-    type,
-    targetId,
-    updateNoteCollaborators,
-    updateCollectionCollaborators,
     closeDialog,
+    removedIds,
+    targetId,
+    type,
+    updateCollectionCollaborators,
+    updateNoteCollaborators,
+    workingCollaborators,
   ]);
 
   const hasChanges =
     removedIds.size > 0 ||
     workingCollaborators.length !== currentCollaborators.length;
 
-  return (
-    <BaseCollaboratorsDialog
-      open={isDialogOpen}
-      onOpenChange={closeDialog}
-      collaborators={workingCollaborators}
-      removedIds={removedIds}
-      onSave={handleSave}
-      onAddCollaborator={(user) => {
-        setWorkingCollaborators((prev) => [user, ...prev]);
-        setRemovedIds((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(user._id);
-          return newSet;
-        });
-      }}
-      onRemoveCollaborator={(userId) => {
-        setRemovedIds((prev) => {
-          const newSet = new Set(prev);
-          newSet.add(userId);
-          return newSet;
-        });
-      }}
-      onRestoreCollaborator={(userId) => {
-        setRemovedIds((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(userId);
-          return newSet;
-        });
-      }}
-      isSaving={status.collaborator.state === "saving"}
-      hasChanges={hasChanges}
-    />
-  );
-};
-
-const BaseCollaboratorsDialog = ({
-  open,
-  onOpenChange,
-  collaborators,
-  removedIds,
-  onSave,
-  onAddCollaborator,
-  onRemoveCollaborator,
-  onRestoreCollaborator,
-  isSaving,
-  hasChanges,
-}) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -151,12 +164,12 @@ const BaseCollaboratorsDialog = ({
         <div className="space-y-4">
           <SearchBar
             onUserSelect={onAddCollaborator}
-            currentCollaborators={collaborators}
+            currentCollaborators={workingCollaborators}
           />
 
           <CollaboratorsList
-            collaborators={collaborators}
-            removedIds={removedIds}
+            collaborators={workingCollaborators}
+            removedIds={removedIds as Set<string>}
             onRemove={onRemoveCollaborator}
             onRestore={onRestoreCollaborator}
           />
@@ -173,15 +186,20 @@ const BaseCollaboratorsDialog = ({
   );
 };
 
-const SearchBar = ({ onUserSelect, currentCollaborators }) => {
+interface SearchBarProps {
+  onUserSelect: (user: IUser) => void;
+  currentCollaborators: IUser[];
+}
+
+const SearchBar: React.FC<SearchBarProps> = ({ onUserSelect, currentCollaborators }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<IUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const { authUser, getAllUsers } = useAuthStore();
 
   const searchUsers = useCallback(
-    async (query) => {
+    async (query: string) => {
       if (!query.trim()) {
         setSearchResults([]);
         return;
@@ -198,8 +216,8 @@ const SearchBar = ({ onUserSelect, currentCollaborators }) => {
 
         // Filter out current collaborators and auth user
         const filteredUsers = response.users.filter(
-          (user) =>
-            user._id !== authUser._id &&
+          (user: IUser) =>
+            user._id !== authUser?._id &&
             !currentCollaborators.some((c) => c._id === user._id),
         );
 
@@ -208,7 +226,7 @@ const SearchBar = ({ onUserSelect, currentCollaborators }) => {
         setIsSearching(false);
       }
     },
-    [currentCollaborators, authUser._id, getAllUsers],
+    [currentCollaborators, authUser?._id, getAllUsers],
   );
 
   useEffect(() => {
@@ -220,7 +238,7 @@ const SearchBar = ({ onUserSelect, currentCollaborators }) => {
     setSearchResults([]);
   };
 
-  const handleUserSelect = (user) => {
+  const handleUserSelect = (user: IUser) => {
     onUserSelect(user);
     handleClearSearch();
   };
@@ -271,12 +289,19 @@ const SearchBar = ({ onUserSelect, currentCollaborators }) => {
   );
 };
 
+interface CollaboratorsListProps {
+  collaborators: IUser[];
+  removedIds: Set<string>;
+  onRemove: (userId: string) => void;
+  onRestore: (userId: string) => void;
+}
+
 const CollaboratorsList = ({
   collaborators,
   removedIds,
   onRemove,
   onRestore,
-}) => {
+}: CollaboratorsListProps) => {
   if (collaborators.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-4">
@@ -287,7 +312,7 @@ const CollaboratorsList = ({
 
   return (
     <div className="space-y-2 max-h-64 overflow-y-auto">
-      {collaborators.map((user) => {
+      {collaborators.map((user: IUser) => {
         const isRemoved = removedIds.has(user._id);
         return (
           <Card
@@ -311,15 +336,21 @@ const CollaboratorsList = ({
   );
 };
 
-const UserInfo = ({ user, className = "" }) => (
+interface UserInfoProps {
+  user: IUser;
+  className?: string;
+}
+
+const UserInfo: React.FC<UserInfoProps> = ({ user, className = "" }) => (
   <div className={cn("flex gap-2 items-center", className)}>
     <Avatar className="size-10">
       <AvatarImage
-        size={100}
-        src={user?.avatar}
-        alt={user?.fullName || "User Profile Photo"}
+        width={100}
+        height={100}
+        src={user.avatar}
+        alt={user.fullName || "User Profile Photo"}
       />
-      <AvatarFallback>{user?.fullName[0].toUpperCase()}</AvatarFallback>
+      <AvatarFallback>{user.fullName[0].toUpperCase()}</AvatarFallback>
     </Avatar>
     <div>
       <div className="font-medium flex gap-1.5 items-center justify-between">

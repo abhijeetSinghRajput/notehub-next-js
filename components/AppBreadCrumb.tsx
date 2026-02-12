@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -25,32 +25,27 @@ interface RouteItem {
 
 export default function AppBreadcrumbs() {
   const pathname = usePathname();
-  const [routes, setRoutes] = useState<RouteItem[]>([]);
-  const [visibleBreadcrumbs, setVisibleBreadcrumbs] = useState(3);
-  const [visible, setVisible] = useState<RouteItem[]>([]);
-  const [hidden, setHidden] = useState<RouteItem[]>([]);
+  const getVisibleCount = () => {
+    if (typeof window === "undefined") return 3;
+    const width = window.innerWidth;
+    if (width >= 1536) return 5; // 2xl
+    if (width >= 1280) return 4; // xl
+    if (width >= 1024) return 3; // lg
+    if (width >= 768) return 2; // md
+    return 1; // sm
+  };
+
+  const [visibleBreadcrumbs, setVisibleBreadcrumbs] = useState(getVisibleCount);
 
   // --- Calculate visibleBreadcrumbs based on viewport width ---
   useEffect(() => {
-    const updateVisible = () => {
-      const width = window.innerWidth;
-      if (width >= 1536)
-        setVisibleBreadcrumbs(5); // 2xl
-      else if (width >= 1280)
-        setVisibleBreadcrumbs(4); // xl
-      else if (width >= 1024)
-        setVisibleBreadcrumbs(3); // lg
-      else if (width >= 768)
-        setVisibleBreadcrumbs(2); // md
-      else setVisibleBreadcrumbs(1); // sm
-    };
-    updateVisible();
-    window.addEventListener("resize", updateVisible);
-    return () => window.removeEventListener("resize", updateVisible);
+    const onResize = () => setVisibleBreadcrumbs(getVisibleCount());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   // --- Generate route items from pathname ---
-  useEffect(() => {
+  const routes = useMemo<RouteItem[]>(() => {
     const segments = pathname.split("/").filter(Boolean);
     const tempRoutes: RouteItem[] = [{ name: "NoteHub", path: "/" }];
     let path = "/";
@@ -67,29 +62,29 @@ export default function AppBreadcrumbs() {
       tempRoutes.push({ name, path });
     });
 
-    setRoutes(tempRoutes);
+    return tempRoutes;
   }, [pathname]);
 
   // --- Calculate visible / hidden breadcrumbs ---
-  useEffect(() => {
-    if (routes.length === 0) return;
-
+  const { visible, hidden } = useMemo(() => {
+    if (routes.length === 0) return { visible: [], hidden: [] };
     const total = routes.length;
 
     if (total <= visibleBreadcrumbs) {
-      setVisible(routes);
-      setHidden([]);
-      return;
+      return { visible: routes, hidden: [] };
     }
 
     if (visibleBreadcrumbs === 1 && total > 1) {
-      setVisible([routes[total - 1]]);
-      setHidden(routes.slice(0, -1).reverse());
-      return;
+      return {
+        visible: [routes[total - 1]],
+        hidden: routes.slice(0, -1).reverse(),
+      };
     }
 
-    setVisible([routes[0], ...routes.slice(-(visibleBreadcrumbs - 1))]);
-    setHidden(routes.slice(1, -(visibleBreadcrumbs - 1)).reverse());
+    return {
+      visible: [routes[0], ...routes.slice(-(visibleBreadcrumbs - 1))],
+      hidden: routes.slice(1, -(visibleBreadcrumbs - 1)).reverse(),
+    };
   }, [routes, visibleBreadcrumbs]);
 
   // --- Render ---

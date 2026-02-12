@@ -36,18 +36,38 @@ import { useLocalStorage } from "@/app/stores/useLocalStorage";
 import { HighlightMatch } from "../HighlightMatch";
 import { cn } from "@/lib/utils";
 import DraftsSection from "../DraftsSection";
+import { ICollection, INote } from "@/types/model";
 
-const NoteItem = ({ note }) => {
-  const { closeSidebar, isMobile } = useSidebar();
+
+
+interface NavMainProps {
+  collections: ICollection[];
+  searchQuery?: string;
+}
+
+interface NoteItemProps {
+  note: INote;
+}
+
+interface FolderCollapsibleProps {
+  collection: ICollection;
+  pinnedCollections: string[];
+  searchQuery?: string;
+}
+
+// --- Components ---
+
+const NoteItem = ({ note }: NoteItemProps) => {
+  const { setOpenMobile, isMobile } = useSidebar();
   const [isNoteRenaming, setIsNoteRenaming] = useState(false);
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { selectedNote, setselectedNote, renameNote } = useNoteStore();
 
   useEffect(() => {
     if (isNoteRenaming && inputRef.current) {
       const timeout = setTimeout(() => {
-        inputRef.current.focus();
-        inputRef.current.select();
+        inputRef.current?.focus();
+        inputRef.current?.select();
       }, 0);
       return () => clearTimeout(timeout);
     }
@@ -58,20 +78,17 @@ const NoteItem = ({ note }) => {
     if (newName && newName !== note.name) {
       renameNote({
         noteId: note._id,
-        newName: newName,
+        newName,
       });
     }
     setIsNoteRenaming(false);
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     e.stopPropagation();
-    if (e.key === "Enter") {
-      handleSaveRename();
-    } else if (e.key === "Escape") {
-      if (inputRef.current) {
-        inputRef.current.value = note.name;
-      }
+    if (e.key === "Enter") handleSaveRename();
+    else if (e.key === "Escape") {
+      if (inputRef.current) inputRef.current.value = note.name;
       setIsNoteRenaming(false);
     }
   };
@@ -80,17 +97,14 @@ const NoteItem = ({ note }) => {
     <SidebarMenuSubItem className="group/note h-auto">
       <SidebarMenuSubButton
         asChild
-        className={cn(
-          "p-0 h-auto",
-          note.visibility === "private" &&
-            "bg-destructive/10 hover:bg-destructive/20",
-        )}
+        className={cn("p-0 h-auto")}
         onClick={() => !isNoteRenaming && setselectedNote(note._id)}
       >
         <div
-          className={`flex items-center gap-0 w-full hover:bg-sidebar-accent rounded-md p-0 h-auto ${
+          className={cn(
+            "flex items-center gap-0 w-full hover:bg-sidebar-accent rounded-md p-0 h-auto",
             selectedNote === note._id && "bg-accent"
-          }`}
+          )}
         >
           {isNoteRenaming ? (
             <Input
@@ -104,7 +118,7 @@ const NoteItem = ({ note }) => {
           ) : (
             <Link
               href={`/note/${note._id}`}
-              onClick={() => isMobile && closeSidebar()}
+              onClick={() => isMobile && setOpenMobile(false)} 
               className="truncate px-2.5 py-2 flex-1 text-sidebar-foreground/70"
             >
               {note.name}
@@ -127,10 +141,15 @@ const NoteItem = ({ note }) => {
   );
 };
 
-const FolderCollapsible = ({ collection, pinnedCollections, searchQuery }) => {
+const FolderCollapsible = ({
+  collection,
+  pinnedCollections,
+  searchQuery,
+}: FolderCollapsibleProps) => {
   const [isCollectionRenaming, setIsCollectionRenaming] = useState(false);
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { renameCollection } = useNoteStore();
+  const { openedCollections, toggleCollection } = useLocalStorage();
 
   const handleRenameStart = () => {
     setIsCollectionRenaming(true);
@@ -145,58 +164,42 @@ const FolderCollapsible = ({ collection, pinnedCollections, searchQuery }) => {
     if (newName && newName !== collection.name) {
       renameCollection({
         _id: collection._id,
-        newName: newName,
+        newName,
       });
     }
     setIsCollectionRenaming(false);
   };
 
-  const handleInputKeyDown = (e) => {
-    // Stop propagation to prevent collapsible toggle
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     e.stopPropagation();
-    if (e.key === "Enter") {
-      handleRenameSave();
-    }
+    if (e.key === "Enter") handleRenameSave();
   };
 
-  const handleInputBlur = () => {
-    handleRenameSave();
-  };
-
-  const handleInputClick = (e) => {
-    // Stop propagation to prevent collapsible toggle
-    e.stopPropagation();
-  };
-
-  const { openedCollections, toggleCollection } = useLocalStorage();
+  const handleInputClick = (e: React.MouseEvent<HTMLInputElement>) => e.stopPropagation();
 
   return (
     <Collapsible
       asChild
-      open={searchQuery || openedCollections[collection._id] || false}
+      open={!!searchQuery || openedCollections[collection._id] || false}
       className="group/collapsible"
-      onOpenChange={(isExpanded) =>
-        toggleCollection(collection._id, isExpanded)
-      }
+      onOpenChange={(isExpanded) => toggleCollection(collection._id, isExpanded)}
     >
       <SidebarMenuItem>
-        <div className={`relative`}>
+        <div className="relative">
           <CollapsibleTrigger asChild>
             <SidebarMenuButton tooltip={collection.name}>
               <ChevronRight className="transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 size-4" />
               {searchQuery || openedCollections[collection._id] ? (
                 <FolderOpen
-                  className={
-                    collection.visibility === "private" &&
-                    "text-destructive fill-destructive/30"
-                  }
+                  className={cn(
+                    collection.visibility === "private" && "text-destructive fill-destructive/30"
+                  )}
                 />
               ) : (
                 <Folder
-                  className={
-                    collection.visibility === "private" &&
-                    "text-destructive fill-destructive/30"
-                  }
+                  className={cn(
+                    collection.visibility === "private" && "text-destructive fill-destructive/30"
+                  )}
                 />
               )}
               <div className="flex-1 min-w-0">
@@ -205,7 +208,7 @@ const FolderCollapsible = ({ collection, pinnedCollections, searchQuery }) => {
                     className="font-semibold h-auto px-1 py-0 text-sm border-none focus-visible:ring-1"
                     defaultValue={collection.name}
                     ref={inputRef}
-                    onBlur={handleInputBlur}
+                    onBlur={handleRenameSave}
                     onKeyDown={handleInputKeyDown}
                     onClick={handleInputClick}
                   />
@@ -215,10 +218,7 @@ const FolderCollapsible = ({ collection, pinnedCollections, searchQuery }) => {
                   </span>
                 )}
               </div>
-
-              {pinnedCollections.includes(collection._id) && (
-                <Pin className="ml-auto size-4" />
-              )}
+              {pinnedCollections.includes(collection._id) && <Pin className="ml-auto size-4" />}
             </SidebarMenuButton>
           </CollapsibleTrigger>
 
@@ -246,54 +246,44 @@ const FolderCollapsible = ({ collection, pinnedCollections, searchQuery }) => {
   );
 };
 
-const NavMain = ({ collections, searchQuery }) => {
+const NavMain = ({ collections, searchQuery }: NavMainProps) => {
   const { status } = useNoteStore();
   const { pinnedCollections } = useLocalStorage();
 
   const filteredCollections = collections
     .map((collection) => {
-      // Only filter notes if there's a search query
       const processedNotes = searchQuery
-        ? collection.notes
-            .filter((note) =>
-              note.name.toLowerCase().includes(searchQuery.toLowerCase()),
-            )
-            .map((note) => ({
-              ...note,
-              name: HighlightMatch(note.name, searchQuery),
-            }))
-        : collection.notes; // Return all notes when not searching
+        ? collection.notes?.filter((note) =>
+            note.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ).map((note) => ({
+            ...note,
+            name: HighlightMatch(note.name, searchQuery),
+          }))
+        : collection.notes ?? [];
 
-      return {
-        ...collection,
-        notes: processedNotes,
-      };
+      return { ...collection, notes: processedNotes };
     })
-    // Only filter out empty collections when searching
-    .filter((collection) => !searchQuery || collection.notes.length > 0)
+    .filter((collection) => !searchQuery || (collection.notes?.length ?? 0) > 0)
     .sort((a, b) => {
       const aPinned = pinnedCollections.includes(a._id);
       const bPinned = pinnedCollections.includes(b._id);
-
       if (aPinned && !bPinned) return -1;
       if (!aPinned && bPinned) return 1;
       return 0;
     });
 
-  if (status.collection.state === "loading") {
-    return <SidebarSkeleton />;
-  }
+  if (status.collection.state === "loading") return <SidebarSkeleton />;
 
   return (
     <>
-      <DraftsSection/>
+      <DraftsSection />
       <SidebarGroup>
         <SidebarGroupLabel>Collections</SidebarGroupLabel>
         <SidebarMenu>
           {filteredCollections.map((collection) => (
             <FolderCollapsible
               key={collection._id}
-              collection={collection}
+              collection={collection as ICollection}
               pinnedCollections={pinnedCollections}
               searchQuery={searchQuery}
             />

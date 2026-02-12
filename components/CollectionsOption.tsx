@@ -33,7 +33,15 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/app/stores/useLocalStorage";
 
-const CollectionsOption = ({ trigger, collection, onRenameStart }) => {
+import { ICollection } from "@/types/model"; // Import your ICollection type
+
+interface CollectionsOptionProps {
+  trigger: React.ReactNode;
+  collection: ICollection;
+  onRenameStart: () => void;
+}
+
+const CollectionsOption = ({ trigger, collection, onRenameStart }: CollectionsOptionProps) => {
   const [noteName, setNoteName] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isInsertNoteDialogOpen, setIsInsertNoteDialogOpen] = useState(false);

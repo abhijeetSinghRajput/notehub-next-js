@@ -1,12 +1,19 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+interface ToggleSwitchProps {
+  options: { label: string; icon: React.ReactNode; value: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+}
+
 const ToggleSwitch = ({
   options,
   value,
   onChange,
   className,
-}) => {
+}: ToggleSwitchProps) => {
   return (
     <div className={cn("max-w-md w-max", className)}>
       <div className="flex gap-2 rounded-xl p-1 border bg-muted/50">

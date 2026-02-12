@@ -14,11 +14,20 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import FolderPlusIcon from "../icons/FolderPlusIcon";
+import { ICollection, IUser } from "@/types/model";
 
-const ChooseCollection = ({ setActiveTab, setSelectedCollection }) => {
+interface ChooseCollectionProps {
+  setActiveTab: (tab: string) => void;
+  setSelectedCollection: (collection: ICollection) => void;
+}
+
+const ChooseCollection: React.FC<ChooseCollectionProps> = ({
+  setActiveTab,
+  setSelectedCollection,
+}) => {
   const { collections } = useNoteStore();
 
-  const handleCollectionSelect = (collection) => {
+  const handleCollectionSelect = (collection: ICollection) => {
     setSelectedCollection(collection);
     setActiveTab("add-note");
   };
@@ -70,7 +79,7 @@ const ChooseCollection = ({ setActiveTab, setSelectedCollection }) => {
         </CommandEmpty>
         <CommandGroup
           heading={collections?.length === 0 ? "" : "Collections"}
-          className="[&_[cmdk-group-heading]]:text-lg"
+          className="**:[[cmdk-group-heading]]:text-lg"
         >
           {collections.map((collection) => (
             <CommandItem
@@ -88,7 +97,7 @@ const ChooseCollection = ({ setActiveTab, setSelectedCollection }) => {
                 <div className="mt-1 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-xs">
-                      {collection.notes.length} notes
+                      {collection.notes?.length} notes
                     </Badge>
                     {collection.visibility === "private" && (
                       <Badge
@@ -99,12 +108,12 @@ const ChooseCollection = ({ setActiveTab, setSelectedCollection }) => {
                       </Badge>
                     )}
                   </div>
-                  {collection.collaborators?.length > 0 && (
+                  {collection.collaborators?.length ? (
                     <AvatarStack
-                      size="xs"
-                      collaborators={collection.collaborators}
+                      size="sm"
+                      collaborators={collection.collaborators as IUser[]}
                     />
-                  )}
+                  ) : null}
                 </div>
               </div>
 

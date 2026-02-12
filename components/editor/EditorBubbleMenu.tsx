@@ -12,7 +12,7 @@ export default function EditorBubbleMenu() {
   if (!editor) return null;
 
   // -------- Image alignment --------
-  const setAlign = (align) => {
+  const setAlign = (align: string) => {
     editor.chain().focus().updateAttributes("image", { align }).run();
   };
 

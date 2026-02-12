@@ -22,17 +22,17 @@ import { useState } from "react";
 const DraftsSection = () => {
   const { authUser } = useAuthStore();
   const { drafts, clearUserDrafts } = useDraftStore();
-  const { closeSidebar, isMobile } = useSidebar();
+  const { setOpenMobile, isMobile } = useSidebar();
   const [open, setOpen] = useState(false);
 
   // ✅ Get drafts for current user only
-  const userDrafts = drafts[authUser._id] || {};
+  const userDrafts = drafts[authUser?._id || ""] || {};
   const entries = Object.entries(userDrafts); // [[noteId, draft]]
 
   if (entries.length === 0) return null;
 
   const handleClearDrafts = () => {
-    clearUserDrafts(authUser._id); // only clear this user's drafts
+    clearUserDrafts(); // clear draft for auth user only
     setOpen(false);
   };
 
@@ -75,7 +75,7 @@ const DraftsSection = () => {
           <Link
             key={noteId}
             href={`/note/${noteId}/editor`} 
-            onClick={() => isMobile && closeSidebar()}
+            onClick={() => isMobile && setOpenMobile(false)}
             className="flex flex-col gap-0.5 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
           >
             {draft.name || "Untitled draft"}

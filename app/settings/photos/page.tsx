@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Loader2, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import imageCompression from "browser-image-compression";
@@ -28,11 +28,15 @@ const Photos = () => {
     removeUserCover,
   } = useAuthStore();
 
-  const [previewavatar, setPreviewavatar] = useState(null);
-  const [previewCover, setPreviewCover] = useState(null);
+  const [previewavatar, setPreviewavatar] = useState<string | null>(null);
+  const [previewCover, setPreviewCover] = useState<string | null>(null);
 
-  const handleUploadImage = async (e, setPreview, onUpload) => {
-    const file = e.target.files[0];
+  const handleUploadImage = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
+    onUpload: (file: File) => Promise<unknown>,
+  ) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     try {
@@ -55,11 +59,14 @@ const Photos = () => {
     } catch (error) {
       console.error("Error compressing or uploading:\n", error);
     } finally {
-      e.target.value = null; // Reset file input
+      e.target.value = ""; // Reset file input
     }
   };
 
-  const handleRemoveImage = async (setPreview, onRemove) => {
+  const handleRemoveImage = async (
+    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
+    onRemove: () => Promise<unknown>,
+  ) => {
     const result = await onRemove();
     if (result) {
       setPreview(null);
@@ -151,8 +158,6 @@ const Photos = () => {
         <div className="space-y-4">
           <Label>Profile Page Cover</Label>
           <div className="flex flex-col sm:flex-col gap-8 items-start">
-            {/* relative aspect-video shadow-md h-44 sm:h-auto sm:w-44 shrink-0 */}
-            import Image from "next/image";
             <div className="relative w-full h-48 rounded-xl overflow-hidden">
               <Image
                 src={previewCover || authUser?.cover || "/profile-cover.svg"}

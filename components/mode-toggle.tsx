@@ -52,7 +52,7 @@ export function ModeToggle() {
   );
 }
 
-export function ModeToggleMini({ className, ...props }) {
+export function ModeToggleMini({ className, ...props }: { className?: string; [key: string]: any }) {
   const { toggleTheme } = useTheme();
 
   return (

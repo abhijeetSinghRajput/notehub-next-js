@@ -31,16 +31,20 @@ const UpdateEmailCard = () => {
     authUser,
   } = useAuthStore();
 
+  if (!authUser) return;
+
   const [newEmail, setNewEmail] = useState("");
   const [otp, setOtp] = useState("");
 
   const [emailError, setEmailError] = useState("");
-  const [emailStatus, setEmailStatus] = useState(null); // "available" | "taken"
+  const [emailStatus, setEmailStatus] = useState<"available" | "taken" | null>(
+    null,
+  ); // "available" | "taken"
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
   // ✅ Stable callback reference
-  const checkAvailability = useCallback(async (email) => {
+  const checkAvailability = useCallback(async (email: string) => {
     setCheckingEmail(true);
     try {
       const available = await isEmailAvailable(email);
@@ -123,7 +127,7 @@ const UpdateEmailCard = () => {
             <AvatarImage
               className="w-full h-full object-cover rounded-full"
               src={authUser.avatar}
-              alt={authUser.name}
+              alt={authUser.fullName}
               referrerPolicy="no-referrer"
             />
             <AvatarFallback className="bg-transparent">
@@ -148,6 +152,7 @@ const UpdateEmailCard = () => {
         </div>
 
         <LabeledInput
+          id="new-email"
           label="New Email"
           placeholder="you@example.com"
           inputClassName={cn(

@@ -18,12 +18,19 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
+interface SortSelectorProps {
+  sortBy: string;
+  sortDirection: "asc" | "desc";
+  setSortBy: (value: string) => void;
+  toggleSortDirection: () => void;
+}
+
 const SortSelector = ({
   sortBy,
   sortDirection,
   setSortBy,
   toggleSortDirection,
-}) => {
+}: SortSelectorProps) => {
   const options = [
     {
       value: "name",
@@ -45,11 +52,7 @@ const SortSelector = ({
             {options.map((opt) => {
               const Icon = opt.icon;
               return (
-                <SelectItem
-                  key={opt.value}
-                  value={opt.value}
-                  className=" px-3 py-2"
-                >
+                <SelectItem key={opt.value} value={opt.value} className=" px-3 py-2">
                   <div className="flex items-center gap-2">
                     <Icon className="h-4 w-4 text-muted-foreground" />
                     {opt.label}
@@ -61,7 +64,6 @@ const SortSelector = ({
         </SelectContent>
       </Select>
 
-      {/* Sort Direction Button */}
       <Button
         tooltip={sortDirection === "asc" ? "Ascending" : "Decending"}
         size="icon"

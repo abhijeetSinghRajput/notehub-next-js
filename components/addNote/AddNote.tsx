@@ -1,14 +1,22 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { ChevronLeft, Globe, Loader2, Lock } from "lucide-react";
-import {LabeledInput} from "@/components/labeled-input"
+import { LabeledInput } from "@/components/labeled-input";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import FileIcon from "../icons/FileIcon";
 import { useRouter } from "next/navigation";
+import { ICollection } from "@/types/model";
 
-const AddNote = ({
+interface AddNoteProps {
+  setSelectedCollection: (collection: ICollection | null) => void;
+  selectedCollection: ICollection | null;
+  setActiveTab: (tab: string) => void;
+  setOpen: (open: boolean) => void;
+}
+
+const AddNote: React.FC<AddNoteProps> = ({
   setSelectedCollection,
   selectedCollection,
   setActiveTab,
@@ -16,12 +24,13 @@ const AddNote = ({
 }) => {
   const router = useRouter();
   const [noteName, setNoteName] = useState("");
-  const [visibility, setVisibility] = useState("public");
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
   const { createNote, status } = useNoteStore();
 
   const isCreatingNote = status.note.state === "creating";
+
   const handleAddNote = async () => {
-    if (!noteName.trim() || isCreatingNote) return;
+    if (!noteName.trim() || isCreatingNote || !selectedCollection) return;
 
     const noteId = await createNote({
       name: noteName,
@@ -42,7 +51,7 @@ const AddNote = ({
     setActiveTab("choose-collection");
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && noteName.trim() && !isCreatingNote) {
       e.preventDefault();
       handleAddNote();
@@ -82,12 +91,13 @@ const AddNote = ({
       <div className="px-6 py-6">
         <div className="space-y-4">
           <LabeledInput
+            id="note-name"
             inputClassName="bg-muted/30"
             label="Note Name"
             placeholder="Enter note title"
             value={noteName}
             onChange={(e) => setNoteName(e.target.value)}
-            error={!noteName.trim() && "Note name is required"}
+            error={!noteName.trim() ? "Note name is required" : undefined}
             autoFocus={true}
             onKeyDown={handleKeyDown}
           />
@@ -122,9 +132,7 @@ const AddNote = ({
                   >
                     {visibility === "public" ? (
                       selectedCollection?.visibility === "public" ? (
-                        <>
-                          This note will be visible to everyone.
-                        </>
+                        <>This note will be visible to everyone.</>
                       ) : (
                         <>
                           This note will be visible to you and{" "}

@@ -1,48 +1,65 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useAuthStore } from "./useAuthStore";
+import { INote } from "@/types/model";
 
-export const useDraftStore = create(
+interface DraftState {
+  drafts: Record<string, Record<string, INote>>;
+
+  getDraft: (noteId: string) => INote | null;
+  setDraft: (noteId: string, data: INote) => void;
+  clearDraft: (noteId: string) => void;
+  clearUserDrafts: () => void;
+  clearAllDrafts: () => void;
+}
+
+/* ================= STORE ================= */
+
+export const useDraftStore = create<DraftState>()(
   persist(
     (set, get) => ({
-      drafts: {}, // { [userId]: { [noteId]: draft } }
+      drafts: {},
 
-      // ✅ Get draft by noteId (auto use current user)
-      getDraft: (noteId) => {
+      // ✅ Get draft by noteId
+      getDraft: (noteId: string) => {
         const { authUser } = useAuthStore.getState();
         if (!authUser?._id) return null;
-        return get().drafts[authUser._id]?.[noteId] || null;
+
+        return get().drafts[authUser._id]?.[noteId] ?? null;
       },
 
-      // ✅ Set / update draft for a note (auto user)
-      setDraft: (noteId, data) => {
+      // ✅ Set / update draft
+      setDraft: (noteId: string, data: INote) => {
         const { authUser } = useAuthStore.getState();
         if (!authUser?._id) return;
+
         const userId = authUser._id;
 
-        set((state) => ({
+        set((state: DraftState) => ({
           drafts: {
             ...state.drafts,
             [userId]: {
               ...state.drafts[userId],
               [noteId]: {
-                ...state.drafts[userId]?.[noteId],
+                ...(state.drafts[userId]?.[noteId] ?? {}),
                 ...data,
-                updatedAt: Date.now(),
+                updatedAt: new Date(),
               },
             },
           },
         }));
       },
 
-      // ✅ Clear draft after publish (auto user)
-      clearDraft: (noteId) => {
+      // ✅ Clear one draft
+      clearDraft: (noteId: string) => {
         const { authUser } = useAuthStore.getState();
         if (!authUser?._id) return;
+
         const userId = authUser._id;
 
-        set((state) => {
+        set((state: DraftState) => {
           if (!state.drafts[userId]) return state;
+
           const userDrafts = { ...state.drafts[userId] };
           delete userDrafts[noteId];
 
@@ -55,21 +72,24 @@ export const useDraftStore = create(
         });
       },
 
-      // ✅ Clear all drafts for current user (logout)
+      // ✅ Clear all drafts for current user
       clearUserDrafts: () => {
         const { authUser } = useAuthStore.getState();
         if (!authUser?._id) return;
+
         const userId = authUser._id;
 
-        set((state) => {
+        set((state: DraftState) => {
           const drafts = { ...state.drafts };
           delete drafts[userId];
           return { drafts };
         });
       },
 
-      // ⚠️ Optional: wipe everything (dev / reset)
-      clearAllDrafts: () => ({ drafts: {} }),
+      // ✅ Clear everything
+      clearAllDrafts: () => ({
+        drafts: {},
+      }),
     }),
     {
       name: "notehub-drafts",

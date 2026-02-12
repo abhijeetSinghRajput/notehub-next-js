@@ -7,10 +7,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useCollaboratorManager } from "@/contex/CollaboratorManagerContext";
+import { ICollection, IUser } from "@/types/model";
 import { Pencil, Plus } from "lucide-react";
 import Link from "next/link";
 
-export const CollectionHeader = ({ user, collection, isOwner }) => {
+interface CollectionHeaderProps {
+  user: IUser;
+  collection: ICollection;
+  isOwner: boolean;
+}
+
+export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
+  user,
+  collection,
+  isOwner,
+}) => {
   if (!user) return null;
   const { openDialog } = useCollaboratorManager();
 
@@ -45,19 +56,16 @@ export const CollectionHeader = ({ user, collection, isOwner }) => {
           </DialogContent>
         </Dialog>
         <div>
-          <Link href={`/${user?.userName}`}>
+          <Link href={`/${user?.userName}`} className="block">
             <h2 className="flex gap-2.5 items-center text-lg sm:text-xl md:text-2xl font-bold tracking-tight">
               {user?.fullName}
               {user.role === "admin" && (
                 <BadgeIcon className="size-4 sm:size-5 text-blue-500" />
               )}
             </h2>
-            <div
-              href={`/${user?.userName}`}
-              className="text-sm sm:text-base text-muted-foreground transition-colors"
-            >
+            <p className="text-sm sm:text-base text-muted-foreground transition-colors">
               @{user?.userName}
-            </div>
+            </p>
           </Link>
         </div>
       </div>
@@ -97,7 +105,7 @@ export const CollectionHeader = ({ user, collection, isOwner }) => {
               {hasCollaborators ? (
                 <div className="flex items-center gap-3">
                   <AvatarStack
-                    collaborators={collection.collaborators}
+                    collaborators={collection.collaborators as IUser[]}
                     maxVisible={4}
                     size="lg"
                   />

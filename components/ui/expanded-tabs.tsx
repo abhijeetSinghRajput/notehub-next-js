@@ -1,21 +1,48 @@
-"use client"
+"use client";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePathname, useRouter } from "next/navigation";
+import { LucideIcon } from "lucide-react";
 
-export function ExpandedTabs({ tabs, className, activeColor = "", onChange }) {
+type TabItem =
+  | {
+      label: string;
+      icon: LucideIcon;
+      path: string;
+      type?: undefined;
+    }
+  | {
+      type: "separator";
+      label?: never;
+      icon?: never;
+      path?: never;
+    };
+
+interface ExpandedTabsProps {
+  tabs: TabItem[];
+  className?: string;
+  activeColor?: string;
+  onChange?: (index: number) => void;
+}
+
+export function ExpandedTabs({
+  tabs,
+  className,
+  activeColor = "",
+  onChange,
+}: ExpandedTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
-
   const isMobile = useIsMobile();
-  const [selected, setSelected] = React.useState(null);
 
-  // sync with route
+  const [selected, setSelected] = React.useState<number | null>(null);
+
   React.useEffect(() => {
-    const activeIndex = tabs.findIndex((tab) =>
-      pathname.startsWith(tab.path)
-    );
+    const activeIndex = tabs.findIndex((tab) => {
+      if (!("path" in tab) || !tab.path) return false;
+      return pathname.startsWith(tab.path);
+    });
 
     if (activeIndex !== -1) {
       setSelected(activeIndex);
@@ -23,9 +50,9 @@ export function ExpandedTabs({ tabs, className, activeColor = "", onChange }) {
     }
   }, [pathname, tabs, onChange]);
 
-  const handleSelect = (index) => {
+  const handleSelect = (index: number) => {
     const tab = tabs[index];
-    if (!tab?.path) return;
+    if (!tab || !("path" in tab) || !tab.path) return;
 
     setSelected(index);
     onChange?.(index);
@@ -40,11 +67,11 @@ export function ExpandedTabs({ tabs, className, activeColor = "", onChange }) {
     <div
       className={cn(
         "flex gap-2 rounded-xl w-max border bg-muted/30 p-1 shadow-sm",
-        className
+        className,
       )}
     >
       {tabs.map((tab, index) => {
-        if (tab.type === "separator") {
+        if ("type" in tab && tab.type === "separator") {
           return <Separator key={`separator-${index}`} />;
         }
 
@@ -62,19 +89,17 @@ export function ExpandedTabs({ tabs, className, activeColor = "", onChange }) {
               showLabel ? "gap-2" : "gap-0",
               isActive
                 ? cn("bg-primary/20", activeColor)
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
             <Icon className="h-4 w-4 shrink-0" />
-
-            {/* Label animation */}
             <span
               className={cn(
                 "overflow-hidden whitespace-nowrap",
                 "transition-all duration-300 ease-out",
                 showLabel
                   ? "max-w-[200px] opacity-100 ml-1"
-                  : "max-w-0 opacity-0 ml-0"
+                  : "max-w-0 opacity-0 ml-0",
               )}
             >
               {tab.label}

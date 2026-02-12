@@ -16,13 +16,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 
 import { LabeledInput } from "@/components//labeled-input";
 
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import { useRouter } from "next/navigation";
+
+type UserPreview = {
+  fullName: string;
+  email: string;
+  avatar: string;
+  role: "user" | "admin";
+};
 
 const ForgotPasswordPage = () => {
   const {
@@ -42,12 +49,12 @@ const ForgotPasswordPage = () => {
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [identifierError, setIdentifierError] = useState("");
   const [cooldown, setCooldown] = useState(0);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<UserPreview | null>(null);
   const [isValidIdentifier, setIsValidIdentifier] = useState(false);
   const [isCheckingIdentifier, setIsCheckingIdentifier] = useState(false);
 
   // Identifier validation (both username and email)
-  const validateIdentifierFormat = (identifier) => {
+  const validateIdentifierFormat = (identifier: string): boolean => {
     // Username pattern (alphanumeric with possible underscores/dots, 3-20 chars)
     const usernamePattern = /^[a-zA-Z0-9_.]{3,20}$/;
     // Email pattern
@@ -57,12 +64,15 @@ const ForgotPasswordPage = () => {
   };
 
   // Password validation
-  const validatePassword = (password) => {
+  const validatePassword = (password: string): boolean => {
     return password.length >= 6;
   };
 
   // Confirm password validation
-  const validateConfirmPassword = (password, confirmPassword) => {
+  const validateConfirmPassword = (
+    password: string,
+    confirmPassword: string,
+  ): boolean => {
     return password === confirmPassword;
   };
 
@@ -99,7 +109,7 @@ const ForgotPasswordPage = () => {
 
   // Cooldown timer
   useEffect(() => {
-    let interval;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (cooldown > 0) {
       interval = setInterval(() => {
         setCooldown((prev) => prev - 1);
@@ -159,12 +169,12 @@ const ForgotPasswordPage = () => {
                 <Avatar className="size-10">
                   <AvatarImage
                     src={user.avatar}
-                    alt={user.name || "User"}
+                    alt={user.fullName || "User"}
                     className="object-cover"
                     referrerPolicy="no-referrer"
                   />
                   <AvatarFallback className="bg-muted text-xs font-medium">
-                    {user.name?.[0]?.toUpperCase() ?? "U"}
+                    {user.fullName?.[0]?.toUpperCase() ?? "U"}
                   </AvatarFallback>
                 </Avatar>
 
@@ -284,8 +294,8 @@ const ForgotPasswordPage = () => {
               className="h-12 font-semibold rounded-xl"
               disabled={
                 isResettingPassword ||
-                passwordError ||
-                confirmPasswordError ||
+                Boolean(passwordError) ||
+                Boolean(confirmPasswordError) ||
                 otp.length !== 6
               }
             >

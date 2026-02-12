@@ -15,23 +15,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
+import { NodeViewContent, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 
-export default ({
-  node: {
-    attrs: { language: defaultLanguage },
-  },
+const CodeBlockComponent: React.FC<NodeViewProps> = ({
+  node: { attrs: { language: defaultLanguage } },
   updateAttributes,
   extension,
 }) => {
-  const languages = extension.options.lowlight.listLanguages();
+  const languages: string[] = extension.options.lowlight.listLanguages();
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(defaultLanguage);
+  const [value, setValue] = useState<string>(defaultLanguage);
   const [copied, setCopied] = useState(false);
-  const codeRef = useRef(null);
+  const codeRef = useRef<HTMLPreElement>(null);
 
   const handleCopy = async () => {
-    const codeContent = codeRef.current.textContent;
+    const codeContent = codeRef.current?.textContent ?? "";
     await navigator.clipboard.writeText(codeContent);
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
@@ -49,34 +47,32 @@ export default ({
               className="min-w-32 justify-between h-7"
               contentEditable={false}
             >
-              {value
-                ? languages.find((language) => language === value)
-                : "Select Language..."}
+              {value || "Select Language..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] bg-zinc-800 border-zinc-800 p-0 " size="top" align="start">
+          <PopoverContent className="w-[200px] bg-zinc-800 border-zinc-800 p-0" align="start">
             <Command className="bg-transparent text-zinc-50 border-zinc-800">
               <CommandInput placeholder="Search language..." className="h-9 placeholder:text-zinc-400" />
               <CommandList>
                 <CommandEmpty>No language found.</CommandEmpty>
                 <CommandGroup>
-                  {languages.map((lang, index) => (
+                  {languages.map((lang: string, index: number) => (
                     <CommandItem
                       key={index}
                       value={lang}
-                      onSelect={(currentValue) => {
+                      onSelect={(currentValue: string) => {
                         setValue(currentValue === value ? "" : currentValue);
                         updateAttributes({ language: currentValue });
                         setOpen(false);
                       }}
-                      style={{color: "white"}}
+                      style={{ color: "white" }}
                     >
                       {lang}
                       <Check
                         className={cn(
                           "ml-auto h-4 w-4",
-                          value === lang ? "opacity-100" : "opacity-0",
+                          value === lang ? "opacity-100" : "opacity-0"
                         )}
                       />
                     </CommandItem>
@@ -95,25 +91,20 @@ export default ({
           className="gap-2 size-7"
           aria-label={copied ? "Code copied" : "Copy code to clipboard"}
         >
-          {copied ? (
-            <CopyCheck className="h-4 w-4" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
+          {copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
       </header>
 
       <pre
         ref={codeRef}
         className="p-4 overflow-x-auto bg-[#09090b]"
-        style={{
-          tabSize: 4,
-          whiteSpace: "pre",
-          fontFamily: "monospace",
-        }}
+        style={{ tabSize: 4, whiteSpace: "pre", fontFamily: "monospace" }}
       >
+        {/* @ts-ignore */}
         <NodeViewContent as="code" className={`language-${value}`} />
       </pre>
     </NodeViewWrapper>
   );
 };
+
+export default CodeBlockComponent;

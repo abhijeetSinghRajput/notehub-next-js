@@ -62,7 +62,7 @@ export const MenuBar = ({ noteId }) => {
     return null;
   }
 
-  const isEmptyContent = (html) => {
+  const isEmptyContent = (html: string) => {
     // text
     if (html.replace(/<[^>]*>/g, "").trim().length > 0) return false;
 
@@ -76,7 +76,7 @@ export const MenuBar = ({ noteId }) => {
   };
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault(); // stop browser save
         if (noteId && status.noteContent.state !== "saving") {
@@ -129,7 +129,7 @@ export const MenuBar = ({ noteId }) => {
     }
 
     // 2️⃣ Clear draft for this user + note
-    clearDraft(authUser._id, noteId);
+    clearDraft(noteId);
   };
 
   return (
@@ -137,7 +137,7 @@ export const MenuBar = ({ noteId }) => {
       <div className="Button-group flex flex-wrap gap-1">
         {FORMATTING_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
-            message={tooltip}
+            tooltip={tooltip}
             key={index}
             size="icon"
             onClick={() => editor.chain().focus()[command]().run()}
@@ -149,7 +149,7 @@ export const MenuBar = ({ noteId }) => {
         ))}
         {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
-            message={tooltip}
+            tooltip={tooltip}
             key={index}
             size="icon"
             onClick={() => editor.chain().focus()[command]().run()}
@@ -164,7 +164,7 @@ export const MenuBar = ({ noteId }) => {
 
         {LIST_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
-            message={tooltip}
+            tooltip={tooltip}
             key={index}
             size="icon"
             onClick={() => editor.chain().focus()[command]().run()}
@@ -176,7 +176,7 @@ export const MenuBar = ({ noteId }) => {
 
         {LIST_CONTROL_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
-            message={tooltip}
+            tooltip={tooltip}
             key={index}
             size="icon"
             variant="ghost"
@@ -197,7 +197,7 @@ export const MenuBar = ({ noteId }) => {
 
         {CONTROL_BUTTONS.map(({ icon, command, tooltip }, index) => (
           <Button
-            message={tooltip}
+            tooltip={tooltip}
             key={index}
             size="icon"
             variant="ghost"
@@ -210,7 +210,7 @@ export const MenuBar = ({ noteId }) => {
 
         {ALIGNMENT_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
-            message={tooltip}
+            tooltip={tooltip}
             key={index}
             size="icon"
             onClick={() => editor.chain().focus()[command](name).run()}
@@ -225,7 +225,7 @@ export const MenuBar = ({ noteId }) => {
 
         <ColorPicker
           icon={HighlighterIcon}
-          tooltipMessage="Highlighter"
+          tooltiptooltip="Highlighter"
           colors={COLORS}
           activeColor={COLORS.find((color) =>
             editor.isActive("highlight", { color }),
@@ -239,7 +239,7 @@ export const MenuBar = ({ noteId }) => {
 
         <ColorPicker
           icon={Palette}
-          tooltipMessage="Set Color"
+          tooltiptooltip="Set Color"
           colors={COLORS}
           activeColor={COLORS.find((color) =>
             editor.isActive("textStyle", { color }),

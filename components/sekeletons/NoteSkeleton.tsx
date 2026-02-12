@@ -11,7 +11,7 @@ const NoteSkeleton = () => {
     .map(() => getRandomWidth(20, 100));
   return (
     <div className="h-svh flex w-full justify-center">
-      <div className="max-w-screen-md w-full">
+      <div className="max-w-3xl w-full">
         <div className="py-8 px-4 space-y-6 border-b border-dashed mb-6 sm:mb-12">
           <div className="flex  items-center justify-between">
             <div className="flex flex-row items-center w-max gap-3">

@@ -1,6 +1,37 @@
 import { create } from "zustand";
 
-export const useThemeStore = create((set, get) => ({
+interface ColorConfig {
+  defaultColor: string;
+  property: string;
+  noLabel?: boolean;
+}
+
+interface ThemeGroup {
+  bg: ColorConfig;
+  fg?: ColorConfig;
+}
+
+interface ThemeVariables {
+  card: ThemeGroup;
+  popover: ThemeGroup;
+  primary: ThemeGroup;
+  secondary: ThemeGroup;
+  muted: ThemeGroup;
+  accent: ThemeGroup;
+  destructive: ThemeGroup;
+  background: { bg: ColorConfig };
+  foreground: { bg: ColorConfig };
+  border: { bg: ColorConfig };
+  input: { bg: ColorConfig };
+  ring: { bg: ColorConfig };
+}
+
+interface ThemeStore {
+  variable: ThemeVariables;
+  updateVariable: () => void;
+}
+
+export const useThemeStore = create<ThemeStore>((set, get) => ({
   variable: {
     card: {
       bg: { defaultColor: "240 10% 3.9%", property: "--card" },
@@ -63,26 +94,29 @@ export const useThemeStore = create((set, get) => ({
     },
   },
 
-  updateVariable: ()=>{
+  updateVariable: () => {
     const root = document.documentElement;
     const state = get().variable;
-    const updated = {};
+    const updated: Partial<ThemeVariables> = {};
 
-    for(const key in state){
-        const themeGroup = state[key];
-        updated[key] = {};
+    for (const key in state) {
+      const themeGroup = state[key as keyof ThemeVariables];
+      updated[key as keyof ThemeVariables] = {} as any;
 
-        for(const type in themeGroup){
-            const {property, noLabel} = themeGroup[type];
-            const computedValue = getComputedStyle(root).getPropertyValue(property).trim();
+      for (const type in themeGroup) {
+        const { property } = themeGroup[
+          type as keyof typeof themeGroup
+        ] as ColorConfig;
+        const computedValue = getComputedStyle(root)
+          .getPropertyValue(property)
+          .trim();
 
-            updated[key][type] = {
-                ...themeGroup[type],
-                defaultColor: computedValue
-            }
-        }
+        (updated[key as keyof ThemeVariables] as any)[type] = {
+          ...themeGroup[type as keyof typeof themeGroup],
+          defaultColor: computedValue,
+        };
+      }
     }
-
-    set({variable: updated})
-  }
+    set({ variable: updated as ThemeVariables });
+  },
 }));

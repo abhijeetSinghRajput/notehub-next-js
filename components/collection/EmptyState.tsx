@@ -1,7 +1,20 @@
 import AddNoteDrawer from "@/components/AddNoteDrawer";
 import { Button } from "@/components/ui/button";
+import { ReactNode } from "react";
 
-export const EmptyState = ({ icon, title, description, showCreateButton }) => {
+interface EmptyStateProps {
+  icon: ReactNode; // For JSX icons or any React element
+  title: string;
+  description: string;
+  showCreateButton?: boolean; // optional if you want
+}
+
+export const EmptyState = ({
+  icon,
+  title,
+  description,
+  showCreateButton = false,
+}: EmptyStateProps) => {
   return (
     <div className="flex flex-col items-center justify-center py-12 gap-4">
       {icon}

@@ -1,31 +1,36 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import type { ICollection, INote, IUser, PopulatedNote } from "@/types/model";
+import { Heading } from "@/components/ArticleCard";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
-export const formatTime = (isoString: string) => {
+export const formatTime = (isoString: string): string => {
   const date = new Date(isoString);
 
-  // Get time components
   let hours = date.getUTCHours();
   const minutes = date.getUTCMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "PM" : "AM";
 
-  // Convert hours to 12-hour format
-  hours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+  hours = hours % 12 || 12;
   const formattedHours = hours.toString().padStart(2, "0");
-  const formattedTime = `${formattedHours}:${minutes} ${ampm}`;
-  return formattedTime;
+  return `${formattedHours}:${minutes} ${ampm}`;
 };
 
 // Time formatter
-export const formatTimeAgo = (date: string) => {
+export const formatTimeAgo = (
+  date: string | Date,
+  // Optional fallback/format argument for future extensibility
+  _format?: string,
+): string => {
+  const targetDate = date instanceof Date ? date : new Date(date);
   const seconds = Math.floor(
-    (new Date().getTime() - new Date(date).getTime()) / 1000
+    (Date.now() - targetDate.getTime()) / 1000,
   );
-  const intervals = {
+
+  const intervals: Record<string, number> = {
     year: 31536000,
     month: 2592000,
     week: 604800,
@@ -37,44 +42,68 @@ export const formatTimeAgo = (date: string) => {
   for (const [unit, secondsInUnit] of Object.entries(intervals)) {
     const interval = Math.floor(seconds / secondsInUnit);
     if (interval >= 1) {
-      const label = interval === 1 ? unit : `${unit}s`; // pluralize
+      const label = interval === 1 ? unit : `${unit}s`;
       return `${interval} ${label} ago`;
     }
   }
   return "Just now";
 };
 
-
-export const formatDate = (isoString: string) => {
+export const formatDate = (isoString: string): string => {
   const date = new Date(isoString);
 
-  // Get date components
   const day = date.getUTCDate().toString().padStart(2, "0");
   const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
   const year = date.getUTCFullYear();
 
-  // Construct date and time strings
-  const formattedDate = `${day}-${month}-${year}`;
-
-  return formattedDate;
+  return `${day}-${month}-${year}`;
 };
 
-export const formatDeviceInfo = (device: { browser: { name: string }, os: { name: string } }) => {
+export const formatDeviceInfo = (device?: {
+  browser?: { name?: string };
+  os?: { name?: string };
+}): string => {
   if (!device) return "Unknown device";
   return `${device.browser?.name || "Unknown browser"} on ${
     device.os?.name || "Unknown OS"
   }`;
 };
 
-export function format(date: Date, pattern: string) {
+export function format(date: Date, pattern: string): string {
   const d = new Date(date);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  
+  const pad = (n: number) => String(n).padStart(2, "0");
+
   const map = {
     yyyy: d.getFullYear(),
     yy: String(d.getFullYear()).slice(-2),
-    MMMM: ["January","February","March","April","May","June","July","August","September","October","November","December"][d.getMonth()],
-    MMM: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()],
+    MMMM: [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ][d.getMonth()],
+    MMM: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ][d.getMonth()],
     MM: pad(d.getMonth() + 1),
     M: d.getMonth() + 1,
     dd: pad(d.getDate()),
@@ -87,46 +116,69 @@ export function format(date: Date, pattern: string) {
     m: d.getMinutes(),
     ss: pad(d.getSeconds()),
     s: d.getSeconds(),
-    a: d.getHours() >= 12 ? 'PM' : 'AM',
+    a: d.getHours() >= 12 ? "PM" : "AM",
   };
-  
-  // Sort by length (longest first) to avoid partial matches
+
   return pattern.replace(
     /yyyy|yy|MMMM|MMM|MM|M|dd|d|HH|H|hh|h|mm|m|ss|s|a/g,
-    (m) => (map as Record<string, string | number>)[m]?.toString() ?? m
+    (token) => (map as Record<string, string | number>)[token]?.toString() ?? token,
   );
 }
 
-export const formatLocation = (location: { city: string, country: string }) => {
+export const formatLocation = (location?: {
+  city?: string;
+  country?: string;
+}): string => {
   if (!location) return "Unknown location";
   return `${location.city || ""}${
     location.city && location.country ? ", " : ""
   }${location.country || ""}`;
 };
 
-export const formatCompactNumber = (num: number) => {
+export const formatCompactNumber = (num: number): string => {
   if (num >= 1_000_000_000) {
     return `${(num / 1_000_000_000).toFixed(1)}b`;
-  } else if (num >= 1_000_000) {
-    return `${(num / 1_000_000).toFixed(1)}m`;
-  } else if (num >= 1_000) {
-    return `${(num / 1_000).toFixed(1)}k`;
-  } else {
-    return num.toString();
   }
+  if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toFixed(1)}m`;
+  }
+  if (num >= 1_000) {
+    return `${(num / 1_000).toFixed(1)}k`;
+  }
+  return num.toString();
 };
 
-export const stripLatex = (text: string) =>
+export const stripLatex = (text: string): string =>
   text
-    .replace(/\$\$[\s\S]*?\$\$/g, " ") // $$ block
-    .replace(/\$[^$]*\$/g, " ")       // $ inline
-    .replace(/\\\([\s\S]*?\\\)/g, " ") // \( \)
-    .replace(/\\\[[\s\S]*?\\\]/g, " ") // \[ \]
+    .replace(/\$\$[\s\S]*?\$\$/g, " ")
+    .replace(/\$[^$]*\$/g, " ")
+    .replace(/\\\([\s\S]*?\\\)/g, " ")
+    .replace(/\\\[[\s\S]*?\\\]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
 
-export const noteTransformer = (htmlContent: string, options: { headings: boolean, images: boolean, description: boolean } = { headings: false, images: false, description: false }) => {
+export type NoteImageMeta = {
+  src: string;
+  alt: string;
+  width: number | null;
+  height: number | null;
+};
+
+export interface NoteTransformResult {
+  headings: Heading[];
+  images: NoteImageMeta[];
+  description: string;
+}
+
+export const noteTransformer = (
+  htmlContent: string,
+  options: {
+    headings?: boolean;
+    images?: boolean;
+    description?: boolean;
+  } = { headings: false, images: false, description: false },
+): NoteTransformResult => {
   if (!htmlContent || typeof htmlContent !== "string") {
     return {
       headings: [],
@@ -138,47 +190,44 @@ export const noteTransformer = (htmlContent: string, options: { headings: boolea
   try {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlContent, "text/html");
-    const result = {
+    const result: NoteTransformResult = {
       headings: [],
       images: [],
       description: "",
     };
 
-    // Extract headings
     if (options.headings) {
-      const headingElements = doc.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      const headingElements = doc.querySelectorAll<HTMLHeadingElement>(
+        "h1, h2, h3, h4, h5, h6",
+      );
       result.headings = Array.from(headingElements)
         .map((heading) => ({
-          text: heading.textContent.trim(),
-          level: parseInt(heading.tagName.substring(1)),
-          id: heading.id || null,
+          text: (heading.textContent || "").trim(),
+          level: parseInt(heading.tagName.substring(1), 10),
+          id: heading.id || "",
         }))
         .filter((h) => h.text.length > 0);
     }
 
-    // Extract images
     if (options.images) {
-      const imgElements = doc.querySelectorAll("img[src]");
+      const imgElements = doc.querySelectorAll<HTMLImageElement>("img[src]");
       result.images = Array.from(imgElements)
         .map((img) => ({
           src: img.src,
-          alt: img.alt?.trim() || "",
+          alt: (img.alt || "").trim(),
           width: img.naturalWidth || null,
           height: img.naturalHeight || null,
         }))
         .filter((img) => img.src);
     }
 
-    // Enhanced paragraph extraction
     if (options.description) {
-      // Get all text-containing elements
       const textElements = Array.from(
-        doc.querySelectorAll("p, div, section, article")
+        doc.querySelectorAll<HTMLElement>("p, div, section, article"),
       )
-        .map((el) => el.textContent.trim())
+        .map((el) => (el.textContent || "").trim())
         .filter((text) => text.length > 0);
 
-      // Find the best candidate text
       let bestText = "";
       let maxWordCount = 0;
 
@@ -186,20 +235,17 @@ export const noteTransformer = (htmlContent: string, options: { headings: boolea
         const words = text.split(/\s+/);
         const wordCount = words.length;
 
-        // If we find text with ≥20 words, use it immediately
         if (wordCount >= 20) {
-          bestText = words.slice(0, 20).join(" "); // Take first 20 words
+          bestText = words.slice(0, 20).join(" ");
           break;
         }
 
-        // Otherwise track the longest text found
         if (wordCount > maxWordCount) {
           maxWordCount = wordCount;
           bestText = text;
         }
       }
 
-      // Fallback to first heading if no text found
       if (!bestText && result.headings.length > 0) {
         bestText = result.headings[0].text;
       }
@@ -218,21 +264,19 @@ export const noteTransformer = (htmlContent: string, options: { headings: boolea
   }
 };
 
-export const noteToArticle = (note) => {
-  // Ensure content exists before transforming
+export const noteToArticle = (note: PopulatedNote) => {
   const content = note.content || "";
   const transformed = noteTransformer(content, {
     headings: true,
     images: true,
-    description: true, // Changed from longDescription to match the transformer
+    description: true,
   });
 
-  // Get the best available description
   let description = "";
   if (transformed.description) {
     description = transformed.description;
   } else if (note.name) {
-    description = note.name; // Fallback to note name
+    description = note.name;
   }
 
   return {
@@ -240,7 +284,6 @@ export const noteToArticle = (note) => {
     article: {
       ...transformed,
       description,
-      // Ensure images array exists even if empty
       images: transformed.images || [],
     },
   };
@@ -250,31 +293,30 @@ export const noteToArticle = (note) => {
  * Basic fuzzy match + scoring
  * Returns -1 if no match
  */
-export function fuzzyScore(query, target) {
-  query = query.toLowerCase();
-  target = target.toLowerCase();
+export function fuzzyScore(query: string, target: string): number {
+  const q = query.toLowerCase();
+  const t = target.toLowerCase();
 
   let score = 0;
   let qIndex = 0;
   let tIndex = 0;
   let consecutive = 0;
 
-  while (qIndex < query.length && tIndex < target.length) {
-    if (query[qIndex] === target[tIndex]) {
+  while (qIndex < q.length && tIndex < t.length) {
+    if (q[qIndex] === t[tIndex]) {
       qIndex++;
       consecutive++;
-      score += 10 + consecutive * 5; // reward consecutive matches
+      score += 10 + consecutive * 5;
     } else {
       consecutive = 0;
-      score -= 1; // small penalty for gaps
+      score -= 1;
     }
     tIndex++;
   }
 
-  if (qIndex !== query.length) return -1; // not all chars matched
+  if (qIndex !== q.length) return -1;
 
-  // bonus for prefix match
-  if (target.startsWith(query)) score += 20;
+  if (t.startsWith(q)) score += 20;
 
   return score;
 }
@@ -282,38 +324,41 @@ export function fuzzyScore(query, target) {
 /**
  * Fuzzy filter & sort
  */
-export function fuzzyFilter(query, items, key = "label") {
+export function fuzzyFilter<T extends Record<string, unknown>>(
+  query: string,
+  items: T[],
+  key: keyof T & string = "label",
+): T[] {
   if (!query) return items;
 
   return items
     .map((item) => ({
       item,
-      score: fuzzyScore(query, item[key]),
+      score: fuzzyScore(query, String(item[key] ?? "")),
     }))
     .filter((result) => result.score > -1)
     .sort((a, b) => b.score - a.score)
     .map((result) => result.item);
 }
 
-
 // strip HTML tags
-export function stripHTML(html) {
+export function stripHTML(html: string): string {
   const tmp = document.createElement("div");
   tmp.innerHTML = html;
   return tmp.textContent || tmp.innerText || "";
 }
 
-export const getCanonicalUrl = () => {
-  if(typeof window === "undefined") return "";
+export const getCanonicalUrl = (): string => {
+  if (typeof window === "undefined") return "";
 
   const url = new URL(window.location.href);
   url.hash = "";
   url.search = "";
 
   let pathname = url.pathname;
-  if(pathname.length > 1 && pathname.endsWith("/")){
+  if (pathname.length > 1 && pathname.endsWith("/")) {
     pathname = pathname.slice(0, -1);
   }
 
   return `${url.origin}${pathname}`;
-}
+};

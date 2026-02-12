@@ -14,9 +14,11 @@ import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import EditorBubbleMenu from "./EditorBubbleMenu";
 import { useParams } from "next/navigation";
 import { Inbox } from "lucide-react";
+import { INote } from "@/types/model";
 
 const Tiptap = () => {
-  const { id: noteId } = useParams();
+  const { id } = useParams();
+  const noteId = Array.isArray(id) ? id[0] : id!;
 
   const { getNoteContent, status } = useNoteStore();
   const { getDraft, setDraft } = useDraftStore();
@@ -29,7 +31,7 @@ const Tiptap = () => {
 
   // ✅ Stable reference
   const saveDraftCallback = useCallback(
-    (noteObj) => {
+    (noteObj: INote) => {
       if (!noteId) return;
       setDraft(noteId, noteObj);
     },
@@ -70,14 +72,14 @@ const Tiptap = () => {
   }, [noteId, getNoteContent, getDraft, getImages]);
 
   // ✅ BEST SOLUTION: Use functional state update
-  const handleUpdate = (html) => {
+  const handleUpdate = (html: string) => {
     setNote((prevNote) => {
       const updatedNote = {
         ...prevNote,
         content: html,
-        updatedAt: Date.now(),
+        updatedAt: new Date(), 
       };
-      saveDraft(updatedNote);
+      saveDraft(updatedNote as INote);
       return updatedNote;
     });
   };
@@ -91,7 +93,9 @@ const Tiptap = () => {
           </div>
           <div>
             <h3 className="text-xl font-semibold">Note Note Found</h3>
-            <p className="text-muted-foreground">Lorem ipsum dolor sit amet, consectetur adipisicing elit</p>
+            <p className="text-muted-foreground">
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit
+            </p>
           </div>
         </div>
       </div>
@@ -104,7 +108,6 @@ const Tiptap = () => {
 
   return (
     <EditorProvider
-      className="h-full"
       slotBefore={<MenuBar noteId={noteId} />}
       extensions={extensions}
       content={note.content}
@@ -114,7 +117,7 @@ const Tiptap = () => {
         transformPastedHTML(html) {
           const doc = new DOMParser().parseFromString(html, "text/html");
 
-          doc.querySelectorAll("[style]").forEach((el) => {
+          doc.querySelectorAll<HTMLElement>("[style]").forEach((el) => {
             el.style.removeProperty("font-family");
             el.style.removeProperty("font-size");
             el.style.removeProperty("line-height");
@@ -142,7 +145,7 @@ const Tiptap = () => {
         },
       }}
     >
-      <EditorBubbleMenu/>
+      <EditorBubbleMenu />
     </EditorProvider>
   );
 };

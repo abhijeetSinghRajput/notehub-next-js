@@ -3,7 +3,7 @@ import { Card } from "../ui/card";
 
 const CollectionPageSkeleton = () => {
   return (
-    <div className="container overflow-y-auto mx-auto px-4 py-8 max-w-screen-xl">
+    <div className="container overflow-y-auto mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col gap-8 animate-pulse">
         {/* Header Section Skeleton */}
         <div className="flex justify-between items-end">

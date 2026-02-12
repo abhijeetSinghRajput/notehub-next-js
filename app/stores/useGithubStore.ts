@@ -2,7 +2,12 @@ import { create } from "zustand";
 import axios from "axios";
 import { formatCompactNumber } from "@/lib/utils";
 
-export const useGithubStore = create((set) => ({
+interface GithubState {
+  starCount: string | null;
+  fetchStars: () => Promise<void>;
+}
+
+export const useGithubStore = create<GithubState>((set) => ({
   starCount: null,
   fetchStars: async () => {
     try {

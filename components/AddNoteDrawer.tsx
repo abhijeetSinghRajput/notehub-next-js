@@ -1,5 +1,6 @@
-"use client"
-import { useState, useEffect } from "react";
+"use client";
+import { useState } from "react";
+import type { ReactNode } from "react";
 import {
   Drawer,
   DrawerContent,
@@ -7,26 +8,23 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import TooltipWrapper from "./TooltipWrapper";
 import ChooseCollection from "./addNote/ChooseCollection";
 import CreateCollection from "./addNote/CreateCollection";
 import AddNote from "./addNote/AddNote";
 import { motion, AnimatePresence } from "framer-motion";
+import { ICollection } from "@/types/model";
 
-const AddNoteDrawer = ({ trigger }) => {
+type AddNoteDrawerProps = {
+  trigger: ReactNode;
+};
+
+const AddNoteDrawer = ({ trigger }: AddNoteDrawerProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState(null);
+  const [selectedCollection, setSelectedCollection] = useState<ICollection | null>(null);
   const [activeTab, setActiveTab] = useState("choose-collection");
   const [direction, setDirection] = useState(0);
 
-  useEffect(() => {
-    if (!open) {
-      setActiveTab("choose-collection");
-      setDirection(0);
-    }
-  }, [open]);
-
-  const handleTabChange = (newTab) => {
+  const handleTabChange = (newTab: string) => {
     const tabs = ["choose-collection", "create-collection", "add-note"];
     const currentIndex = tabs.indexOf(activeTab);
     const newIndex = tabs.indexOf(newTab);
@@ -36,7 +34,7 @@ const AddNoteDrawer = ({ trigger }) => {
   };
 
   const variants = {
-    enter: (direction) => ({
+    enter: (direction: number) => ({
       x: direction > 0 ? 30 : -30,
       opacity: 0,
     }),
@@ -44,14 +42,25 @@ const AddNoteDrawer = ({ trigger }) => {
       x: 0,
       opacity: 1,
     },
-    exit: (direction) => ({
+    exit: (direction: number) => ({
       x: direction > 0 ? -30 : 30,
       opacity: 0,
     }),
   };
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
+    <Drawer
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        // Reset internal state when drawer closes (no effect needed)
+        if (!nextOpen) {
+          setActiveTab("choose-collection");
+          setDirection(0);
+          setSelectedCollection(null);
+        }
+      }}
+    >
       <DrawerTrigger asChild>{trigger}</DrawerTrigger>
       <DrawerContent className="h-[80vh]">
         <DrawerTitle className="sr-only">Add note to collection</DrawerTitle>

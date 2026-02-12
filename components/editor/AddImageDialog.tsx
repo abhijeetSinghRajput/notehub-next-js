@@ -14,7 +14,7 @@ const AddImageDialog = ({ editor }) => {
   const { openImageDialog, closeDialog, openDialog } = useEditorStore();
 
   const handleSetImage = useCallback(
-    (url) => {
+    (url: string) => {
       if (editor) {
         editor.chain().focus().setImage({ src: url }).run();
       }

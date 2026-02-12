@@ -19,12 +19,12 @@ const socialMedia = [
   {
     name: "WhatsApp",
     icon: "/social-icons/whatsapp.svg",
-    url: (link) => `https://wa.me/?text=${encodeURIComponent(link)}`,
+    url: (link: string) => `https://wa.me/?text=${encodeURIComponent(link)}`,
   },
   {
     name: "Facebook",
     icon: "/social-icons/facebook.svg",
-    url: (link) =>
+    url: (link: string) =>
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
         link,
       )}`,
@@ -32,18 +32,18 @@ const socialMedia = [
   {
     name: "X",
     icon: "/social-icons/x.svg",
-    url: (link) =>
+    url: (link: string) =>
       `https://twitter.com/intent/tweet?url=${encodeURIComponent(link)}`,
   },
   {
     name: "Telegram",
     icon: "/social-icons/telegram.svg",
-    url: (link) => `https://t.me/share/url?url=${encodeURIComponent(link)}`,
+    url: (link: string) => `https://t.me/share/url?url=${encodeURIComponent(link)}`,
   },
   {
     name: "LinkedIn",
     icon: "/social-icons/linkedin.svg",
-    url: (link) =>
+    url: (link: string) =>
       `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
         link,
       )}`,
@@ -51,10 +51,10 @@ const socialMedia = [
 ];
 
 // /user/abhijeetsingh/daa-design-and-analysis/all-pairs-shortest-path-floyd-s
-
-export function ShareNotePopover({ shareLink }) {
+export function ShareNotePopover({ shareLink }: {shareLink: string}) {
   const [copied, setCopied] = useState(false);
   const copyToClipboard = async () => {
+    if (!shareLink) return;
     await navigator.clipboard.writeText(shareLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);

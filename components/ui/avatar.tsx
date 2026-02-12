@@ -49,21 +49,24 @@ function AvatarImage(
       ? { width: Number(width), height: Number(height) }
       : { fill: true };
 
+  let nextOptimizedProps: React.ComponentProps<typeof AvatarPrimitive.Image> =
+    props;
+
   try {
     // This is the key line that makes Next.js image optimization take effect
-    const { props: nextOptimizedProps } = getImageProps({
+    const { props: computed } = getImageProps({
       src,
       alt: String(alt),
       ...size,
       ...rest,
     });
-
-    return <AvatarPrimitive.Image {...nextOptimizedProps} />;
+    nextOptimizedProps = computed as React.ComponentProps<typeof AvatarPrimitive.Image>;
   } catch (error) {
     // If getImageProps fails, fallback to original behavior
     console.warn("Failed to optimize image:", error);
-    return <AvatarPrimitive.Image {...props} />;
   }
+
+  return <AvatarPrimitive.Image {...nextOptimizedProps} />;
 }
 AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 

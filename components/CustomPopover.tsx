@@ -1,14 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Card } from "./ui/card";
 
-const CustomPopover = ({ trigger, children }) => {
+interface CustomPopoverProps {
+    trigger: React.ReactNode;
+    children: React.ReactNode;
+}
+
+const CustomPopover: React.FC<CustomPopoverProps> = ({ trigger, children }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const popoverRef = useRef(null);
+    const popoverRef = useRef<HTMLDivElement>(null);
 
     // Close the popover when clicking outside
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (popoverRef.current && !popoverRef.current.contains(event.target)) {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         };

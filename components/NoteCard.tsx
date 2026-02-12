@@ -11,17 +11,27 @@ import { Calendar, EllipsisVertical, File, Lock } from "lucide-react";
 import Link from "next/link";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "@/lib/utils";
+import { INote, IUser } from "@/types/model";
 
-const NoteCard = ({ note, isOwner, username, collectionSlug }) => {
-  const inputRef = useRef(null);
+
+interface NoteCardProps {
+  note: INote;
+  isOwner: boolean;
+  username: string;
+  collectionSlug: string;
+}
+
+const NoteCard = ({ note, isOwner, username, collectionSlug }: NoteCardProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isRenaming, setIsRenaming] = useState(false);
   const { renameNote } = useNoteStore();
 
   useEffect(() => {
     if (isRenaming && inputRef.current) {
+      const input = inputRef.current;
       const timeout = setTimeout(() => {
-        inputRef.current.focus();
-        inputRef.current.select();
+        input.focus();
+        input.select();
       }, 300);
       return () => clearTimeout(timeout);
     }
@@ -39,7 +49,7 @@ const NoteCard = ({ note, isOwner, username, collectionSlug }) => {
   }, [note.name, note._id, renameNote]);
 
   const handleKeyDown = useCallback(
-    (e) => {
+    (e:React.KeyboardEvent<HTMLInputElement>) => {
       e.stopPropagation();
       if (e.key === "Enter") {
         handleSaveRename();
@@ -69,7 +79,7 @@ const NoteCard = ({ note, isOwner, username, collectionSlug }) => {
               />
             ) : (
               <>
-                <File className="size-4 text-muted-foreground flex-shrink-0" />
+                <File className="size-4 text-muted-foreground shrink-0" />
                 <TooltipWrapper message={note.name}>
                   <Link
                     href={`/${username}/${collectionSlug}/${note.slug}`}
@@ -100,7 +110,7 @@ const NoteCard = ({ note, isOwner, username, collectionSlug }) => {
           <div className="flex justify-between items-center gap-4">
             {Array.isArray(note.collaborators) && (
               <AvatarStack
-                collaborators={note.collaborators}
+                collaborators={note.collaborators as IUser[]}
                 maxVisible={2}
                 size="sm"
               />

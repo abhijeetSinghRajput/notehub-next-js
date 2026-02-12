@@ -3,7 +3,7 @@ import { Copy, CopyCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export const CopyButton = ({ codeElement }) => {
+export const CopyButton: React.FC<{ codeElement: HTMLElement }> = ({ codeElement }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {

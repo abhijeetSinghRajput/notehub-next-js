@@ -41,8 +41,45 @@ import {
 import BadgeIcon from "./icons/BadgeIcon";
 import { useDebounceCallback } from "../hooks/useDebounceCallback";
 import { useRouter } from "next/navigation";
+import { INote, IUser, PopulatedNote } from "@/types/model";
 
-export function getFirstMatchSnippets(html, query, radius = 60, limit = 3) {
+interface PaginationState {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+interface SearchResults {
+  notes: INote[];
+  users: IUser[];
+}
+
+interface NotesSearchResponse {
+  notes: PopulatedNote[];
+  pagination: PaginationState;
+}
+
+interface UsersSearchResponse {
+  users: IUser[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number; // Changed from totalUsers
+    itemsPerPage: number; // Changed from usersPerPage
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+export function getFirstMatchSnippets(
+  html: string,
+  query: string,
+  radius = 60,
+  limit = 3,
+) {
   if (!html || !query) return [];
 
   // Normalize block tags
@@ -89,7 +126,7 @@ export function SearchButton() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [searchResults, setSearchResults] = React.useState({
+  const [searchResults, setSearchResults] = React.useState<SearchResults>({
     notes: [],
     users: [],
   });
@@ -112,7 +149,7 @@ export function SearchButton() {
     },
   });
   const [isSearching, setIsSearching] = React.useState(false);
-  const { authUser, getAllUsers } = useAuthStore();
+  const { getAllUsers } = useAuthStore();
   const [isTyping, setIsTyping] = React.useState(false);
   const {
     searchHistory,
@@ -120,11 +157,11 @@ export function SearchButton() {
     removeSearchHistory,
     clearSearchHistory,
   } = useLocalStorage();
-  const inputRef = React.useRef(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   // Debounced search for both notes and users
   const fetchSearchResults = useDebounceCallback(
-    async (query, notesPage = 1, usersPage = 1) => {
+    async (query: string, notesPage = 1, usersPage = 1) => {
       setIsTyping(false);
 
       const trimmedQuery = query.trim();
@@ -137,6 +174,7 @@ export function SearchButton() {
             currentPage: 1,
             totalPages: 0,
             totalItems: 0,
+            itemsPerPage: 10,
             hasNextPage: false,
             hasPreviousPage: false,
           },
@@ -144,6 +182,7 @@ export function SearchButton() {
             currentPage: 1,
             totalPages: 0,
             totalItems: 0,
+            itemsPerPage: 10,
             hasNextPage: false,
             hasPreviousPage: false,
           },
@@ -156,15 +195,15 @@ export function SearchButton() {
         setIsSearching(true);
 
         const [notesResponse, usersResponse] = await Promise.all([
-          axiosInstance.get(
+          axiosInstance.get<NotesSearchResponse>(
             `/note/search?q=${encodeURIComponent(trimmedQuery)}&page=${notesPage}&limit=10`,
           ),
           getAllUsers({
-            page: usersPage,
+            page: usersPage as number,
             limit: 10,
             filter: "all",
             search: trimmedQuery,
-          }),
+          }) as Promise<UsersSearchResponse>,
         ]);
 
         setSearchResults({
@@ -197,17 +236,17 @@ export function SearchButton() {
   }, [searchQuery, fetchSearchResults]);
 
   // Handle pagination changes
-  const handleNotesPageChange = (page) => {
+  const handleNotesPageChange = (page: number) => {
     fetchSearchResults(searchQuery, page, pagination.users.currentPage);
   };
 
-  const handleUsersPageChange = (page) => {
+  const handleUsersPageChange = (page: number) => {
     fetchSearchResults(searchQuery, pagination.notes.currentPage, page);
   };
 
   // Keyboard shortcut
   React.useEffect(() => {
-    const down = (e) => {
+    const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
@@ -218,7 +257,7 @@ export function SearchButton() {
   }, []);
 
   const generateSnippet = React.useCallback(
-    (html) => getFirstMatchSnippets(html, searchQuery),
+    (html: string) => getFirstMatchSnippets(html, searchQuery),
     [searchQuery],
   );
 
@@ -247,13 +286,13 @@ export function SearchButton() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           closeButtonClassName="hidden"
-          className="max-w-3xl !rounded-tl-none !rounded-tr-none gap-0 top-0 -translate-x-1/2 translate-y-0 bg-muted p-0 overflow-hidden"
+          className="max-w-3xl rounded-tl-none! rounded-tr-none! gap-0 top-0 -translate-x-1/2 translate-y-0 bg-muted p-0 overflow-hidden"
         >
           <DialogHeader>
             <div className="relative flex items-center border-b">
               <DialogClose asChild>
                 <Button variant="ghost" className="h-full rounded-none">
-                  <ArrowLeft className="!size-6" />
+                  <ArrowLeft className="size-6!" />
                 </Button>
               </DialogClose>
               <Input
@@ -303,7 +342,7 @@ export function SearchButton() {
             <TabsList className="h-auto! grid grid-cols-2 w-full">
               <TabsTrigger
                 value="notes"
-                className="w-full h-12 gap-3 rounded-none text-base border-none border-b-[3px] border-transparent !shadow-none data-[state=active]:bg-primary/5 data-[state=active]:border-primary/50"
+                className="w-full h-12 gap-3 rounded-none text-base border-none border-b-[3px] border-transparent shadow-none! data-[state=active]:bg-primary/5 data-[state=active]:border-primary/50"
               >
                 Notes
                 {pagination.notes.totalItems > 0 && (
@@ -314,7 +353,7 @@ export function SearchButton() {
               </TabsTrigger>
               <TabsTrigger
                 value="users"
-                className="w-full h-12 gap-3 rounded-none text-base border-none border-b-[3px] border-transparent !shadow-none data-[state=active]:bg-primary/5 data-[state=active]:border-primary/50"
+                className="w-full h-12 gap-3 rounded-none text-base border-none border-b-[3px] border-transparent shadow-none! data-[state=active]:bg-primary/5 data-[state=active]:border-primary/50"
               >
                 Users
                 {pagination.users.totalItems > 0 && (
@@ -335,7 +374,12 @@ export function SearchButton() {
                       <NotFound searchQuery={searchQuery} type="notes" />
                     )
                   ) : (
-                    <EmptyState />
+                    <EmptyState
+                      icon={<Search />}
+                      title="Search for notes"
+                      description="Type to discover notes"
+                      showCreateButton={false}
+                    />
                   )
                 ) : (
                   <>
@@ -350,7 +394,7 @@ export function SearchButton() {
                             className="flex border-b border-primary/20 hover:bg-primary/10 items-start gap-3 p-2 px-4  group cursor-pointer"
                             onClick={() => {
                               router.push(
-                                `/${note.userId?.userName}/${note.collectionId?.slug}/${note.slug}`,
+                                `/${(note.userId as IUser)?.userName}/${(note.collectionId as any)?.slug}/${note.slug}`,
                               );
                               setOpen(false);
                             }}
@@ -374,21 +418,25 @@ export function SearchButton() {
                                     size={14}
                                   />
                                   <p className="line-clamp-1 text-xs text-muted-foreground">
-                                    {note.collectionId?.name}
+                                    {(note.collectionId as any)?.name}
                                   </p>
                                 </div>
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                   <div className="flex items-center gap-1">
                                     <Avatar className="size-4">
                                       <AvatarImage
-                                        src={note.userId?.avatar}
+                                        src={(note.userId as IUser)?.avatar}
                                         alt="Author Profile Photo"
                                       />
                                       <AvatarFallback>
-                                        {note.userId?.fullName?.charAt(0)}
+                                        {(
+                                          note.userId as IUser
+                                        )?.fullName?.charAt(0)}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <span>{note.userId?.fullName}</span>
+                                    <span>
+                                      {(note.userId as IUser)?.fullName}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -423,7 +471,12 @@ export function SearchButton() {
                       <NotFound searchQuery={searchQuery} type="users" />
                     )
                   ) : searchHistory.length === 0 ? (
-                    <EmptyState type="users" />
+                    <EmptyState
+                      icon={<User />}
+                      title="Search for users"
+                      description="Type a name, username, or email to discover people"
+                      showCreateButton={false}
+                    />
                   ) : null
                 ) : (
                   <>
@@ -436,7 +489,7 @@ export function SearchButton() {
                           <div
                             key={user._id || index}
                             onClick={() => {
-                              addSearchHistory(user);
+                              addSearchHistory(user as any);
                               router.push(`/${user.userName}`);
                               setOpen(false);
                             }}
@@ -455,13 +508,13 @@ export function SearchButton() {
                             </Avatar>
                             <div>
                               <p className="font-medium flex items-center gap-1.5">
-                                {user.fullName}
+                                {user.fullName as string}
                                 {user.role === "admin" && (
                                   <BadgeIcon className="size-4 text-blue-500" />
                                 )}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                @{user.userName}
+                                @{user.userName as string}
                               </p>
                             </div>
                           </div>
@@ -517,11 +570,11 @@ export function SearchButton() {
                             <div className="relative">
                               <Avatar className="h-8 w-8">
                                 <AvatarImage
-                                  src={user.avatar}
+                                  src={user.avatar as string}
                                   alt={"Users Profile Photo"}
                                 />
                                 <AvatarFallback>
-                                  {user.fullName?.charAt(0) || (
+                                  {(user.fullName as string)?.charAt(0) || (
                                     <User className="h-4 w-4" />
                                   )}
                                 </AvatarFallback>
@@ -530,13 +583,13 @@ export function SearchButton() {
                             </div>
                             <div className="flex-1">
                               <p className="font-medium flex items-center gap-1.5">
-                                {user.fullName}
+                                {user.fullName as string}
                                 {user.role === "admin" && (
                                   <BadgeIcon className="size-4 text-blue-500" />
                                 )}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                @{user.userName}
+                                @{user.userName as string}
                               </p>
                             </div>
                             <button
@@ -564,9 +617,17 @@ export function SearchButton() {
 }
 
 // Custom Pagination Component
-function CustomPagination({ currentPage, totalPages, onPageChange }) {
+function CustomPagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
   const getPageNumbers = () => {
-    const pages = [];
+    const pages: (number | string)[] = [];
     const showEllipsis = totalPages > 7;
 
     if (!showEllipsis) {
@@ -626,7 +687,7 @@ function CustomPagination({ currentPage, totalPages, onPageChange }) {
               <PaginationEllipsis />
             ) : (
               <PaginationLink
-                onClick={() => onPageChange(page)}
+                onClick={() => onPageChange(page as number)}
                 isActive={currentPage === page}
                 className="cursor-pointer"
               >
@@ -653,7 +714,13 @@ function CustomPagination({ currentPage, totalPages, onPageChange }) {
   );
 }
 
-export function Searching({ searchQuery = "", type = "users" }) {
+export function Searching({
+  searchQuery = "",
+  type = "users",
+}: {
+  searchQuery?: string;
+  type?: string;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-4 gap-6 animate-pulse">
       <div className="bg-primary/20 rounded-full p-5">
@@ -674,7 +741,13 @@ export function Searching({ searchQuery = "", type = "users" }) {
   );
 }
 
-export function NotFound({ searchQuery = "", type = "users" }) {
+export function NotFound({
+  searchQuery = "",
+  type = "users",
+}: {
+  searchQuery?: string;
+  type?: string;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-4 gap-6">
       <div className="bg-primary/20 rounded-full p-5 animate-pulse">

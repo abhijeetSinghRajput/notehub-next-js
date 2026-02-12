@@ -8,7 +8,6 @@ import {
 import { Button } from "../ui/button";
 import { ExternalLink, LinkIcon, Trash2 } from "lucide-react";
 import { Input } from "../ui/input";
-import TooltipWrapper from "../TooltipWrapper";
 import { useEditorStore } from "@/app/stores/useEditorStore";
 
 export function LinkDialog({ editor }) {

@@ -1,6 +1,6 @@
 export const generatePKCE = async () => {
   // Generate secure random string for code verifier
-  const generateRandomString = (length) => {
+  const generateRandomString = (length:number) => {
     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
     const randomValues = crypto.getRandomValues(new Uint8Array(length));
     return Array.from(randomValues)

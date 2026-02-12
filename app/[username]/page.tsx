@@ -28,6 +28,7 @@ import CollectionCard from "@/components/CollectionCard";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import SortSelector from "@/components/SortSelector";
 import BadgeIcon from "@/components/icons/BadgeIcon";
+import { ICollection, IUser } from "@/types/model";
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -42,22 +43,23 @@ const ProfilePage = () => {
     uploadUserCover,
     removeUserCover,
   } = useAuthStore();
-  const [previewUrl, setPreviewUrl] = useState(null);
   const {
     getAllCollections,
     collections: ownerCollections,
     status,
   } = useNoteStore();
-  const [user, setUser] = useState(null);
-  const [collections, setCollections] = useState([]);
+  const [user, setUser] = useState<IUser | null>(null);
+  const [collections, setCollections] = useState<ICollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { pinnedCollections } = useLocalStorage();
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
-  const [currentImageType, setCurrentImageType] = useState(null); // 'avatar' or 'cover'
-  const [previewavatar, setPreviewavatar] = useState(null);
-  const [previewCover, setPreviewCover] = useState(null);
+  const [currentImageType, setCurrentImageType] = useState<
+    "avatar" | "cover" | null
+  >(null);
+  const [previewavatar, setPreviewavatar] = useState<string | null>(null);
+  const [previewCover, setPreviewCover] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("name");
-  const [sortDirection, setSortDirection] = useState("asc");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -97,10 +99,14 @@ const ProfilePage = () => {
     fetchData();
   }, [username, authUser, ownerCollections, isOwner, getAllCollections]);
 
-  const handleUploadImage = async (e, setPreview, onUpload) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
+  const handleUploadImage = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
+    onUpload: (file: File) => Promise<any>,
+  ) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
     try {
       // Set image preview (optional)
       const previewURL = URL.createObjectURL(file);
@@ -122,11 +128,14 @@ const ProfilePage = () => {
     } catch (error) {
       console.error("Error compressing or uploading:\n", error);
     } finally {
-      e.target.value = null; // Reset file input
+      e.target.value = ""; // Reset file input
     }
   };
 
-  const handleRemoveImage = async (setPreview, onRemove) => {
+  const handleRemoveImage = async (
+    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
+    onRemove: () => Promise<any>,
+  ) => {
     const result = await onRemove();
     if (result) {
       setPreview(null);
@@ -174,7 +183,7 @@ const ProfilePage = () => {
   if (!user) {
     return (
       <div className="p-4 overflow-auto flex items-center justify-center h-full">
-        <Card className="max-w-screen-md w-full mx-auto p-8 text-center">
+        <Card className="max-w-3xl w-full mx-auto p-8 text-center">
           <h2 className="text-xl font-semibold">User not found</h2>
           <p className="text-muted-foreground mt-2">
             The user @{username} doesn't exist or you don't have permission to
@@ -243,10 +252,10 @@ const ProfilePage = () => {
             {isOwner && (
               <DialogFooter className="p-4 border-t sticky bottom-0 bg-background">
                 <div className="grid grid-cols-2 gap-2 w-full">
-                  <Label htmlFor={currentImageType} className="contents">
+                  <Label htmlFor={currentImageType ?? undefined} className="contents">
                     <input
                       type="file"
-                      id={currentImageType}
+                      id={currentImageType ?? undefined}
                       accept="image/*"
                       className="hidden"
                       disabled={disableImageUpload}
@@ -310,7 +319,7 @@ const ProfilePage = () => {
       {/* Profile Card */}
       <Card
         className={cn(
-          "max-w-screen-md mx-auto overflow-hidden shadow-sm",
+          "max-w-3xl mx-auto overflow-hidden shadow-sm",
           isLoading && "animate-pulse",
         )}
       >
@@ -318,7 +327,6 @@ const ProfilePage = () => {
           <AvatarImage
             src={user?.cover || "/placeholder.svg"}
             alt="User cover photo"
-            unoptimized={true} // keep original URL
             loading="eager" // important for LCP
             fetchPriority="high" // important for LCP
             decoding="async"
@@ -348,7 +356,6 @@ const ProfilePage = () => {
               <AvatarImage
                 src={user?.avatar || "/avatar.svg"}
                 alt="User avatar"
-                unoptimized={true} // optional: keep original URL
                 loading="lazy"
                 fetchPriority="low"
                 className="w-full h-full object-cover"
@@ -396,7 +403,7 @@ const ProfilePage = () => {
       </Card>
 
       {/* Collections Section */}
-      <div className="max-w-screen-md mx-auto mt-8">
+      <div className="max-w-3xl mx-auto mt-8">
         {status.collection.state === "loading" ? (
           <CollectionSkeleton />
         ) : collections.length === 0 ? (

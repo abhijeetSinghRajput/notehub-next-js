@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-const Footer = ({ className }) => {
+const Footer = ({ className }: {className: string}) => {
   const footerLinks = [
     { href: "/privacy-policy", label: "Privacy Policy" },
     {
@@ -42,7 +42,7 @@ const Footer = ({ className }) => {
 
       {/* Brand Name */}
       <div className="relative text-6xl font-black tracking-tighter text-nowrap lg:text-9xl select-none">
-        <span className="bg-gradient-to-b from-foreground/20 to-transparent bg-clip-text text-transparent">
+        <span className="bg-linear-to-b from-foreground/20 to-transparent bg-clip-text text-transparent">
           NoteHub
         </span>
       </div>

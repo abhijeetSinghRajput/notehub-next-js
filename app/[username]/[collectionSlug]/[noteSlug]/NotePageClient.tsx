@@ -10,7 +10,14 @@ import {
   ChevronsUpDown,
   Inbox,
 } from "lucide-react";
-import { useEffect, useMemo, useCallback, useState, memo } from "react"; // ADDED useCallback
+import {
+  useEffect,
+  useMemo,
+  useCallback,
+  useState,
+  memo,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import parse from "html-react-parser";
@@ -23,11 +30,7 @@ import { axiosInstance } from "@/lib/axios";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useImageStore } from "@/app/stores/useImageStore";
 import Footer from "@/components/Footer";
-import {
-  cn,
-  formatDate,
-  formatTimeAgo,
-} from "@/lib/utils";
+import { cn, formatDate, formatTimeAgo } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import ScrollTopButton from "@/components/ScrollTopButton";
@@ -42,42 +45,49 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import EditorTypographyControls from "@/components/editor/EditorTypographyControls";
 import ShareNotePopover from "@/components/ShareNotePopover";
 import BadgeIcon from "@/components/icons/BadgeIcon";
+import type { INote, IUser } from "@/types/model";
 
 const MemoEditorTypographyControls = memo(EditorTypographyControls);
 const MemoShareNotePopover = memo(ShareNotePopover);
 const MemoScrollTopButton = memo(ScrollTopButton);
 const MemoFooter = memo(Footer);
 
+type TocItem = {
+  id: string;
+  text: string;
+  level: number;
+  element: HTMLElement;
+};
 
 const NotePageClient = () => {
-  const { username, collectionSlug, noteSlug } = useParams();
+  const { username, collectionSlug, noteSlug } = useParams<{
+    username: string;
+    collectionSlug: string;
+    noteSlug: string;
+  }>();
   const router = useRouter();
   const { authUser } = useAuthStore();
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [note, setNote] = useState(null);
-  const [author, setAuthor] = useState(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isPrivate, setIsPrivate] = useState<boolean>(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [note, setNote] = useState<INote | null>(null);
+  const [author, setAuthor] = useState<IUser | null>(null);
   const { getImages } = useImageStore();
 
-  const [activeId, setActiveId] = useState(null);
-  const [toc, setToc] = useState([]);
-  const [tocOpen, setTocOpen] = useState(false);
-  const {
-    scrollRef,
-    editorFontFamily,
-    editorFontSizeIndex,
-  } = useEditorStore();
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [toc, setToc] = useState<TocItem[]>([]);
+  const [tocOpen, setTocOpen] = useState<boolean>(false);
+  const { editorFontFamily, editorFontSizeIndex } = useEditorStore();
 
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState<number>(0);
   const fontSize = FONT_SIZE[editorFontSizeIndex] || FONT_SIZE[1];
 
   // ✅ MOVED: useMemo/useCallback BEFORE any conditional returns
   const isAuthor = useMemo(() => {
     // Ensure both objects exist before comparing
     if (!authUser || !note) return false;
-    return authUser._id === note.userId;
+    return String(authUser._id) === String(note.userId);
   }, [authUser, note]);
 
   const isAdmin = useMemo(() => {
@@ -89,14 +99,14 @@ const NotePageClient = () => {
 
   console.log(authUser?._id, note?.userId, isAuthor, isAdmin, isOwner);
 
-  const handleTocItemClick = useCallback((itemId) => {
+  const handleTocItemClick = useCallback((itemId: string) => {
     document.getElementById(itemId)?.scrollIntoView({ behavior: "smooth" });
     setTocOpen(false);
   }, []);
 
   const handleNavigateToEditor = useCallback(() => {
     if (note?._id) {
-      router.push(`/note/${note._id}/editor`);
+      router.push(`/note/${String(note._id)}/editor`);
     } else {
       toast.error("Note not loaded yet!");
     }
@@ -114,7 +124,8 @@ const NotePageClient = () => {
         setNote(note);
         setAuthor(author);
       } catch (error) {
-        if (error.response?.status === 403) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 403) {
           setIsPrivate(true);
         } else {
           console.error(error);
@@ -133,13 +144,15 @@ const NotePageClient = () => {
   useEffect(() => {
     if (!note?.content) return;
 
-    const imageClickHandlers = new Map();
+    const imageClickHandlers = new Map<HTMLImageElement, () => void>();
 
     // Generate TOC
     const headings = Array.from(
-      document.querySelectorAll(".tiptap h1, .tiptap h2, .tiptap h3"),
+      document.querySelectorAll<HTMLElement>(
+        ".tiptap h1, .tiptap h2, .tiptap h3",
+      ),
     );
-    const tocData = headings.map((h, index) => {
+    const tocData: TocItem[] = headings.map((h, index) => {
       if (!h.id) h.id = `heading-${index}`;
       return {
         id: h.id,
@@ -151,21 +164,21 @@ const NotePageClient = () => {
     setToc(tocData);
 
     // Syntax highlighting
-    const codeBlocks = document.querySelectorAll(
+    const codeBlocks = document.querySelectorAll<HTMLElement>(
       "pre code:not([data-highlighted])",
     );
     codeBlocks.forEach((block) => {
-      hljs.highlightElement(block);
+      hljs.highlightElement(block as HTMLElement);
       block.setAttribute("data-highlighted", "true");
     });
 
     // KaTeX
-    const mathElements = document.querySelectorAll(
+    const mathElements = document.querySelectorAll<HTMLElement>(
       '[data-type="inline-math"]:not([data-katex-rendered]), [data-type="block-math"]:not([data-katex-rendered])',
     );
     mathElements.forEach((element) => {
       try {
-        const latex = element.getAttribute("data-latex");
+        const latex = element.getAttribute("data-latex") || "";
         const isBlock = element.getAttribute("data-type") === "block-math";
         katex.render(latex, element, {
           displayMode: isBlock,
@@ -181,8 +194,9 @@ const NotePageClient = () => {
     const copyIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
     const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
 
-    const handleCopyClick = async (e) => {
-      const button = e.target.closest(".copy-code-button");
+    const handleCopyClick = async (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      const button = target?.closest<HTMLButtonElement>(".copy-code-button");
       if (!button) return;
 
       button.disabled = true;
@@ -202,7 +216,8 @@ const NotePageClient = () => {
     };
 
     // Add headers with buttons
-    const preWrappers = document.querySelectorAll(".pre-wrapper");
+    const preWrappers =
+      document.querySelectorAll<HTMLDivElement>(".pre-wrapper");
     preWrappers.forEach((pre) => {
       if (!pre.querySelector(".pre-header")) {
         const codeElement = pre.querySelector("code");
@@ -232,10 +247,10 @@ const NotePageClient = () => {
     document.addEventListener("click", handleCopyClick);
 
     // Image handlers
-    const images = document.querySelectorAll(".tiptap img");
+    const images = document.querySelectorAll<HTMLImageElement>(".tiptap img");
     images.forEach((img) => {
       img.style.cursor = "pointer";
-      const handler = () => setSelectedImage(img.getAttribute("src") || "");
+      const handler = () => setSelectedImage(img.getAttribute("src"));
       img.addEventListener("click", handler);
       imageClickHandlers.set(img, handler);
     });
@@ -250,39 +265,41 @@ const NotePageClient = () => {
     };
   }, [note?.content]);
 
-  // ✅ FIXED: Only ONE progress tracking listener (REMOVED duplicate from lines 52-62)
   useEffect(() => {
-    const el = scrollRef?.current;
-    if (!el) return;
-
     let ticking = false;
+
     const onScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          const { scrollTop, scrollHeight, clientHeight } = el;
+          const scrollTop = window.scrollY;
+          const scrollHeight = document.documentElement.scrollHeight;
+          const clientHeight = window.innerHeight;
+
           const percent = (scrollTop / (scrollHeight - clientHeight)) * 100;
           setProgress(Math.min(100, Math.max(0, Math.round(percent))));
+
           ticking = false;
         });
+
         ticking = true;
       }
     };
 
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [scrollRef]);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // TOC scroll tracking
   useEffect(() => {
-    const el = scrollRef?.current;
-    if (!el || toc.length === 0) return;
+    if (toc.length === 0) return;
 
     let ticking = false;
+
     const onScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          let current = null;
-          const containerTop = el.getBoundingClientRect().top;
+          let current: string | null = null;
+          const containerTop = 0; // body top is 0
 
           for (const item of toc) {
             const rect = item.element.getBoundingClientRect();
@@ -300,10 +317,13 @@ const NotePageClient = () => {
       }
     };
 
-    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Run once initially
     onScroll();
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [toc, scrollRef]);
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [toc]);
 
   if (isLoading) {
     return <NoteSkeleton />;
@@ -359,7 +379,7 @@ const NotePageClient = () => {
         !note?.content.trim() && "empty",
       )}
     >
-      <div className="max-w-screen-md w-full mx-auto relative">
+      <div className="max-w-3xl w-full mx-auto relative">
         <div className="py-8 px-4 space-y-6 border-b border-dashed mb-6 sm:mb-12">
           <div className="flex items-center justify-between">
             <Link
@@ -368,7 +388,7 @@ const NotePageClient = () => {
             >
               <Avatar className="size-12 bg-muted">
                 <AvatarImage
-                  className="w-full h-full object-cover !m-0"
+                  className="w-full h-full object-cover m-0!"
                   src={author?.avatar}
                   alt={author?.fullName || "Author Profile Photo"}
                 />
@@ -377,7 +397,7 @@ const NotePageClient = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <div className="font-semibold flex gap-4 !text-primary items-center text-sm">
+                <div className="font-semibold flex gap-4 text-primary! items-center text-sm">
                   <div className="flex gap-2 items-center">
                     <span>{author?.fullName}</span>
                     <span>
@@ -434,9 +454,13 @@ const NotePageClient = () => {
               <div className="flex flex-col gap-0.5">
                 <span
                   className="text-sm font-medium"
-                  title={formatDate(note?.createdAt)}
+                  title={
+                    note?.createdAt ? formatDate(String(note.createdAt)) : ""
+                  }
                 >
-                  {format(new Date(note?.createdAt), "MMM d, yyyy")}
+                  {note?.createdAt
+                    ? format(new Date(note.createdAt), "MMM d, yyyy")
+                    : ""}
                 </span>
               </div>
             </div>
@@ -452,12 +476,18 @@ const NotePageClient = () => {
               <div className="flex flex-col gap-0.5">
                 <span
                   className="text-sm font-medium"
-                  title={formatDate(note?.contentUpdatedAt)}
+                  title={
+                    note?.contentUpdatedAt
+                      ? formatDate(String(note.contentUpdatedAt))
+                      : ""
+                  }
                 >
-                  {formatTimeAgo(
-                    new Date(note?.contentUpdatedAt),
-                    "MMM d, yyyy",
-                  )}
+                  {note?.contentUpdatedAt
+                    ? formatTimeAgo(
+                        new Date(note.contentUpdatedAt),
+                        "MMM d, yyyy",
+                      )
+                    : ""}
                 </span>
               </div>
             </div>
@@ -465,12 +495,12 @@ const NotePageClient = () => {
         </div>
 
         <Dialog
-          open={selectedImage}
+          open={Boolean(selectedImage)}
           onOpenChange={(open) => !open && setSelectedImage(null)}
         >
           <DialogContent
             closeButtonClassName="top-2 left-2 right-auto bg-black md:size-6 flex items-center justify-center bg-neutral-200 text-neutral-600"
-            className="p-0 border-none w-auto h-auto max-w-[100vw] max-h-[100vh] overflow-hidden sm:rounded-lg"
+            className="p-0 border-none w-auto h-auto max-w-[100vw] max-h-screen overflow-hidden sm:rounded-lg"
           >
             <DialogTitle className="hidden">Image Dialog</DialogTitle>
             <div className="flex items-center justify-center w-full h-full">
@@ -478,7 +508,7 @@ const NotePageClient = () => {
                 <img
                   src={selectedImage}
                   alt="Preview"
-                  className="object-contain w-auto h-auto max-w-[100vw] max-h-[100vh]"
+                  className="object-contain w-auto h-auto max-w-[100vw] max-h-screen"
                 />
               )}
             </div>
@@ -519,7 +549,22 @@ const NotePageClient = () => {
 };
 
 // ✅ EXTRACT FLOATING BUTTONS TO SEPARATE MEMOIZED COMPONENT
-const FloatingActionButtons = memo(
+type FloatingActionButtonsProps = {
+  toc: TocItem[];
+  tocOpen: boolean;
+  setTocOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  progress: number;
+  activeId: string | null;
+  handleTocItemClick: (id: string) => void;
+  note: INote | null;
+  username: string;
+  collectionSlug: string;
+  noteSlug: string;
+  isOwner: boolean;
+  handleNavigateToEditor: () => void;
+};
+
+const FloatingActionButtons = memo<FloatingActionButtonsProps>(
   ({
     toc,
     tocOpen,
@@ -566,7 +611,7 @@ const FloatingActionButtons = memo(
                         key={item.id}
                         onClick={() => handleTocItemClick(item.id)}
                         className={cn(
-                          "cursor-pointer !pl-0 list-decimal !text-base/6 text-muted-foreground hover:text-primary",
+                          "cursor-pointer pl-0! list-decimal text-base/6! text-muted-foreground hover:text-primary",
                           activeId === item.id && "text-primary font-semibold",
                         )}
                         style={{ paddingLeft: (item.level - 1) * 12 }}
@@ -582,7 +627,6 @@ const FloatingActionButtons = memo(
         )}
         <MemoEditorTypographyControls />
         <MemoShareNotePopover
-          note={note}
           shareLink={`https://notehub-38kp.onrender.com/user/${username}/${collectionSlug}/${noteSlug}`}
         />
         {isOwner && (

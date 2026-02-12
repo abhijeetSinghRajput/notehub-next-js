@@ -21,7 +21,12 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 
-export function DrawerDialog({ children, triggerButton  }) {
+interface DrawerDialogProps {
+  children: React.ReactNode;
+  triggerButton: React.ReactNode;
+}
+
+export function DrawerDialog({ children, triggerButton }: DrawerDialogProps) {
   const [open, setOpen] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")
 

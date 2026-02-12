@@ -1,10 +1,20 @@
 import React from "react";
 
-const TableOfContent = ({ data = [] }) => {
+type TocItem = {
+  id?: string;
+  text: string;
+  level: number;
+};
+
+type TableOfContentProps = {
+  data?: TocItem[];
+};
+
+const TableOfContent = ({ data = [] }: TableOfContentProps) => {
   if (!data.length) return null;
 
   const STEP = 20;
-  const stack = []; // Track parent levels
+  const stack: number[] = []; // Track parent levels
 
   return (
     <div>

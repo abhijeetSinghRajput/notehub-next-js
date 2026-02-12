@@ -20,23 +20,23 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SidebarSearch } from "./SidebarSearch";
 import { useLocalStorage } from "@/app/stores/useLocalStorage";
-import SettingSidebar from "./SettingSidebar";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { ModeToggleMini } from "@/components/mode-toggle";
 import LogoIcon from "../icons/LogoIcon";
 
-const AppSidebar = (props) => {
+const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
   const { getAllCollections, collections } = useNoteStore();
   const { authUser } = useAuthStore();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const { collapseAll } = useLocalStorage();
   const { setOpen, isMobile } = useSidebar();
 
   useEffect(() => {
-    getAllCollections({
-      userId: authUser?._id,
+    if (!authUser?._id) return;
+    void getAllCollections({
+      userId: String(authUser._id),
     });
-  }, [getAllCollections]);
+  }, [getAllCollections, authUser?._id]);
 
   const handleCloseSearch = () => {
     setShowSearch(false);
@@ -44,7 +44,7 @@ const AppSidebar = (props) => {
   };
 
   const [showSearch, setShowSearch] = useState(false);
-  const searchRef = useRef(null);
+  const searchRef = useRef<HTMLInputElement | null>(null);
 
   if (!authUser) return null;
 
@@ -54,7 +54,6 @@ const AppSidebar = (props) => {
         {showSearch ? (
           <div className="flex gap-2 items-center">
             <SidebarSearch
-              setShowSearch={setShowSearch}
               inputRef={searchRef}
               onSearch={setSearchQuery}
             />

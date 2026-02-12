@@ -1,8 +1,20 @@
+import { IUser } from "@/types/model";
 import TooltipWrapper from "./TooltipWrapper";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { cn } from "@/lib/utils"; // Assuming you have a cn utility
 
-const AvatarStack = ({ collaborators = [], maxVisible = 5, size = "md" }) => {
+
+type AvatarStackProps = {
+  collaborators?: IUser[];
+  maxVisible?: number;
+  size?: "sm" | "md" | "lg";
+};
+
+const AvatarStack = ({
+  collaborators = [],
+  maxVisible = 5,
+  size = "md",
+}: AvatarStackProps) => {
   if (collaborators.length === 0) return null;
 
   const visibleAvatars = Math.min(collaborators.length, maxVisible);
@@ -64,8 +76,8 @@ const AvatarStack = ({ collaborators = [], maxVisible = 5, size = "md" }) => {
         .reverse()
         .map((collaborator, index) => (
           <TooltipWrapper
-            key={collaborator._id || index}
-            message={`@${collaborator.userName}`}
+            key={collaborator._id ? String(collaborator._id) : index}
+            message={`@${collaborator.userName ?? ""}`}
           >
             <Avatar
               className={cn(

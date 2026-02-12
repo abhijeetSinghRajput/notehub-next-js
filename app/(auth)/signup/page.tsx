@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,15 +20,14 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-
-import { LabeledInput } from "@/components//labeled-input";
-
+import { LabeledInput } from "@/components/labeled-input";
 import { isEmail, isEmpty, isLength, isNumeric } from "@/lib/validator";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+// ✅ Typed useDebounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -43,22 +42,39 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
+// ✅ Type definitions
+type EmailStatus = "available" | "taken" | null;
+
+interface SignupFormData {
+  fullName: string;
+  email: string;
+  password: string;
+  otp: string;
+}
+
+interface FormErrors {
+  name: string;
+  email: string;
+  password: string;
+  otp: string;
+}
+
 const SignupPage = () => {
   const { isSigningUp, signup, sendSignupOtp, isSendingOtp, isEmailAvailable } =
     useAuthStore();
   const [cooldown, setCooldown] = useState(0);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const [emailStatus, setEmailStatus] = useState(null);
+  const [emailStatus, setEmailStatus] = useState<EmailStatus>(null);
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignupFormData>({
     fullName: "",
     email: "",
     password: "",
     otp: "",
   });
 
-  const [errors, setErrors] = useState({
+  const [errors, setErrors] = useState<FormErrors>({
     name: "",
     email: "",
     password: "",
@@ -67,14 +83,17 @@ const SignupPage = () => {
 
   const debouncedEmail = useDebounce(formData.email, 500);
 
+  // ✅ Typed interval
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout | undefined;
     if (cooldown > 0) {
       interval = setInterval(() => {
         setCooldown((prev) => prev - 1);
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [cooldown]);
 
   useEffect(() => {
@@ -102,9 +121,10 @@ const SignupPage = () => {
     };
 
     checkEmailAvailability();
-  }, [debouncedEmail, isEmailAvailable]);
+  }, [debouncedEmail, isEmailAvailable, formData.email]);
 
-  const handleChange = (e) => {
+  // ✅ Typed event handler
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
 
@@ -135,8 +155,12 @@ const SignupPage = () => {
 
     try {
       const result = await sendSignupOtp(trimmedEmail);
-      if (result?.status >= 200) {
-        setCooldown(60);
+      // ✅ Type assertion for result
+      if (result && typeof result === 'object' && 'status' in result) {
+        const status = (result as { status: number }).status;
+        if (status >= 200) {
+          setCooldown(60);
+        }
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -145,7 +169,7 @@ const SignupPage = () => {
 
   const validateForm = () => {
     // Create trimmed form data
-    const trimmedData = {
+    const trimmedData: SignupFormData = {
       fullName: formData.fullName.trim(),
       email: formData.email.trim(),
       password: formData.password.trim(),
@@ -153,7 +177,7 @@ const SignupPage = () => {
     };
 
     let valid = true;
-    let newErrors = {
+    const newErrors: FormErrors = {
       name: "",
       email: "",
       password: "",
@@ -209,7 +233,8 @@ const SignupPage = () => {
     return { valid, trimmedData };
   };
 
-  const handleFormSubmit = async (e) => {
+  // ✅ Typed form submit handler
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const { valid, trimmedData } = validateForm();
@@ -246,7 +271,7 @@ const SignupPage = () => {
                   onChange={handleChange}
                   disabled={isSigningUp}
                   error={errors.name}
-                  inputClassName={errors.name && "ring-2 ring-red-500"}
+                  inputClassName={errors.name ? "ring-2 ring-red-500" : ""}
                 />
 
                 {/* Email Field */}
@@ -259,7 +284,7 @@ const SignupPage = () => {
                   onChange={handleChange}
                   disabled={isSigningUp}
                   error={errors.email}
-                  inputClassName={errors.email && "ring-2 ring-red-500"}
+                  inputClassName={errors.email ? "ring-2 ring-red-500" : ""}
                   loading={isCheckingEmail}
                   rightElement={
                     !isCheckingEmail && emailStatus === "available" ? (
@@ -279,7 +304,7 @@ const SignupPage = () => {
                   disabled={isSigningUp}
                   error={errors.password}
                   showPasswordToggle
-                  inputClassName={errors.password && "ring-2 ring-red-500"}
+                  inputClassName={errors.password ? "ring-2 ring-red-500" : ""}
                 />
 
                 {/* OTP Input */}
@@ -363,7 +388,7 @@ const SignupPage = () => {
             </div>
           </CardContent>
         </Card>
-        <div className="text-muted-foreground mt-6 *:[a]:hover:text-primary text-center text-sm text-balance *:[a]:underline *:[a]:underline-offset-4">
+        <div className="text-muted-foreground mt-6 text-center text-sm text-balance">
           By clicking continue, you agree to our{" "}
           <Link href={"/privacy-policy"} className="underline">
             Privacy Policy

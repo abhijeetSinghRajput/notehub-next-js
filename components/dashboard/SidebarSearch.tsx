@@ -1,11 +1,21 @@
-import React, { useEffect } from 'react';
-import { Search } from 'lucide-react';
-import { Input } from '../ui/input'; 
-import { Label } from '../ui/label';
+import React, { useEffect } from "react";
+import type { RefObject, Dispatch, SetStateAction } from "react";
+import { Search } from "lucide-react";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
+export interface SidebarSearchProps {
+  inputRef: RefObject<HTMLInputElement | null>;
+  onSearch: (value: string) => void;
+  defaultValue?: string;
+}
 
-export function SidebarSearch({ inputRef, onSearch, defaultValue = '' }) {
-  const [searchQuery, setSearchQuery] = React.useState(defaultValue);
+export function SidebarSearch({
+  inputRef,
+  onSearch,
+  defaultValue = "",
+}: SidebarSearchProps) {
+  const [searchQuery, setSearchQuery] = React.useState<string>(defaultValue);
 
   // Sync with parent's onSearch
   useEffect(() => {
@@ -14,7 +24,7 @@ export function SidebarSearch({ inputRef, onSearch, defaultValue = '' }) {
 
   useEffect(() => {
     if (inputRef?.current) {
-      inputRef.current.focus();
+      (inputRef.current as HTMLInputElement).focus();
     }
   }, [inputRef]);
 

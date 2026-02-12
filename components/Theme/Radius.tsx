@@ -6,13 +6,14 @@ import { Button } from "../ui/button";
 
 const Radius = () => {
   const radius = [0, 0.3, 0.5, 0.75, 1.0];
-  const [selectedRadius, setSelectedRadius] = useState(()=>(
-    localStorage.getItem('radius') || 0.5
-  ));
-
+  const [selectedRadius, setSelectedRadius] = useState<number>(() => {
+    const stored = localStorage.getItem('radius');
+    return stored ? parseFloat(stored) : 0.5;
+  });
+  
   useEffect(() => {
     document.documentElement.style.setProperty('--radius', `${selectedRadius}rem`);
-    localStorage.setItem('radius', selectedRadius);
+    localStorage.setItem('radius', selectedRadius.toString());
   }, [selectedRadius]);
 
   return (

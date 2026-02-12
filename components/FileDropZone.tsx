@@ -17,24 +17,30 @@ import {
   AlertDialogAction,
 } from "./ui/alert-dialog";
 
-const FileDropZone = ({ onImageSelect }) => {
-  const {
-    getImages,
-    galleryImages,
-    isLoadingImages,
-    uploadImage,
-    removeImage,
-  } = useImageStore();
+interface FileDropZoneProps {
+  onImageSelect: (url: string) => void;
+}
+
+const FileDropZone: React.FC<FileDropZoneProps> = ({ onImageSelect }) => {
+  const { galleryImages, isLoadingImages, uploadImage, removeImage } =
+    useImageStore();
 
   const [isUploading, setIsUploading] = useState(false);
-  const [isRemoving, setIsRemoving] = useState(null);
+  const [isRemoving, setIsRemoving] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, imageId: null });
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    imageId: null as string | null,
+  });
 
-  const handleDrop = async (droppedFiles, event) => {
+  const handleDrop = async (
+    files: FileList | null,
+    event: React.DragEvent<HTMLDivElement>,
+  ) => {
     event.preventDefault();
-    const file = droppedFiles[0];
-    if (!file) return;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
     if (isUploading) return toast.error("Wait until uploading finishes");
 
     setIsUploading(true);
@@ -42,8 +48,8 @@ const FileDropZone = ({ onImageSelect }) => {
     setIsUploading(false);
   };
 
-  const handleInputChange = async (e) => {
-    const file = e.target.files[0];
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
     if (isUploading) return toast.error("Wait until uploading finishes");
 
@@ -51,11 +57,10 @@ const FileDropZone = ({ onImageSelect }) => {
     await uploadImage(file);
     setIsUploading(false);
 
-    e.target.value = null;
+    e.target.value = "";
   };
 
-
-  const imageCount = localStorage.getItem("imageCount") || 3;
+  const imageCount = parseInt(localStorage.getItem("imageCount") || "3");
   const skeletons = [];
   for (let i = 0; i < imageCount; ++i) {
     skeletons.push(<Skeleton key={i} className={"aspect-square"} />);
@@ -77,7 +82,7 @@ const FileDropZone = ({ onImageSelect }) => {
         >
           <ImageIcon className="size-12 mb-4" />
           <p className="text-sm mb-2">Drag and drop or</p>
-          <Button disabled={isUploading || isRemoving} className="pointer">
+          <Button disabled={isUploading || !!isRemoving} className="pointer">
             <label
               htmlFor="upload-photo"
               className="p-4 flex items-center gap-2 cursor-pointer"
@@ -118,9 +123,9 @@ const FileDropZone = ({ onImageSelect }) => {
                 <Button
                   size="icon"
                   variant="secondary"
-                  disabled={isRemoving}
+                  disabled={!!isRemoving}
                   className="cursor-pointer rounded-full sm:invisible group-hover:visible transition-opacity size-6 absolute top-0 right-0"
-                  onClick={() => setDeleteDialog({ open: true, imageId: _id })}
+                  onClick={() => setDeleteDialog({ open: true, imageId: _id as string })}
                 >
                   <X />
                 </Button>
@@ -131,24 +136,23 @@ const FileDropZone = ({ onImageSelect }) => {
       {/* Delete Confirmation Dialog */}
       <AlertDialog
         open={deleteDialog.open}
-        onOpenChange={(open) =>
-          setDeleteDialog((prev) => ({ ...prev, open }))
-        }
+        onOpenChange={(open) => setDeleteDialog((prev) => ({ ...prev, open }))}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete image?</AlertDialogTitle>
             <AlertDialogDescription>
-              This image will be permanently deleted. If it’s used in any notes, they may appear broken.
+              This image will be permanently deleted. If it’s used in any notes,
+              they may appear broken.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
-                setIsRemoving(deleteDialog.imageId);
+                setIsRemoving(deleteDialog.imageId as string);
                 setDeleteDialog({ open: false, imageId: null });
-                await removeImage(deleteDialog.imageId);
+                await removeImage(deleteDialog.imageId as string);
                 setIsRemoving(null);
               }}
             >

@@ -13,10 +13,17 @@ import { format } from "@/lib/utils";
 import AvatarStack from "./CollaboratorAvatars";
 import { usePathname } from "next/navigation";
 import FolderIcon from "./icons/FolderIcon";
+import { ICollection, IUser } from "@/types/model";
 
-function CollectionCard({ collection, isOwner, pinnedCollections }) {
+interface CollectionCardProps {
+  collection: ICollection;
+  isOwner: boolean;
+  pinnedCollections: string[];
+}
+
+function CollectionCard({ collection, isOwner, pinnedCollections }: CollectionCardProps) {
   const [isCollectionRenaming, setIsCollectionRenaming] = useState(false);
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const { renameCollection } = useNoteStore();
 
@@ -39,7 +46,7 @@ function CollectionCard({ collection, isOwner, pinnedCollections }) {
     setIsCollectionRenaming(false);
   };
 
-  const handleInputKeyDown = (e) => {
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Stop propagation to prevent collapsible toggle
     e.stopPropagation();
     if (e.key === "Enter") {
@@ -51,12 +58,12 @@ function CollectionCard({ collection, isOwner, pinnedCollections }) {
     handleRenameSave();
   };
 
-  const handleInputClick = (e) => {
+  const handleInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
     // Stop propagation to prevent collapsible toggle
     e.stopPropagation();
   };
 
-  const isPinned = (collectionId) => {
+  const isPinned = (collectionId:string) => {
     return pinnedCollections.includes(collectionId);
   };
 
@@ -125,7 +132,7 @@ function CollectionCard({ collection, isOwner, pinnedCollections }) {
             <div className="flex gap-2 justify-between items-center w-full">
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="px-1">
-                  {collection.notes.length}
+                  {collection.notes?.length}
                 </Badge>
                 <p className="text-xs text-muted-foreground mt-1">
                   Created{" "}
@@ -136,7 +143,7 @@ function CollectionCard({ collection, isOwner, pinnedCollections }) {
               <div className="flex justify-between items-center gap-4">
                 {Array.isArray(collection.collaborators) && (
                   <AvatarStack
-                    collaborators={collection.collaborators}
+                    collaborators={collection.collaborators as IUser[]}
                     maxVisible={3}
                     size="sm"
                   />

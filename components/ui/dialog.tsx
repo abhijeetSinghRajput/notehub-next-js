@@ -54,7 +54,8 @@ function DialogContent({
   closeButtonClassName,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
-  showCloseButton?: boolean
+  showCloseButton?: boolean;
+  closeButtonClassName?: string;
 }) {
   return (
     <DialogPortal data-slot="dialog-portal">

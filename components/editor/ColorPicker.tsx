@@ -7,6 +7,16 @@ import {
 import { Button } from "../ui/button";
 import { Eraser } from "lucide-react";
 
+interface ColorPickerProps {
+  icon: React.ReactNode;
+  tooltipMessage: string;
+  colors: string[];
+  activeColor: string;
+  onColorSelect: (color: string) => void;
+  onUnsetColor: () => void;
+  isActive: (color: string) => boolean;
+}
+
 export const ColorPicker = ({
   icon: Icon,
   tooltipMessage,
@@ -15,7 +25,7 @@ export const ColorPicker = ({
   onColorSelect,
   onUnsetColor,
   isActive,
-}) => {
+}: ColorPickerProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -26,7 +36,7 @@ export const ColorPicker = ({
             backgroundColor: activeColor || "transparent",
           }}
         >
-          <Icon />
+          {Icon}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="bg-popover border rounded-md w-auto flex items-center gap-1 p-2">
@@ -39,7 +49,7 @@ export const ColorPicker = ({
             } hover:bg-accent rounded-md cursor-pointer`}
           >
             <div
-              className="absolute inset-[6px] rounded-sm"
+              className="absolute inset-1.5 rounded-sm"
               style={{ backgroundColor: color }}
             />
           </Button>

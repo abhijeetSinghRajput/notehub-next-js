@@ -15,33 +15,49 @@ const OAuthCallback = () => {
       const code = searchParams.get("code");
       const error = searchParams.get("error");
 
+      // Handle OAuth errors
       if (error) {
+        console.error("OAuth error:", error);
         router.push(`/login?error=${encodeURIComponent(error)}`);
         return;
       }
 
-      if (code) {
-        const codeVerifier = sessionStorage.getItem("code_verifier");
-        console.log({codeVerifier});
-        try {
-          const result = await googleLogin({
-            code,
-            codeVerifier,
-            redirectUri,
-          });
-          console.log({result});
-
-          if (!result) {
-            router.push("/login?error=Authentication failed");
-            return;
-          }
-
-          router.push("/");
-        } catch {
-          router.push("/login?error=Something went wrong");
-        }
-      } else {
+      // Validate authorization code exists
+      if (!code) {
+        console.error("Authorization code missing");
         router.push("/login?error=Authorization code missing");
+        return;
+      }
+
+      // Get and validate code verifier
+      const codeVerifier = sessionStorage.getItem("code_verifier");
+      
+      if (!codeVerifier) {
+        console.error("Code verifier not found in session storage");
+        router.push("/login?error=Session expired. Please try again.");
+        return;
+      }
+
+      // Clear code verifier immediately for security
+      sessionStorage.removeItem("code_verifier");
+
+      try {
+        const result = await googleLogin({
+          code,
+          codeVerifier,
+          redirectUri,
+        });
+
+        if (!result) {
+          router.push("/login?error=Authentication failed");
+          return;
+        }
+
+        // Successful login
+        router.push("/");
+      } catch (err) {
+        console.error("OAuth callback error:", err);
+        router.push("/login?error=Something went wrong");
       }
     };
 
@@ -50,9 +66,9 @@ const OAuthCallback = () => {
 
   return (
     <div className="h-screen flex items-center justify-center">
-      <div className="flex gap-2">
-        <Loader2 className="animate-spin" />
-        <span>Logging in</span>
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="animate-spin size-8" />
+        <span className="text-muted-foreground">Completing sign in...</span>
       </div>
     </div>
   );

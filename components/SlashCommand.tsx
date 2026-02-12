@@ -1,6 +1,6 @@
 import { Extension, ReactRenderer } from "@tiptap/react";
-import Suggestion from "@tiptap/suggestion";
-import tippy from "tippy.js";
+import Suggestion, { SuggestionProps, SuggestionKeyDownProps } from "@tiptap/suggestion";
+import tippy, { Instance as TippyInstance } from "tippy.js";
 import {
   CodeSquare,
   Heading1,
@@ -20,6 +20,24 @@ import {
 import SuggestionList from "./SuggestionList";
 import { fuzzyFilter } from "@/lib/utils";
 
+interface SuggestionItem {
+  icon: React.ReactNode;
+  label: string;
+  command: string;
+  props?: Record<string, any>;
+  shortcut?: string;
+  dialog?: string;
+  [key: string]: any;
+}
+
+interface SlashCommandProps extends SuggestionProps {
+  items: SuggestionItem[];
+  command: (item: SuggestionItem) => void;
+  editor: any;
+  range: any;
+  clientRect?: (() => DOMRect) | null;
+}
+
 export const SlashCommand = Extension.create({
   name: "slashCommand",
 
@@ -27,9 +45,9 @@ export const SlashCommand = Extension.create({
     return {
       suggestion: {
         char: "/",
-        items: ({ query }) => {
+        items: ({ query }: { query: string }) => {
           // Filter suggestions based on the query
-          const suggestions = [
+          const suggestions: SuggestionItem[] = [
             { icon: <Pilcrow />, label: "Paragraph", command: "setParagraph" },
             {
               icon: <Heading1 />,
@@ -113,11 +131,11 @@ export const SlashCommand = Extension.create({
           return fuzzyFilter(query, suggestions);
         },
         render: () => {
-          let component;
-          let popup;
+          let component: ReactRenderer | null = null;
+          let popup: TippyInstance[] | null = null;
 
           return {
-            onStart: (props) => {
+            onStart: (props: SlashCommandProps) => {
               component = new ReactRenderer(SuggestionList, {
                 props: {
                   items: props.items,
@@ -143,39 +161,50 @@ export const SlashCommand = Extension.create({
               });
             },
 
-            onUpdate: (props) => {
-              component.updateProps({
-                items: props.items,
-                command: props.command,
-                editor: props.editor,
-                range: props.range,
-              });
-
-              if (props.items.length === 0) {
-                // Hide the popup if there are no items
-                popup[0].hide();
-              } else {
-                // Show the popup if there are items
-                popup[0].show();
+            onUpdate: (props: SlashCommandProps) => {
+              if (component) {
+                component.updateProps({
+                  items: props.items,
+                  command: props.command,
+                  editor: props.editor,
+                  range: props.range,
+                });
               }
 
-              if (!props.clientRect) return;
-              popup[0].setProps({
-                getReferenceClientRect: props.clientRect,
-              });
+              if (popup && popup[0]) {
+                if (props.items.length === 0) {
+                  // Hide the popup if there are no items
+                  popup[0].hide();
+                } else {
+                  // Show the popup if there are items
+                  popup[0].show();
+                }
+
+                if (!props.clientRect) return;
+                popup[0].setProps({
+                  getReferenceClientRect: props.clientRect,
+                });
+              }
             },
 
-            onKeyDown: (props) => {
+            onKeyDown: (props: SuggestionKeyDownProps) => {
               if (props.event.key === "Escape") {
-                popup[0].hide();
+                if (popup && popup[0]) {
+                  popup[0].hide();
+                }
                 return true;
               }
-              return component.ref?.onKeyDown(props.event);
+              
+              return (component?.ref as any)?.onKeyDown?.(props.event) || false;
             },
 
             onExit: () => {
-              popup[0].destroy();
-              component.destroy();
+              if (popup && popup[0]) {
+                popup[0].destroy();
+              }
+              if (component) {
+                component.destroy();
+              }
             },
           };
         },

@@ -44,7 +44,7 @@ export const CollectionSkeleton = () => {
           .map((_, index) => (
             <div
               key={index}
-              className="h-20 rounded-none bg-card mx-auto border-b-[1px] border-primary/30 overflow-hidden shadow-sm animate-pulse"
+              className="h-20 rounded-none bg-card mx-auto border-b border-primary/30 overflow-hidden shadow-sm animate-pulse"
             />
           ))}
       </div>
@@ -55,7 +55,7 @@ export const CollectionSkeleton = () => {
 export const ProfilePageSkeleton = () => {
   return (
     <div className="p-4 overflow-auto">
-      <div className="max-w-screen-md space-y-8 mx-auto w-full animate-pulse">
+      <div className="max-w-3xl space-y-8 mx-auto w-full animate-pulse">
         <ProfileSkeleton />
         <CollectionSkeleton />
       </div>

@@ -18,27 +18,29 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { Separator } from "../ui/separator";
 import BadgeIcon from "../icons/BadgeIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const NavUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { isMobile, closeSidebar } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   const { authUser, logout, isLoggingOut } = useAuthStore();
   const router = useRouter();
 
   const handleLogout = async () => {
-    await logout(); // perform actual logout
-    setDropdownOpen(false); // close dropdown overlay
-    closeSidebar(); // close sidebar if open
+    await logout();
+    setDropdownOpen(false);
+    setOpenMobile(false); // Changed from closeSidebar()
     const layers = document.querySelectorAll("[data-scroll-locked]");
     if (layers.length === 0) {
       document.body.style.pointerEvents = "";
     }
     router.replace("/");
   };
+  
+
+  if(!authUser) return null;
 
   return (
     <SidebarMenu>
@@ -88,8 +90,8 @@ const NavUser = () => {
           >
             <Link href={`/${authUser?.userName}`}>
               <DropdownMenuItem
-                onClick={() => isMobile && closeSidebar()}
-                className="!h-auto"
+                onClick={() => isMobile && setOpenMobile(false)}
+                className="h-auto!"
               >
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
@@ -126,7 +128,7 @@ const NavUser = () => {
             <DropdownMenuGroup>
               <Link
                 href="/settings/appearance"
-                onClick={() => isMobile && closeSidebar()}
+                onClick={() => isMobile && setOpenMobile(false)}
               >
                 <DropdownMenuItem>
                   <Settings />

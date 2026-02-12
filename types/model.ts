@@ -2,7 +2,7 @@
 import { Types } from "mongoose";
 
 export interface IBase {
-  _id: Types.ObjectId;
+  _id: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,12 +25,13 @@ export interface IUser extends IBase {
 // 📁 ICollection
 export interface ICollection extends IBase {
   name: string;
-  userId: Types.ObjectId;
+  userId: string | IUser;
 
   visibility: "public" | "private";
   slug: string;
+  notes?: INote[];
 
-  collaborators: Types.ObjectId[];
+  collaborators: string[] | IUser[];
 }
 
 // 📝 INote
@@ -38,19 +39,25 @@ export interface INote extends IBase {
   name: string;
   content: string;
 
-  collectionId: Types.ObjectId;
-  userId: Types.ObjectId;
+  // id can be populated to full object.
+  collectionId: string | ICollection; 
+  userId: string | IUser;
 
   visibility: "public" | "private";
-  collaborators: Types.ObjectId[];
+  collaborators: string[] | IUser[];
 
   slug: string;
   contentUpdatedAt: Date;
 }
 
+export type PopulatedNote = Omit<INote, "userId" | "collectionId"> & {
+  userId: IUser;
+  collectionId: ICollection;
+};
+
 // 🖼️ IImage
 export interface IImage extends IBase {
-  userId: Types.ObjectId;
+  userId: string | IUser;
 
   url: string;
   publicId: string;
@@ -71,7 +78,7 @@ export interface ISearchIndex extends IBase {
   lemma: string;
 
   notes: {
-    noteId: Types.ObjectId;
+    noteId: string;
     tf: number;
   }[];
 }
@@ -87,3 +94,18 @@ export type PublicNote = Pick<
   INote,
   "name" | "slug" | "content" | "contentUpdatedAt"
 >;
+
+
+export interface IPagination {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface IGetAllUsersResponse {
+  users: IUser[];
+  pagination: IPagination;
+}

@@ -8,54 +8,74 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AlertCircle, Eye, EyeOff, Loader2, Lock, User2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
 import { z } from "zod";
-
 import { LabeledInput } from "@/components/labeled-input";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
+// ✅ Schema definition
 const loginSchema = z.object({
   identifier: z.string().min(1, "Username or Email is required"),
   password: z.string().min(1, "Password is required"),
 });
 
+// ✅ Type inference from schema
+type LoginFormData = z.infer<typeof loginSchema>;
+
+// ✅ Error type for form fields
+type FormErrors = Partial<Record<keyof LoginFormData, string>>;
+
 const LogInPage = () => {
   const { isLoggingIn, login } = useAuthStore();
-  const [formData, setFormData] = useState({
+
+  // ✅ Typed state
+  const [formData, setFormData] = useState<LoginFormData>({
     identifier: "",
     password: "",
   });
-  const [errors, setErrors] = useState({});
-  const router = useRouter();
 
+  // ✅ Typed errors
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const router = useRouter();
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
-  const handleChange = (e) => {
+  // ✅ Typed event handler
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
     setErrors((prev) => ({ ...prev, [id]: "" }));
   };
 
-  const handleFormSubmit = async (e) => {
+  // ✅ Typed form submit handler
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      loginSchema.parse(formData);
-      const success = await login(formData);
-      if (success) router.push("/");
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors = error.errors.reduce((acc, curr) => {
-          acc[curr.path[0]] = curr.message;
+
+    // ✅ BEST APPROACH - No try/catch needed
+    const result = loginSchema.safeParse(formData);
+
+    if (!result.success) {
+      // Type-safe error handling
+      const fieldErrors = result.error.issues.reduce<FormErrors>(
+        (acc, curr) => {
+          const field = curr.path[0] as keyof LoginFormData;
+          acc[field] = curr.message;
           return acc;
-        }, {});
-        setErrors(fieldErrors);
-      }
+        },
+        {},
+      );
+      setErrors(fieldErrors);
+      return;
     }
+
+    // result.data is fully typed as LoginFormData
+    const success = await login(result.data);
+    if (success) router.push("/");
   };
 
   return (
@@ -87,7 +107,9 @@ const LogInPage = () => {
                   onChange={handleChange}
                   disabled={isLoggingIn}
                   error={errors.identifier}
-                  inputClassName={errors.identifier && "ring-2 ring-red-500"}
+                  inputClassName={
+                    errors.identifier ? "ring-2 ring-red-500" : ""
+                  }
                 />
 
                 {/* Password Field with Forgot Password Link */}
@@ -102,7 +124,9 @@ const LogInPage = () => {
                     disabled={isLoggingIn}
                     error={errors.password}
                     showPasswordToggle
-                    inputClassName={errors.password && "ring-2 ring-red-500"}
+                    inputClassName={
+                      errors.password ? "ring-2 ring-red-500" : ""
+                    }
                   />
                   <Link
                     href="/forgot-password"

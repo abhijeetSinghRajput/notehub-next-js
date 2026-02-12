@@ -17,7 +17,6 @@ import {
   TableHeader,
 } from "@tiptap/extension-table";
 import { Placeholder } from "@tiptap/extensions";
-import Image from "@tiptap/extension-image";
 import { SlashCommand } from "@/components/SlashCommand";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { createLowlight } from "lowlight";
@@ -86,23 +85,17 @@ const AutoPairExtension = Extension.create({
       "`": "`",
     };
 
-    const shortcuts = {};
+    const shortcuts: Record<string, (props: { editor: any }) => boolean> = {};
 
     Object.entries(pairs).forEach(([open, close]) => {
-      shortcuts[open] = ({ editor }) => {
-        // Only auto-pair in code blocks
-        if (!editor.isActive("codeBlock")) {
-          return false;
-        }
-
+      shortcuts[open] = ({ editor }: { editor: any }) => {
+        if (!editor.isActive("codeBlock")) return false;
         const { state } = editor;
         const { selection } = state;
-        const { from, to, empty } = selection;
-
+        const { from, empty } = selection;
         if (!empty) return false;
 
-        const text = open + close;
-        editor.commands.insertContent(text);
+        editor.commands.insertContent(open + close);
         editor.commands.setTextSelection(from + 1);
         return true;
       };
@@ -131,8 +124,8 @@ const CustomCodeBlock = CodeBlockLowlight.extend({
 }).configure({ lowlight });
 
 export const extensions = [
-  Color.configure({ types: [TextStyleKit.name, ListItem.name] }),
-  TextStyleKit.configure({ types: [ListItem.name] }),
+  Color.configure({ types: [ListItem.name] as string[] }),
+  TextStyleKit.configure({ types: [ListItem.name] } as any),
   StarterKit.configure({
     bulletList: {
       keepMarks: true,

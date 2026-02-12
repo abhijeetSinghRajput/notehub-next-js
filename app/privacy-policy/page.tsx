@@ -1,4 +1,3 @@
-import BaseHeader from "@/components/BaseHeader";
 import {
   Card,
   CardContent,
@@ -12,7 +11,7 @@ import React from "react";
 
 const PolicyPage = () => {
   return (
-    <div className="mt-14 tiptap max-w-screen-md m-auto px-4 py-8">
+    <div className="mt-14 tiptap max-w-3xl m-auto px-4 py-8">
       <h1>Privacy Policy – NoteHub</h1>
 
       <p className="italic text-muted-foreground">

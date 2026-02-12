@@ -29,19 +29,22 @@ const Security = () => {
 
         <CardContent className="space-y-8">
           <PasswordUpdateSection
-            updatePassword={updatePassword}
+            updatePassword={async ({ currentPassword, newPassword }) => {
+              await updatePassword({ currentPassword, newPassword });
+            }}
             isResettingPassword={isResettingPassword}
           />
         </CardContent>
       </Card>
   );
-};
+}
 
-function PasswordUpdateSection({ updatePassword, isResettingPassword }) {
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+interface PasswordUpdateSectionProps {
+  updatePassword: (args: { currentPassword: string; newPassword: string }) => Promise<void>;
+  isResettingPassword: boolean;
+}
 
+function PasswordUpdateSection({ updatePassword, isResettingPassword }: PasswordUpdateSectionProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -52,11 +55,11 @@ function PasswordUpdateSection({ updatePassword, isResettingPassword }) {
     confirmPassword: "",
   });
 
-  const validatePassword = (password) => {
+  const validatePassword = (password: string): boolean => {
     return password.length >= 6;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
     // Reset errors

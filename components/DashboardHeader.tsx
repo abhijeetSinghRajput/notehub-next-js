@@ -23,6 +23,7 @@ import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "next/navigation";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
+
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
   const { open, isMobile } = useSidebar();
@@ -30,7 +31,7 @@ const DashboardHeader = () => {
   const router = useRouter();
 
   return (
-    <header className="z-50 flex border-b sticky top-0 bg-background  justify-between h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+    <header className="z-50 flex border-b sticky top-0 bg-background  justify-between h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="max-w-screen-2xl w-full mx-auto flex justify-between">
         <div className="flex items-center gap-2 px-4 min-w-0 flex-1">
           {!open && authUser && (

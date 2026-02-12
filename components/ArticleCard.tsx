@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, memo, lazy, Suspense } from "react";
+import { useEffect, useRef, useState, memo, lazy, Suspense, useCallback } from "react";
 import Link from "next/link";
 import type { EmblaCarouselType } from "embla-carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -26,6 +26,7 @@ import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import BadgeIcon from "./icons/BadgeIcon";
+import { ICollection, INote, IUser } from "@/types/model";
 
 // Lazy load heavy components for better performance
 const Accordion = lazy(() =>
@@ -54,43 +55,23 @@ const TableOfContent = lazy(() => import("./table-of-content"));
 // TYPE DEFINITIONS
 // ==========================================
 
-interface Author {
-  userName: string;
-  fullName: string;
-  avatar?: string;
-  role?: string;
-}
-
-interface Note {
-  _id: string;
-  name: string;
-  slug: string;
-  visibility: string;
-  contentUpdatedAt: string | Date;
-}
-
-interface Collection {
-  name: string;
-  slug: string;
-  visibility: string;
-}
 
 interface ImageData {
   src: string;
   alt: string;
 }
 
-interface Heading {
+export interface Heading {
   id: string;
   text: string;
   level: number;
 }
 
 interface CardHeaderContentProps {
-  author: Author;
+  author: IUser;
   isOwner: boolean;
-  note: Note;
-  collection: Collection;
+  note: INote;
+  collection: ICollection;
   isRenaming: boolean;
   onRename: (value: boolean) => void;
 }
@@ -104,10 +85,10 @@ interface TableOfContentsSectionProps {
 }
 
 interface ArticleCardProps {
-  note: Note;
-  author: Author;
+  note: INote;
+  author: IUser;
   images: ImageData[];
-  collection: Collection;
+  collection: ICollection;
   headings: Heading[];
   description: string;
 }
@@ -136,7 +117,7 @@ const CardHeaderContent = memo<CardHeaderContentProps>(
       if (newName && newName !== note.name) {
         renameNote({
           noteId: note._id,
-          name: newName,
+          newName,
         });
       }
       onRename(false);
@@ -224,6 +205,13 @@ const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
   const [openImageIndex, setOpenImageIndex] = useState<number | null>(null);
   const [enableCarousel, setEnableCarousel] = useState(false);
 
+  const handleSetApi = useCallback((emblaApi?: EmblaCarouselType) => {
+    if (!emblaApi) return;
+    setApi(emblaApi);
+    // Initialize current slide outside of an effect
+    setCurrent(emblaApi.selectedScrollSnap());
+  }, []);
+
   // Defer carousel initialization until after LCP - PERFORMANCE OPTIMIZATION
   useEffect(() => {
     if (typeof requestIdleCallback !== "undefined") {
@@ -237,10 +225,11 @@ const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
 
   useEffect(() => {
     if (!api) return;
-    setCurrent(api.selectedScrollSnap());
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
+    const onSelect = () => setCurrent(api.selectedScrollSnap());
+    api.on("select", onSelect);
+    return () => {
+      api.off("select", onSelect);
+    };
   }, [api]);
 
   if (!enableCarousel) {
@@ -262,7 +251,7 @@ const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
   return (
     <>
       <div className="w-full md:w-[40%] shadow-md border rounded-lg overflow-hidden">
-        <Carousel className="w-full relative" setApi={setApi}>
+        <Carousel className="w-full relative" setApi={handleSetApi}>
           <CarouselContent>
             {images.map((img: ImageData, index: number) => (
               <CarouselItem key={index}>

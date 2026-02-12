@@ -6,10 +6,16 @@ import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import {LabeledInput} from "@/components/labeled-input"
+import { ICollection } from "@/types/model";
 
-const CreateCollection = ({ setSelectedCollection, setActiveTab }) => {
+interface CreateCollectionProps {
+  setSelectedCollection: (collection: ICollection) => void;
+  setActiveTab: (tab: string) => void;
+}
+
+const CreateCollection: React.FC<CreateCollectionProps> = ({ setSelectedCollection, setActiveTab }) => {
   const [collectionName, setCollectionName] = useState("");
-  const [visibility, setVisibility] = useState("private");
+  const [visibility, setVisibility] = useState<"private" | "public">("private");
   const { createCollection, status } = useNoteStore();
 
   const handleAddCollection = async () => {
@@ -27,8 +33,8 @@ const CreateCollection = ({ setSelectedCollection, setActiveTab }) => {
   };
 
   // Handle Enter key press
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && collectionName.trim() && !status.collection.state === "creating") {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && collectionName.trim() && status.collection.state !== "creating") {
       e.preventDefault();
       handleAddCollection();
     }
@@ -62,12 +68,13 @@ const CreateCollection = ({ setSelectedCollection, setActiveTab }) => {
       <div className="px-6 py-6">
         <div className="space-y-4">
           <LabeledInput
+            id="collection-name"
             inputClassName="bg-muted/30"
             label="Collection Name"
             placeholder="Enter collection name"
             value={collectionName}
             onChange={(e) => setCollectionName(e.target.value)}
-            error={!collectionName.trim() && "Collection name is required"}
+            error={!collectionName.trim() ? "Collection name is required" : undefined}
             autoFocus={true}
             onKeyDown={handleKeyDown}
           />

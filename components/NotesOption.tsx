@@ -41,23 +41,30 @@ import { cn } from "@/lib/utils";
 import AvatarStack from "./CollaboratorAvatars";
 import { Badge } from "./ui/badge";
 import FolderIcon from "./icons/FolderIcon";
+import { INote } from "@/types/model";
 
-const NotesOption = React.memo(
+type NotesOptionProps = {
+  trigger: React.ReactNode;
+  note: INote;
+  setIsRenaming: React.Dispatch<React.SetStateAction<boolean>>;
+  className?: string;
+};
+
+const NotesOption = React.memo<NotesOptionProps>(
   ({ trigger, note, setIsRenaming, className }) => {
     const { collections, moveTo, deleteNote, updateNoteVisibility, status } =
       useNoteStore();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
-    useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const { openDialog } = useCollaboratorManager();
 
     const filteredCollections = useMemo(() => {
-      return collections.filter((c) => c._id !== note.collectionId);
+      return collections.filter((c) => String(c._id) !== String(note.collectionId));
     }, [collections, note.collectionId]);
 
     const handleMove = useCallback(
-      async (collectionId) => {
+      async (collectionId: string) => {
         await moveTo({ collectionId, noteId: note._id });
         setIsMoveDialogOpen(false);
       },
@@ -113,8 +120,8 @@ const NotesOption = React.memo(
           icon: <UserPlus2 className="size-4 text-muted-foreground" />,
           label: "Collaborators",
           onClick: () => {
-            (openDialog(note?.collaborators || [], note?._id, "note"),
-              setDropdownOpen(false));
+            openDialog(note?.collaborators || [], note?._id, "note");
+            setDropdownOpen(false);
           },
         },
         {
@@ -143,7 +150,7 @@ const NotesOption = React.memo(
       <>
         {/* Move Dialog */}
         <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
-          <DialogContent className="sm:max-w-lg p-1 overflow-hidden bg-muted !rounded-2xl">
+          <DialogContent className="sm:max-w-lg p-1 overflow-hidden bg-muted rounded-2xl!">
             <div className="flex flex-col h-full">
               <Command className="rounded-xl bg-background/70 border-none">
                 <div className="border-b-2">
@@ -154,9 +161,9 @@ const NotesOption = React.memo(
                   <CommandGroup>
                     {filteredCollections.map((collection, index) => (
                       <CommandItem
-                        key={collection._id || index}
+                        key={collection._id ? String(collection._id) : index}
                         value={collection.name}
-                        onSelect={() => handleMove(collection._id)}
+                        onSelect={() => handleMove(String(collection._id))}
                         className="group flex cursor-pointer items-center gap-4 border-b p-3 rounded-none transition-all hover:bg-muted/50 hover:shadow-sm"
                       >
                         <FolderIcon className="size-12" />
@@ -171,7 +178,7 @@ const NotesOption = React.memo(
                                 variant="outline"
                                 className="text-xs text-muted-foreground"
                               >
-                                {collection.notes.length} notes
+                                {collection.notes?.length} notes
                               </Badge>
                               {collection.visibility === "private" && (
                                 <Badge
@@ -185,7 +192,7 @@ const NotesOption = React.memo(
                             {collection.collaborators?.length > 0 && (
                               <AvatarStack
                                 size="sm"
-                                collaborators={collection.collaborators}
+                                collaborators={collection.collaborators as any}
                               />
                             )}
                           </div>
@@ -267,5 +274,7 @@ const NotesOption = React.memo(
     );
   },
 );
+
+NotesOption.displayName = "NotesOption";
 
 export default NotesOption;
