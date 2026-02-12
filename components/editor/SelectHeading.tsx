@@ -1,4 +1,5 @@
 import React from "react";
+import type { Editor } from "@tiptap/react";
 import { Button } from "../ui/button";
 import {
   Select,
@@ -8,8 +9,8 @@ import {
 } from "@/components/ui/select";
 import { Pilcrow, Heading1, Heading2, Heading3, Heading } from "lucide-react";
 
-export const SelectHeading = ({ editor }) => {
-  const headers = [1, 2, 3];
+export const SelectHeading = ({ editor }: { editor: Editor }) => {
+  const headers: (1 | 2 | 3)[] = [1, 2, 3];
 
   return (
     <Select>

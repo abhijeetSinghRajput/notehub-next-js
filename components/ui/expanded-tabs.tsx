@@ -60,7 +60,7 @@ export function ExpandedTabs({
   };
 
   const Separator = () => (
-    <div className="h-[24px] w-[1.2px] bg-border" aria-hidden="true" />
+    <div className="h-6 w-[1.2px] bg-border" aria-hidden="true" />
   );
 
   return (
@@ -98,7 +98,7 @@ export function ExpandedTabs({
                 "overflow-hidden whitespace-nowrap",
                 "transition-all duration-300 ease-out",
                 showLabel
-                  ? "max-w-[200px] opacity-100 ml-1"
+                  ? "max-w-50 opacity-100 ml-1"
                   : "max-w-0 opacity-0 ml-0",
               )}
             >

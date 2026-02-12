@@ -3,10 +3,10 @@ import { Skeleton } from '../ui/skeleton'
 
 const HomePageNotesSkeleton = () => {
   let collectionLength = localStorage.getItem("collectionLength");
-  collectionLength = collectionLength ? JSON.parse(collectionLength) : [];
+  const parsedLength = collectionLength ? (JSON.parse(collectionLength) as unknown[]).length : 0;
 
   const skeletons = [];
-  for (let i = 0; i < collectionLength && i < 10; ++i) {
+  for (let i = 0; i < parsedLength && i < 10; ++i) {
     skeletons.push(<Skeleton key={i} className="h-28" />);
   }
   return (

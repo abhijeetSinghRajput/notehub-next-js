@@ -1,19 +1,20 @@
-import { NodeViewWrapper } from "@tiptap/react";
+import { NodeViewWrapper, type ReactNodeViewProps } from "@tiptap/react";
 import React, { useRef, useState } from "react";
 
-export default function ResizableImage({ node, updateAttributes }) {
-  const imgRef = useRef(null);
+export default function ResizableImage(props: ReactNodeViewProps) {
+  const { node, updateAttributes } = props;
+  const imgRef = useRef<HTMLImageElement>(null);
   const [isResizing, setIsResizing] = useState(false);
 
-  const startResize = (e, direction) => {
+  const startResize = (e: React.PointerEvent<HTMLSpanElement>, direction: "left" | "right") => {
     e.preventDefault();
     setIsResizing(true);
     e.currentTarget.setPointerCapture(e.pointerId);
 
     const startX = e.clientX;
-    const startWidth = imgRef.current.offsetWidth;
+    const startWidth = imgRef.current?.offsetWidth || 0;
 
-    const onPointerMove = (event) => {
+    const onPointerMove = (event: PointerEvent) => {
       let deltaX = event.clientX - startX;
       if (direction === "left") deltaX = -deltaX;
 

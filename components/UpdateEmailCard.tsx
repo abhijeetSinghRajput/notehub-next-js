@@ -144,7 +144,7 @@ const UpdateEmailCard = () => {
             <div className="flex items-center gap-1.5">
               <strong className="font-semibold">{authUser.fullName}</strong>
               {authUser.role === "admin" && (
-                <BadgeIcon className="size-[14px] text-blue-500" />
+                <BadgeIcon className="size-3.5 text-blue-500" />
               )}
             </div>
             <p className="text-muted-foreground text-xs">{authUser.email}</p>

@@ -2,8 +2,8 @@ import React from "react";
 import { Skeleton } from "../ui/skeleton";
 
 const SidebarSkeleton = () => {
-  const collectionLength =
-    JSON.parse(localStorage.getItem("collectionLength")) || [];
+  const storedLength = localStorage.getItem("collectionLength");
+  const collectionLength = storedLength ? JSON.parse(storedLength) : [];
   return (
     <div className="h-full pt-8 w-full p-2">
       {Array(collectionLength)

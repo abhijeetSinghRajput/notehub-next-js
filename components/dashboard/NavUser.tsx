@@ -74,7 +74,7 @@ const NavUser = () => {
                     {authUser?.fullName}
                   </span>
                   {authUser.role === "admin" && (
-                    <BadgeIcon className="size-[14px] text-blue-500" />
+                    <BadgeIcon className="size-3.5 text-blue-500" />
                   )}
                 </div>
                 <span className="truncate text-xs">{authUser?.email}</span>
@@ -115,7 +115,7 @@ const NavUser = () => {
                       {authUser?.fullName}
                     </span>
                     {authUser.role === "admin" && (
-                      <BadgeIcon className="size-[14px] text-blue-500" />
+                      <BadgeIcon className="size-3.5 text-blue-500" />
                     )}
                   </div>
                   <span className="truncate text-xs">{authUser?.email}</span>

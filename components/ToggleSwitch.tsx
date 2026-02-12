@@ -1,3 +1,4 @@
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ const ToggleSwitch = ({
   return (
     <div className={cn("max-w-md w-max", className)}>
       <div className="flex gap-2 rounded-xl p-1 border bg-muted/50">
-        {options.map(({ label, icon: Icon, value: optionValue }, index) => {
+        {options.map(({ label, icon, value: optionValue }, index) => {
           const isActive = optionValue === value;
 
           return (
@@ -39,7 +40,7 @@ const ToggleSwitch = ({
                 exit={{ filter: "blur(2px)" }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                {React.isValidElement(icon) || typeof icon === "string" ? icon : null}
 
                 <AnimatePresence initial={false}>
                   {isActive && (

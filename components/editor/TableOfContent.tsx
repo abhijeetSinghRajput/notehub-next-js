@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-const TableOfContent = ({className}) => {
-  const [anchors, setAnchors] = useState([]);
+interface Anchor {
+  id: string;
+  dom: HTMLElement;
+  isActive: boolean;
+  level: number;
+  textContent: string;
+}
+
+const TableOfContent = ({ className }: { className?: string }) => {
+  const [anchors, setAnchors] = useState<Anchor[]>([]);
 
   useEffect(() => {
-    const handler = (e) => setAnchors(e.detail);
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<Anchor[]>;
+      setAnchors(customEvent.detail);
+    };
     window.addEventListener("toc-update", handler);
     return () => window.removeEventListener("toc-update", handler);
   }, []);

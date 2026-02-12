@@ -100,7 +100,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({ onImageSelect }) => {
         </div>
       </FileDrop>
 
-      <div className="max-h-[300px] grid grid-cols-3 gap-1 overflow-auto">
+      <div className="max-h-75 grid grid-cols-3 gap-1 overflow-auto">
         {isUploading && <Skeleton className={"aspect-square"} />}
         {isLoadingImages
           ? skeletons

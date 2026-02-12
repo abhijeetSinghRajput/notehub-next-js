@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "mathlive";
+import type { Editor } from "@tiptap/react";
 
 import {
   Dialog,
@@ -19,25 +20,41 @@ import {
 import ToggleSwitch from "../ToggleSwitch";
 import { useEditorStore } from "@/app/stores/useEditorStore";
 
+// Type declaration for math-field JSX element
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "math-field": React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & {
+          value?: string;
+          onInput?: (evt: Event) => void;
+        },
+        HTMLElement
+      >;
+    }
+  }
+}
+
 const displayModes = [
   { label: "inline", value: "inline", icon: AlignHorizontalSpaceAround },
   { label: "block", value: "block", icon: AlignVerticalSpaceAround },
 ];
 
-export default function MathDialog({ editor }) {
+export default function MathDialog({ editor }: { editor: Editor }) {
   const { openMathDialog, closeDialog, openDialog } = useEditorStore();
   const [latex, setLatex] = useState("");
-  const [editMode, setEditMode] = useState("inline"); // 'inline' or 'block'
-  const [pos, setPos] = useState(null);
+  const [editMode, setEditMode] = useState<string | null>("inline"); // 'inline' or 'block'
+  const [pos, setPos] = useState<number | null>(null);
 
   // handler when external click (from extension) opens the dialog
   useEffect(() => {
-    const handler = (e) => {
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent;
       const {
         latex: initialLatex = "",
         pos: nodePos = null,
         mode = "inline",
-      } = e.detail || {};
+      } = customEvent.detail || {};
       setLatex(initialLatex);
       setPos(nodePos);
       setEditMode(mode);
@@ -53,6 +70,7 @@ export default function MathDialog({ editor }) {
     if (pos != null) {
       // editing an existing node
       const node = editor.state.doc.nodeAt(pos);
+      if (!node) return;
       const isBlock = node.type.name === "blockMath";
 
       if (editMode === "block") {
@@ -124,7 +142,7 @@ export default function MathDialog({ editor }) {
 
     // reset after close
     setLatex("");
-    setEditMode(null);
+    setEditMode("inline");
     setPos(null);
   };
 
@@ -137,7 +155,7 @@ export default function MathDialog({ editor }) {
           variant="outline"
           onClick={() => {
             // If user manually opens the dialog via button, we treat it as insert (no edit)
-            setEditMode(null);
+            setEditMode("inline");
             setPos(null);
             setLatex("");
             openDialog("openMathDialog");
@@ -157,17 +175,20 @@ export default function MathDialog({ editor }) {
             className="w-full"
             options={displayModes.map(({ label, value, icon }) => ({ label, value, icon: React.createElement(icon) }))}
             value={editMode || "inline"}
-            onChange={setEditMode}
+            onChange={(val) => setEditMode(val as string)}
           />
         </DialogHeader>
 
-        <math-field
-          onInput={(evt) => setLatex(evt.target.value)}
-          class="w-full border border-border rounded-md overflow-x-auto px-3 py-2 text-2xl bg-muted/30 text-primary ring-offset-2 ring-offset-background focus-within::outline-none focus-within::ring-2 focus-within::ring-ring focus:outline-none focus:ring-2 focus:ring-ring"
-          value={latex}
-        >
-          {latex}
-        </math-field>
+        {/* @ts-ignore */}
+        {React.createElement("math-field", {
+          onInput: (evt: Event) => {
+            const target = evt.target as HTMLInputElement;
+            setLatex(target.value);
+          },
+          className: "w-full border border-border rounded-md overflow-x-auto px-3 py-2 text-2xl bg-muted/30 text-primary ring-offset-2 ring-offset-background focus-within::outline-none focus-within::ring-2 focus-within::ring-ring focus:outline-none focus:ring-2 focus:ring-ring",
+          value: latex,
+        }, latex)}
+        {/* @ts-ignore */}
 
         <DialogFooter className={"justify-between"}>
           <Button variant="destructive" onClick={deleteMath}>

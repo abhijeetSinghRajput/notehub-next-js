@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import type { Editor } from "@tiptap/react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,7 @@ import { ImageIcon } from "lucide-react";
 import FileDropZone from "../FileDropZone";
 import { useEditorStore } from "@/app/stores/useEditorStore";
 
-const AddImageDialog = ({ editor }) => {
+const AddImageDialog = ({ editor }: { editor: Editor }) => {
   const { openImageDialog, closeDialog, openDialog } = useEditorStore();
 
   const handleSetImage = useCallback(

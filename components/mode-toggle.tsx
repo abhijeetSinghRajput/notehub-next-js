@@ -20,7 +20,7 @@ export function ModeToggle() {
 
   return (
     <Select value={theme} onValueChange={setTheme}>
-      <SelectTrigger className="w-[120px] h-8">
+      <SelectTrigger className="w-30 h-8">
         <div className="flex items-center gap-2">
           <SelectValue placeholder="Select theme" />
         </div>

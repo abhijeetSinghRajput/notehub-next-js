@@ -35,7 +35,7 @@ import { useDraftStore } from "@/app/stores/useDraftStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useRouter } from "next/navigation";
 
-export const MenuBar = ({ noteId }) => {
+export const MenuBar = ({ noteId }: { noteId: string }) => {
   const { editor } = useCurrentEditor();
   const {authUser} = useAuthStore();
   const router = useRouter();
@@ -93,9 +93,9 @@ export const MenuBar = ({ noteId }) => {
     let content = editor
       .getHTML()
       .replace(/[^\S\r\n]/g, " ")
-      .replace(/<table/g, '<div class="tableWrapper"><table')
+      .replace(/<table/g, '<div className="tableWrapper"><table')
       .replace(/<\/table>/g, "</table></div>")
-      .replace(/<pre/g, "<div class='relative pre-wrapper'><pre")
+      .replace(/<pre/g, "<div className='relative pre-wrapper'><pre")
       .replace(/<\/pre>/g, "</pre></div>");
 
     if (isEmptyContent(content)) content = "";
@@ -123,7 +123,7 @@ export const MenuBar = ({ noteId }) => {
     const note = await getNoteContent(noteId);
 
     if (note !== null) {
-      editor.commands.setContent(note.content, false); // replace editor content
+      editor.commands.setContent(note.content); // replace editor content
     } else {
       editor.commands.clearContent(); // fallback if note not found
     }
@@ -140,8 +140,8 @@ export const MenuBar = ({ noteId }) => {
             tooltip={tooltip}
             key={index}
             size="icon"
-            onClick={() => editor.chain().focus()[command]().run()}
-            disabled={!editor.can().chain().focus()[command]().run()}
+            onClick={() => (editor.chain().focus() as any)[command]().run()}
+            disabled={!(editor.can().chain().focus() as any)[command]().run()}
             variant={editor.isActive(name) ? "secondary" : "ghost"}
           >
             {icon}
@@ -152,10 +152,10 @@ export const MenuBar = ({ noteId }) => {
             tooltip={tooltip}
             key={index}
             size="icon"
-            onClick={() => editor.chain().focus()[command]().run()}
+            onClick={() => (editor.chain().focus() as any)[command]().run()}
             variant={editor.isActive(name) ? "secondary" : "ghost"}
             disabled={
-              name === "code" && !editor.can().chain().focus()[command]().run()
+              name === "code" && !(editor.can().chain().focus() as any)[command]().run()
             }
           >
             {icon}
@@ -167,7 +167,7 @@ export const MenuBar = ({ noteId }) => {
             tooltip={tooltip}
             key={index}
             size="icon"
-            onClick={() => editor.chain().focus()[command]().run()}
+            onClick={() => (editor.chain().focus() as any)[command]().run()}
             variant={editor.isActive(name) ? "secondary" : "ghost"}
           >
             {icon}
@@ -181,14 +181,14 @@ export const MenuBar = ({ noteId }) => {
             size="icon"
             variant="ghost"
             onClick={() => {
-              if (editor.can()[command](name[0])) {
-                editor.chain().focus()[command](name[0]).run();
-              } else if (editor.can()[command](name[1])) {
-                editor.chain().focus()[command](name[1]).run();
+              if ((editor.can() as any)[command](name[0])) {
+                (editor.chain().focus() as any)[command](name[0]).run();
+              } else if ((editor.can() as any)[command](name[1])) {
+                (editor.chain().focus() as any)[command](name[1]).run();
               }
             }}
             disabled={
-              !editor.can()[command](name[0]) && !editor.can()[command](name[1])
+              !(editor.can() as any)[command](name[0]) && !(editor.can() as any)[command](name[1])
             }
           >
             {icon}
@@ -201,8 +201,8 @@ export const MenuBar = ({ noteId }) => {
             key={index}
             size="icon"
             variant="ghost"
-            onClick={() => editor.chain().focus()[command]().run()}
-            disabled={!editor.can().chain().focus()[command]().run()}
+            onClick={() => (editor.chain().focus() as any)[command]().run()}
+            disabled={!(editor.can().chain().focus() as any)[command]().run()}
           >
             {icon}
           </Button>
@@ -213,7 +213,7 @@ export const MenuBar = ({ noteId }) => {
             tooltip={tooltip}
             key={index}
             size="icon"
-            onClick={() => editor.chain().focus()[command](name).run()}
+            onClick={() => (editor.chain().focus() as any)[command](name).run()}
             variant={
               editor.isActive({ textAlign: name }) ? "secondary" : "ghost"
             }
@@ -224,12 +224,12 @@ export const MenuBar = ({ noteId }) => {
         <SelectHeading editor={editor} />
 
         <ColorPicker
-          icon={HighlighterIcon}
-          tooltiptooltip="Highlighter"
+          icon={<HighlighterIcon />}
+          tooltipMessage="Highlighter"
           colors={COLORS}
           activeColor={COLORS.find((color) =>
             editor.isActive("highlight", { color }),
-          )}
+          ) || ""}
           onColorSelect={(color) =>
             editor.chain().focus().setHighlight({ color }).run()
           }
@@ -238,12 +238,12 @@ export const MenuBar = ({ noteId }) => {
         />
 
         <ColorPicker
-          icon={Palette}
-          tooltiptooltip="Set Color"
+          icon={<Palette />}
+          tooltipMessage="Set Color"
           colors={COLORS}
           activeColor={COLORS.find((color) =>
             editor.isActive("textStyle", { color }),
-          )}
+          ) || ""}
           onColorSelect={(color) =>
             editor.chain().focus().setColor(color).run()
           }

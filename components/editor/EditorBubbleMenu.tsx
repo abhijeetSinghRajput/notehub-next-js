@@ -19,7 +19,8 @@ export default function EditorBubbleMenu() {
   const { align } = useEditorState({
     editor,
     selector: ({ editor }) => {
-      const node = editor.state.selection.node;
+      const { $from } = editor.state.selection;
+      const node = $from.parent;
       return node?.type.name === "image"
         ? { align: node.attrs.align ?? "center" }
         : { align: null };

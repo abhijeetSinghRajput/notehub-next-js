@@ -233,8 +233,8 @@ const NotePageClient = () => {
           "pre-header rounded-t-lg w-full flex items-center justify-between py-2 px-4";
 
         header.innerHTML = `
-        <span class="text-xs font-medium text-[#b9b9b9]">${language}</span>
-        <button class="copy-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-accent-foreground">
+        <span className="text-xs font-medium text-[#b9b9b9]">${language}</span>
+        <button className="copy-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-accent-foreground">
           ${copyIcon}
         </button>
       `;

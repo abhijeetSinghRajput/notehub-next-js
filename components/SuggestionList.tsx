@@ -8,12 +8,25 @@ import React, {
 import { Button } from "@/components/ui/button";
 import { useEditorStore } from "@/app/stores/useEditorStore";
 
-const SuggestionList = forwardRef(
-  ({ items = [], editor, command, range }, ref) => {
+const SuggestionList = forwardRef<
+  { onKeyDown: (event: KeyboardEvent) => boolean },
+  {
+    items?: Array<{
+      command: string;
+      dialog?: string;
+      props?: Record<string, unknown>;
+      icon?: React.ReactNode;
+      label?: string;
+    }>;
+    editor: any;
+    command: () => void;
+    range: any;
+  }
+>(({ items = [], editor, command, range }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     // Select the item and execute the command
-    const selectItem = (index) => {
+    const selectItem = (index: number) => {
       const item = items[index];
       if (!item) return;
 
@@ -21,8 +34,8 @@ const SuggestionList = forwardRef(
       editor.chain().focus().deleteRange(range).run();
 
       // CUSTOM → open dialog
-      if (item.command === "custom") {
-        useEditorStore.getState().openDialog(item.dialog);
+      if (item.command === "custom" && item.dialog) {
+        useEditorStore.getState().openDialog(item.dialog as "openImageDialog" | "openMathDialog" | "openLinkDialog");
         command(); // close suggestion popup
         return;
       }
@@ -50,14 +63,14 @@ const SuggestionList = forwardRef(
     };
 
     // Keydown event handlers
-    const keyHandlers = {
+    const keyHandlers: Record<string, () => void> = {
       ArrowUp: upHandler,
       ArrowDown: downHandler,
       Enter: enterHandler,
     };
 
     useImperativeHandle(ref, () => ({
-      onKeyDown: (event) => {
+      onKeyDown: (event: KeyboardEvent) => {
         if (!keyHandlers[event.key]) return false;
 
         keyHandlers[event.key]();
@@ -75,11 +88,11 @@ const SuggestionList = forwardRef(
 
     return (
       <div className="suggestion-list space-y-1">
-        {items.map((item, index) => (
+        {items.map((item: any, index: number) => (
           <Button
             key={index}
             variant="ghost"
-            className={`w-full hover:bg-accent/50 justify-between py-[6px] px-2 h-8 text-muted-foreground ${
+            className={`w-full hover:bg-accent/50 justify-between py-1.5 px-2 h-8 text-muted-foreground ${
               index === selectedIndex
                 ? "bg-accent hover:bg-accent text-accent-foreground"
                 : ""

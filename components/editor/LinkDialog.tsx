@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import type { Editor } from "@tiptap/react";
 import {
   Dialog,
   DialogContent,
@@ -10,11 +11,11 @@ import { ExternalLink, LinkIcon, Trash2 } from "lucide-react";
 import { Input } from "../ui/input";
 import { useEditorStore } from "@/app/stores/useEditorStore";
 
-export function LinkDialog({ editor }) {
+export function LinkDialog({ editor }: { editor: Editor }) {
   const { openLinkDialog, closeDialog, openDialog } = useEditorStore();
 
   const [linkUrl, setLinkUrl] = useState("");
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Set initial link value when dialog opens
   useEffect(() => {

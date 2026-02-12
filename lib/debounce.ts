@@ -1,7 +1,10 @@
-export function debounce(fn, delay = 300) {
-  let timer;
+export function debounce<T extends (...args: unknown[]) => void>(
+  fn: T,
+  delay: number = 300
+): (...args: Parameters<T>) => void {
+  let timer: NodeJS.Timeout | undefined;
 
-  return function (...args) {
+  return function (this: unknown, ...args: Parameters<T>) {
     clearTimeout(timer);
     timer = setTimeout(() => {
       fn.apply(this, args);

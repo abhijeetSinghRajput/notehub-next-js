@@ -114,7 +114,7 @@ const Tiptap = () => {
 
   return (
     <EditorProvider
-      slotBefore={<MenuBar noteId={noteId} />}
+      slotBefore={<MenuBar noteId={noteId || ""} />}
       extensions={extensions}
       content={note.content}
       onCreate={({ editor }) => migrateMathStrings(editor)}

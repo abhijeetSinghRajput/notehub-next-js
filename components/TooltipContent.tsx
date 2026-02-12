@@ -1,7 +1,7 @@
 import { InfoIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipTrigger, TooltipContent as TooltipContentUI } from '@/components/ui/tooltip'
 
 export const TooltipContent = () => {
   return (
@@ -11,7 +11,7 @@ export const TooltipContent = () => {
           Content
         </Button>
       </TooltipTrigger>
-      <TooltipContent className='max-w-64 py-3 text-pretty'>
+      <TooltipContentUI className='max-w-64 py-3 text-pretty'>
         <div className='space-y-1'>
           <div className='flex items-center gap-2'>
             <InfoIcon className='size-4' />
@@ -22,7 +22,7 @@ export const TooltipContent = () => {
             without requiring tooltip interaction.
           </p>
         </div>
-      </TooltipContent>
+      </TooltipContentUI>
     </Tooltip>
   )
 }
