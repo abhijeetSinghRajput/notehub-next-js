@@ -220,7 +220,7 @@ const ProfilePage = () => {
 
           <div className="flex flex-col p-0">
             {noPhoto ? (
-              <div className="relative w-[300px] h-[300px] p-4">
+              <div className="relative w-75 h-75 p-4">
                 <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground h-full">
                   <div className="p-8 rounded-full bg-input/30">
                     <ImageOff className="size-16 stroke-1" />
@@ -237,7 +237,7 @@ const ProfilePage = () => {
                       : user?.cover) || "/avatar.svg"
                   }
                   alt={`user ${currentImageType}`}
-                  className="max-w-[100vw] max-h-[80vh] min-h-[300px] object-contain"
+                  className="max-w-[100vw] max-h-[80vh] min-h-75 object-contain"
                   style={{
                     width:
                       currentImageType === "avatar"
@@ -252,7 +252,10 @@ const ProfilePage = () => {
             {isOwner && (
               <DialogFooter className="p-4 border-t sticky bottom-0 bg-background">
                 <div className="grid grid-cols-2 gap-2 w-full">
-                  <Label htmlFor={currentImageType ?? undefined} className="contents">
+                  <Label
+                    htmlFor={currentImageType ?? undefined}
+                    className="contents"
+                  >
                     <input
                       type="file"
                       id={currentImageType ?? undefined}
@@ -323,22 +326,29 @@ const ProfilePage = () => {
           isLoading && "animate-pulse",
         )}
       >
-        <Avatar className="w-full relative h-48 sm:h-64 rounded-none overflow-hidden">
+        <Avatar
+          className="relative rounded-none max-h-48 h-full w-full overflow-hidden cursor-pointer"
+          style={{ aspectRatio: "3/1" }}
+          onClick={() => {
+            setCurrentImageType("cover");
+            setIsImageDialogOpen(true);
+          }}
+        >
           <AvatarImage
-            src={user?.cover || "/placeholder.svg"}
-            alt="User cover photo"
-            loading="eager" // important for LCP
-            fetchPriority="high" // important for LCP
+            src={user?.cover}
+            alt="User cover Photo"
+            loading="eager" // ⚠️ important for LCP
+            fetchPriority="high" // ⚠️ important for LCP
             decoding="async"
-            className="w-full h-full object-cover"
+            className="w-full h-full max-h-48 object-cover"
             style={{ aspectRatio: "3 / 1" }}
           />
-          <AvatarFallback className="w-full h-full brightness-[0.2]">
+          <AvatarFallback className="rounded-none brightness-[0.2]">
             <img
               src="/placeholder.svg"
               alt="placeholder"
               className="w-full h-full object-cover"
-              style={{ aspectRatio: "3 / 1" }}
+              style={{ aspectRatio: "3/1" }}
             />
           </AvatarFallback>
         </Avatar>

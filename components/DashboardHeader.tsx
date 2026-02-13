@@ -1,6 +1,6 @@
 "use client";
 
-import { SidebarOpenTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -21,29 +21,34 @@ import { useGithubStore } from "@/app/stores/useGithubStore";
 import Link from "next/link";
 import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "next/navigation";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
-  const { open, isMobile } = useSidebar();
-  const githubStarCount = useGithubStore((s) => s.starCount);  
+  const { open, isMobile, openMobile } = useSidebar();
+  const githubStarCount = useGithubStore((s) => s.starCount);
   const router = useRouter();
+  const shouldShowTrigger = isMobile ? !openMobile : !open;
 
   return (
     <header className="z-50 flex border-b sticky top-0 bg-background  justify-between h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="max-w-screen-2xl w-full mx-auto flex justify-between">
         <div className="flex items-center gap-2 px-4 min-w-0 flex-1">
-          {!open && authUser && (
+          {shouldShowTrigger && authUser && (
             <>
               <TooltipWrapper message={"Ctrl + B"}>
-                <SidebarOpenTrigger className="-ml-1 bg-muted/50 size-11 rounded-full border sm:border-none sm:size-8 sm:bg-transparent sm:rounded-md" />
+                <SidebarTrigger className="-ml-1 bg-muted/50 size-11 rounded-full border sm:border-none sm:size-8 sm:bg-transparent sm:rounded-md" />
               </TooltipWrapper>
               <Separator orientation="vertical" className="mr-2 h-4" />
             </>
           )}
 
-          <AppBreadcrumbs/>
+          <AppBreadcrumbs />
         </div>
 
         <div className="shrink-0 mr-4 flex items-center gap-2">
@@ -69,7 +74,9 @@ const DashboardHeader = () => {
             <>
               <AddNoteDrawer
                 trigger={
-                  <Button tooltip="Create Notes" className={`size-8`}
+                  <Button
+                    tooltip="Create Notes"
+                    className={`size-8`}
                     aria-label="Add Note Drawer trigger"
                   >
                     <Plus className="h-4 w-4" />

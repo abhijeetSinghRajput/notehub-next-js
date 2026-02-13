@@ -62,6 +62,7 @@ function CommandInput({
   className,
   wrapperClassName,
   iconClassName,
+  children,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input> & {
   wrapperClassName?: string;
@@ -84,6 +85,7 @@ function CommandInput({
         )}
         {...props}
       />
+      {children}
     </div>
   );
 }

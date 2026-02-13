@@ -36,7 +36,7 @@ const Colors = ({ currentTheme, onThemeChange }: ColorsProps) => {
   return (
     <div className="space-y-2">
       <Label>Color</Label>
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {themeOptions.map(({ name, previewColors }) => {
           const isSelected = currentTheme === name;
 
@@ -56,8 +56,8 @@ const Colors = ({ currentTheme, onThemeChange }: ColorsProps) => {
             >
               {/* Theme Name with Check */}
               <div className="flex items-center justify-center w-full gap-2">
-                <span className="text-sm capitalize font-medium">{name}</span>
-                {isSelected && <Check className="h-4 w-4 shrink-0" />}
+                <span className="text-white/80 text-sm capitalize font-medium">{name}</span>
+                {isSelected && <Check className="text-white/80 h-4 w-4 shrink-0" />}
               </div>
 
               {/* Color Preview Circles */}
@@ -65,7 +65,7 @@ const Colors = ({ currentTheme, onThemeChange }: ColorsProps) => {
                 {previewColors.map((colorHex, index) => (
                   <span
                     key={index}
-                    className="aspect-square max-w-8 w-full rounded-sm outline -outline-offset-1 outline-black/10 sm:rounded-md dark:outline-white/10"
+                    className="aspect-square size-7 rounded-full border-2 border-white/80 -mr-4"
                     style={{ backgroundColor: colorHex }}
                     aria-hidden="true"
                   />

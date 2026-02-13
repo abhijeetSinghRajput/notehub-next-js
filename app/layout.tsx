@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import {
-  Merriweather,
-  Roboto,
-  Source_Serif_4,
-} from "next/font/google";
+import { Merriweather, Roboto, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 
 import "katex/dist/katex.min.css";
@@ -45,6 +41,13 @@ const sourceSerif4 = Source_Serif_4({
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+  },
   title: {
     default: "NoteHub",
     template: "%s | NoteHub",
@@ -101,6 +104,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link
+          rel="preconnect"
+          href="https://notehub-38kp.onrender.com"
+          crossOrigin=""
+        />
+        <link rel="dns-prefetch" href="https://notehub-38kp.onrender.com" />
+      </head>
       <body
         className={`
           ${merriweather.variable} 
@@ -124,8 +135,8 @@ export default function RootLayout({
                 </SidebarProvider>
               </TooltipProvider>
             </CollaboratorManagerProvider>
-            
-            <Toaster/>
+
+            <Toaster />
           </ThemeProvider>
         </AuthProvider>
       </body>

@@ -182,7 +182,7 @@ const ForgotPasswordPage = () => {
                   <div className="flex gap-1.5 items-center">
                     <strong className="font-semibold">{user.fullName}</strong>
                     {user.role === "admin" && (
-                      <BadgeIcon className="size-[14px] text-blue-500" />
+                      <BadgeIcon className="size-3.5 text-blue-500" />
                     )}
                   </div>
                   <p className="text-muted-foreground text-xs">{user.email}</p>

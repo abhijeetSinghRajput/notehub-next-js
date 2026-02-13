@@ -33,10 +33,10 @@ const ChooseCollection: React.FC<ChooseCollectionProps> = ({
   };
 
   return (
-    <Command className="max-w-3xl mx-auto bg-transparent flex flex-col h-[70vh] rounded-none">
-      <div className="shrink-0">
+    <Command className="max-w-3xl  mx-auto bg-transparent flex flex-col h-[70vh] rounded-none">
+      <div className="shrink-0 py-4">
         <CommandInput
-          wrapperClassName={cn("gap-3", collections?.length === 0 && "hidden")}
+          wrapperClassName={cn("gap-3 border-none", collections?.length === 0 && "hidden")}
           iconClassName="hidden"
           className="flex h-10 w-full my-2 rounded-lg border ring-offset-1 ring-offset-background border-input bg-muted/20 px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
           placeholder="Search Collection..."

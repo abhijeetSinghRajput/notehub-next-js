@@ -8,11 +8,11 @@ import NavUser from "@/components/dashboard/NavUser";
 
 import {
   Sidebar,
-  SidebarCloseTrigger,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useNoteStore } from "@/app/stores/useNoteStore";
@@ -80,7 +80,7 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
         ) : (
           <div className="flex items-center justify-between">
             <div className="flex gap-2 items-center">
-              <SidebarCloseTrigger
+              <SidebarTrigger
                 tooltip={"Ctrl + B"}
                 aria-label="close sidebar"
               />
