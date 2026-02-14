@@ -8,6 +8,7 @@ import { useNoteStore } from "@/app/stores/useNoteStore";
 import FileIcon from "../icons/FileIcon";
 import { useRouter } from "next/navigation";
 import { ICollection } from "@/types/model";
+import { cn } from "@/lib/utils";
 
 interface AddNoteProps {
   setSelectedCollection: (collection: ICollection | null) => void;
@@ -105,9 +106,9 @@ const AddNote: React.FC<AddNoteProps> = ({
 
           <div className="bg-muted/30 relative flex w-full items-start gap-2 rounded-md border p-4 shadow-xs outline-none">
             <Switch
-              checked={visibility === "public"}
+              checked={visibility === "private"}
               onCheckedChange={(value) =>
-                setVisibility(value ? "public" : "private")
+                setVisibility(value ? "private" : "public")
               }
               id="note-visibility"
               className="order-1 after:absolute after:inset-0"
@@ -118,18 +119,14 @@ const AddNote: React.FC<AddNoteProps> = ({
                 Visibility
               </div>
               <div className="w-full flex grow items-start gap-3">
-                {visibility === "private" ? (
-                  <Lock size="20" />
-                ) : (
-                  <Globe size="20" />
-                )}
+                <Lock size="20" />
                 <div className="grid grow gap-2">
-                  <Label htmlFor={"note-visibility"} className="capitalize">
-                    {visibility}
+                  <Label htmlFor={"note-visibility"} className={cn("capitalize", visibility !== "private" ? "text-muted-foreground" : "")}>
+                    Private
                   </Label>
                   <p
                     id={`note-visibility-description`}
-                    className="text-muted-foreground text-xs"
+                    className="text-muted-foreground text-sm"
                   >
                     {visibility === "public" ? (
                       selectedCollection?.visibility === "public" ? (

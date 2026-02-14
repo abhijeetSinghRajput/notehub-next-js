@@ -274,7 +274,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onUserSelect, currentCollaborator
       </div>
 
       {searchResults.length > 0 && (
-        <div className="absolute z-50 top-[calc(100%+4px)] bg-background p-1 w-full border rounded-md shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50  top-[calc(100%+4px)] bg-background p-1 w-full border rounded-md shadow-lg max-h-60 overflow-y-auto">
           {searchResults.map((user) => (
             <div
               key={user._id}
@@ -318,7 +318,7 @@ const CollaboratorsList = ({
         return (
           <Card
             key={user._id}
-            className="p-2 flex items-center justify-between"
+            className="p-2 flex flex-row items-center justify-between"
           >
             <UserInfo user={user} className={isRemoved ? "opacity-50" : ""} />
             <Button

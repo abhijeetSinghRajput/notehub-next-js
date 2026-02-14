@@ -6,11 +6,11 @@ export const runtime = "edge";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
-  const noteTitle = searchParams.get("title") || "Untitled Note";
-  const collection = searchParams.get("collection") || "General";
+  const collectionTitle = searchParams.get("title") || "Untitled Collection";
+  const totalNotes = searchParams.get("totalNotes") || "0";
   const authorName = searchParams.get("authorName") || "Anonymous";
   const authorUsername = searchParams.get("authorUsername") || "@anonymous";
-  const authorAvatar = searchParams.get("authorAvatar") || "https://placehold.net/avatar.png";
+  const authorAvatar = searchParams.get("authorAvatar") || "https://i.pravatar.cc/300";
 
   return new ImageResponse(
     <div
@@ -19,19 +19,20 @@ export async function GET(req: NextRequest) {
         height: "630px",
         display: "flex",
         background: "white",
-        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        fontFamily:
+          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         position: "relative",
       }}
     >
       {/* Left Section - Content */}
       <div
         style={{
-          flex: 2,
+          flex:  2,
           background: "white",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          padding: "60px 80px",
+          justifyContent: "space-between", // Changed from "center" to "space-between"
+          padding: "60px 80px", // Reduced top/bottom padding
         }}
       >
         {/* Logo at top */}
@@ -40,10 +41,11 @@ export async function GET(req: NextRequest) {
             display: "flex",
             gap: "12px",
             alignItems: "center",
+            marginBottom: "40px", // Add space below logo
           }}
         >
           <svg
-            width="48"
+            width="48" // Slightly reduced size
             height="48"
             viewBox="0 0 128 128"
             fill="none"
@@ -88,7 +90,7 @@ export async function GET(req: NextRequest) {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-            flex: 1,
+            flex: 1, // Take remaining space
           }}
         >
           {/* Title - Large for social media */}
@@ -100,27 +102,12 @@ export async function GET(req: NextRequest) {
               color: "#111111",
               display: "flex",
               flexWrap: "wrap",
-              marginBottom: "16px",
+              marginBottom: "32px",
               maxWidth: "700px",
               letterSpacing: "-0.02em",
             }}
           >
-            {noteTitle}
-          </div>
-
-          <div
-            style={{
-              fontSize: "58px",
-              lineHeight: 1.1,
-              color: "#666666",
-              display: "flex",
-              flexWrap: "wrap",
-              marginBottom: "48px",
-              maxWidth: "700px",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            /{collection}
+            {collectionTitle}
           </div>
 
           {/* Author - Large enough to read */}
@@ -128,8 +115,20 @@ export async function GET(req: NextRequest) {
             style={{
               display: "flex",
               alignItems: "center",
+              gap: "24px",
             }}
           >
+            <img
+              src={authorAvatar}
+              width="120"
+              height="120"
+              style={{
+                borderRadius: "50%",
+                display: "flex",
+                border: "3px solid #f3f4f6",
+              }}
+              alt={authorName}
+            />
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div
                 style={{
@@ -155,44 +154,43 @@ export async function GET(req: NextRequest) {
         </div>
       </div>
 
-      {/* Right Section - Dark Gradient with Large Image */}
+      {/* Right Section - Dark Gradient */}
       <div
         style={{
           flex:  1,
           background: "linear-gradient(135deg, #171717 0%, #0a0a0a 100%)",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
           justifyContent: "center",
-          padding: "40px",
-          position: "relative",
+          padding: "80px",
         }}
       >
-        {/* Large Image Container - About half the height of the card */}
+        {/* Large Number - Very visible */}
         <div
           style={{
-            width: "280px",
-            height: "280px",
-            borderRadius: "24px",
-            overflow: "hidden",
-            display: "flex",
-            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
+            color: "white",
+            fontSize: "120px",
+            fontWeight: 800,
+            lineHeight: 0.8,
             marginBottom: "24px",
-            border: "4px solid rgba(255, 255, 255, 0.1)",
+            display: "flex",
+            opacity: 0.95,
           }}
         >
-          <img
-            src={authorAvatar}
-            width="280"
-            height="280"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "flex",
-            }}
-            alt="Collection"
-          />
+          {totalNotes}
+        </div>
+
+        {/* Label */}
+        <div
+          style={{
+            color: "#94a3b8",
+            fontSize: "32px",
+            display: "flex",
+            fontWeight: 500,
+            marginBottom: "80px",
+          }}
+        >
+          total notes
         </div>
       </div>
     </div>,

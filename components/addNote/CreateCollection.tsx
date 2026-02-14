@@ -5,22 +5,27 @@ import FolderPlusIcon from "../icons/FolderPlusIcon";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { useNoteStore } from "@/app/stores/useNoteStore";
-import {LabeledInput} from "@/components/labeled-input"
+import { LabeledInput } from "@/components/labeled-input";
 import { ICollection } from "@/types/model";
+import { cn } from "@/lib/utils";
 
 interface CreateCollectionProps {
   setSelectedCollection: (collection: ICollection) => void;
   setActiveTab: (tab: string) => void;
 }
 
-const CreateCollection: React.FC<CreateCollectionProps> = ({ setSelectedCollection, setActiveTab }) => {
+const CreateCollection: React.FC<CreateCollectionProps> = ({
+  setSelectedCollection,
+  setActiveTab,
+}) => {
   const [collectionName, setCollectionName] = useState("");
   const [visibility, setVisibility] = useState<"private" | "public">("private");
   const { createCollection, status } = useNoteStore();
 
   const handleAddCollection = async () => {
-    if(!collectionName.trim() || status.collection.state === "creating") return;
-    
+    if (!collectionName.trim() || status.collection.state === "creating")
+      return;
+
     const collection = await createCollection({
       name: collectionName,
       visibility,
@@ -34,7 +39,11 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ setSelectedCollecti
 
   // Handle Enter key press
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && collectionName.trim() && status.collection.state !== "creating") {
+    if (
+      e.key === "Enter" &&
+      collectionName.trim() &&
+      status.collection.state !== "creating"
+    ) {
       e.preventDefault();
       handleAddCollection();
     }
@@ -44,16 +53,16 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ setSelectedCollecti
     <div>
       <div className="sticky top-0 z-10 border-b bg-background px-6 py-4">
         <div className="flex items-center gap-4">
-            <Button
-              tooltip="Back"
-              variant="secondary"
-              size="icon"
-              onClick={() => setActiveTab("choose-collection")}
-              className="h-10 w-10"
-              aria-label="back"
-            >
-              <ChevronLeft />
-            </Button>
+          <Button
+            tooltip="Back"
+            variant="secondary"
+            size="icon"
+            onClick={() => setActiveTab("choose-collection")}
+            className="h-10 w-10"
+            aria-label="back"
+          >
+            <ChevronLeft />
+          </Button>
           <div className="flex gap-2 items-center">
             <FolderPlusIcon className="size-12 opacity-70" />
             <div>
@@ -75,16 +84,18 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ setSelectedCollecti
             placeholder="Enter collection name"
             value={collectionName}
             onChange={(e) => setCollectionName(e.target.value)}
-            error={!collectionName.trim() ? "Collection name is required" : undefined}
+            error={
+              !collectionName.trim() ? "Collection name is required" : undefined
+            }
             autoFocus={true}
             onKeyDown={handleKeyDown}
           />
 
           <div className="bg-muted/30 relative flex w-full items-start gap-2 rounded-md border p-4 shadow-xs outline-none">
             <Switch
-              checked={visibility === "public"}
+              checked={visibility === "private"}
               onCheckedChange={(value) =>
-                setVisibility(value ? "public" : "private")
+                setVisibility(value ? "private" : "public")
               }
               id="collection-visibility"
               className="order-1 after:absolute after:inset-0"
@@ -95,25 +106,38 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ setSelectedCollecti
                 Visibility
               </div>
               <div className="w-full flex grow items-start gap-3">
-                {visibility === "private" ? (
-                  <Lock size="20" />
-                ) : (
-                  <Globe size="20" />
-                )}
+                <Lock size="20" />
                 <div className="grid grow gap-2">
                   <Label
                     htmlFor={"collection-visibility"}
-                    className="capitalize"
+                    className={cn(
+                      "capitalize",
+                      visibility !== "private" ? "text-muted-foreground" : "",
+                    )}
                   >
-                    {visibility}
+                    private
                   </Label>
                   <p
-                    id={`collection-visibility-description`}
-                    className="text-muted-foreground text-xs"
+                    id="collection-visibility-description"
+                    className="text-muted-foreground text-sm"
                   >
-                    {visibility === "public"
-                      ? "This collection will be visible to everyone."
-                      : "This collection will be private and only visible to your collaborators."}
+                    {visibility === "public" ? (
+                      <>
+                        This collection will be visible to{" "}
+                        <span className="text-primary underline">everyone</span>
+                        .
+                      </>
+                    ) : (
+                      <>
+                        This collection will be{" "}
+                        <span className="text-primary underline">private</span>{" "}
+                        and only visible to your{" "}
+                        <span className="text-primary underline">
+                          collaborators
+                        </span>
+                        .
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
@@ -132,7 +156,9 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ setSelectedCollecti
           <Button
             className="flex-1 gap-2 h-12 rounded-xl"
             onClick={handleAddCollection}
-            disabled={!collectionName.trim() || status.collection.state === "creating"}
+            disabled={
+              !collectionName.trim() || status.collection.state === "creating"
+            }
           >
             {status.collection.state === "creating" && (
               <Loader2 className="h-4 w-4 animate-spin" />
