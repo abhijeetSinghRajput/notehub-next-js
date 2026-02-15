@@ -14,7 +14,7 @@ export const SelectHeading = ({ editor }: { editor: Editor }) => {
 
   return (
     <Select>
-      <SelectTrigger className="w-16">
+      <SelectTrigger className="w-20">
         <SelectValue
           placeholder={
             editor.isActive("heading", { level: 1 }) ? (

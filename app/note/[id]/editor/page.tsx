@@ -16,7 +16,8 @@ import { MenuBar } from "@/components/editor/MenuBar";
 import { extensions } from "@/components/editor/config/extensions.config";
 import { Inbox } from "lucide-react";
 import { INote } from "@/types/model";
-
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const Tiptap = () => {
   const params = useParams();
@@ -74,14 +75,14 @@ const Tiptap = () => {
   }, [noteId, getNoteContent, getDraft, getImages]);
 
   // ✅ BEST SOLUTION: Use functional state update
-  const handleUpdate = (html:string) => {
+  const handleUpdate = (html: string) => {
     setNote((prevNote) => {
-      if(!prevNote) return prevNote;
+      if (!prevNote) return prevNote;
 
       const updatedNote = {
         ...prevNote,
         content: html,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       };
       saveDraft(updatedNote);
       return updatedNote;
@@ -91,16 +92,21 @@ const Tiptap = () => {
   if (notFound) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <div className="flex flex-col items-center text-center max-w-md">
+        <div className="flex flex-col items-center text-center max-w-md space-y-4">
           <div className="size-20 bg-muted rounded-full flex items-center justify-center">
             <Inbox className="size-12 text-muted-foreground" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold">Note Note Found</h3>
+            <h3 className="text-xl font-semibold">Note Not Found</h3>
             <p className="text-muted-foreground">
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit
+              We couldn’t find this note. It may have been deleted or moved. Try
+              exploring your notes or create a new one.
             </p>
           </div>
+
+          <Button asChild variant="secondary">
+            <Link href="/">Explore Notes</Link>
+          </Button>
         </div>
       </div>
     );
@@ -110,10 +116,11 @@ const Tiptap = () => {
     return <NoteSkeleton />;
   }
 
-  if(!note) return null;
+  if (!note) return null;
 
   return (
     <EditorProvider
+      immediatelyRender={false}
       slotBefore={<MenuBar noteId={noteId || ""} />}
       extensions={extensions}
       content={note.content}

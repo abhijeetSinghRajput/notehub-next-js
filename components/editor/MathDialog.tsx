@@ -173,7 +173,6 @@ export default function MathDialog({ editor }: { editor: Editor }) {
             {editMode ? "Edit" : "Insert"} Equation
           </DialogTitle>
           <ToggleSwitch
-            className="w-full"
             options={displayModes.map(({ label, value, icon }) => ({ label, value, icon: React.createElement(icon) }))}
             value={editMode || "inline"}
             onChange={(val) => setEditMode(val as string)}

@@ -112,7 +112,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
 
   if (!editor) {
     return (
-      <div className="controll-group mb-2 sticky top-0 z-10 bg-background border-b border-input" />
+      <div className="controll-group mb-2 sticky top-20 z-10 bg-background border-b border-input" />
     );
   }
 

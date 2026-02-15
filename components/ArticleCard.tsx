@@ -177,12 +177,10 @@ const CardHeaderContent = memo<CardHeaderContentProps>(
               >
                 {note.visibility === "public" &&
                 collection.visibility === "public" ? (
-                  <Globe size={16} strokeWidth={3} />
+                  <Globe  className="size-4!" />
                 ) : (
                   <Lock
-                    size={16}
-                    strokeWidth={3}
-                    className="fill-destructive/20 stroke-destructive"
+                    className="size-4! fill-destructive/20 stroke-destructive"
                   />
                 )}
               </Badge>

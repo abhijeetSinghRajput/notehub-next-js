@@ -29,7 +29,7 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
   const { authUser } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const { collapseAll } = useLocalStorage();
-  const { setOpen, isMobile } = useSidebar();
+  const { setOpen, isMobile, setOpenMobile } = useSidebar();
 
   useEffect(() => {
     if (!authUser?._id) return;
@@ -102,7 +102,9 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
                 variant="ghost"
                 aria-label="go to settings"
               >
-                <Link href="/settings">
+                <Link href="/settings"
+                onClick={() => isMobile && setOpenMobile(false)}
+                >
                   <Settings />
                 </Link>
               </Button>

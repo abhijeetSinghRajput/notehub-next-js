@@ -381,7 +381,7 @@ const NotePage = () => {
               <div className="flex flex-col gap-0.5">
                 <span
                   className="text-sm font-medium"
-                  title={formatDate(note?.createdAt.toISOString())}
+                  title={formatDate(note?.createdAt)}
                 >
                   {format(new Date(note?.createdAt), "MMM d, yyyy")}
                 </span>
@@ -399,7 +399,7 @@ const NotePage = () => {
               <div className="flex flex-col gap-0.5">
                 <span
                   className="text-sm font-medium"
-                  title={formatDate(note?.contentUpdatedAt.toISOString())}
+                  title={formatDate(note?.contentUpdatedAt)}
                 >
                   {formatTimeAgo(
                     new Date(note?.contentUpdatedAt),

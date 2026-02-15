@@ -3,8 +3,8 @@ import { Types } from "mongoose";
 
 export interface IBase {
   _id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // 👤 IUser
@@ -47,7 +47,7 @@ export interface INote extends IBase {
   collaborators: string[] | IUser[];
 
   slug: string;
-  contentUpdatedAt: Date;
+  contentUpdatedAt: string;
 }
 
 export type PopulatedNote = Omit<INote, "userId" | "collectionId"> & {
@@ -69,8 +69,8 @@ export interface IOtp extends IBase {
   email: string;
   otp: string;
 
-  expiresAt: Date;
-  lastSentAt: Date;
+  expiresAt: string;
+  lastSentAt: string;
 }
 
 // 🔎 ISearchIndex

@@ -43,7 +43,7 @@ export const useDraftStore = create<DraftState>()(
               [noteId]: {
                 ...(state.drafts[userId]?.[noteId] ?? {}),
                 ...data,
-                updatedAt: new Date(),
+                updatedAt: new Date().toISOString(),
               },
             },
           },
