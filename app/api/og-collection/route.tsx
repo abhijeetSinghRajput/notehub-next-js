@@ -1,7 +1,17 @@
+import { optimizeImageUrl } from "@/lib/utils";
 import { ImageResponse } from "@vercel/og";
 import { NextRequest } from "next/server";
 
 export const runtime = "edge";
+
+const fontPromise = fetch(
+  new URL("../../../assets/InterSubset.ttf", import.meta.url),
+  {cache: "force-cache"}
+).then((res) => res.arrayBuffer());
+
+async function getFontData(): Promise<ArrayBuffer> {
+  return fontPromise;
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -10,7 +20,11 @@ export async function GET(req: NextRequest) {
   const totalNotes = searchParams.get("totalNotes") || "0";
   const authorName = searchParams.get("authorName") || "Anonymous";
   const authorUsername = searchParams.get("authorUsername") || "@anonymous";
-  const authorAvatar = searchParams.get("authorAvatar") || "https://i.pravatar.cc/300";
+  const authorAvatar = searchParams.get("authorAvatar") || "https://placehold.net/avatar.png";
+
+  const avatarSize = 100;
+  const fontData = await getFontData();
+  const optimizedAvatar = optimizeImageUrl(authorAvatar, avatarSize, avatarSize);
 
   return new ImageResponse(
     <div
@@ -19,15 +33,14 @@ export async function GET(req: NextRequest) {
         height: "630px",
         display: "flex",
         background: "white",
-        fontFamily:
-          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        fontFamily: "Inter",
         position: "relative",
       }}
     >
       {/* Left Section - Content */}
       <div
         style={{
-          flex:  2,
+          flex: 2,
           background: "white",
           display: "flex",
           flexDirection: "column",
@@ -74,7 +87,6 @@ export async function GET(req: NextRequest) {
           <div
             style={{
               fontSize: "32px",
-              fontWeight: 700,
               display: "flex",
               letterSpacing: "-0.02em",
               color: "#111111",
@@ -96,13 +108,16 @@ export async function GET(req: NextRequest) {
           {/* Title - Large for social media */}
           <div
             style={{
-              fontSize: "80px",
-              fontWeight: 800,
+              fontSize: "62px",
               lineHeight: 1.1,
               color: "#111111",
-              display: "flex",
+              display: "-webkit-box", // key for line clamping
+              WebkitLineClamp: 3, // number of lines to clamp
+              WebkitBoxOrient: "vertical", // vertical orientation
+              overflow: "hidden", // hides overflowing text
+              textOverflow: "ellipsis", // adds "..." at the end
               flexWrap: "wrap",
-              marginBottom: "32px",
+              marginBottom: "38px",
               maxWidth: "700px",
               letterSpacing: "-0.02em",
             }}
@@ -119,9 +134,9 @@ export async function GET(req: NextRequest) {
             }}
           >
             <img
-              src={authorAvatar}
-              width="120"
-              height="120"
+              src={optimizedAvatar}
+              width={avatarSize}
+              height={avatarSize}
               style={{
                 borderRadius: "50%",
                 display: "flex",
@@ -132,8 +147,7 @@ export async function GET(req: NextRequest) {
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div
                 style={{
-                  fontSize: "40px",
-                  fontWeight: 600,
+                  fontSize: "38px",
                   color: "#111111",
                   display: "flex",
                 }}
@@ -157,7 +171,7 @@ export async function GET(req: NextRequest) {
       {/* Right Section - Dark Gradient */}
       <div
         style={{
-          flex:  1,
+          flex: 1,
           background: "linear-gradient(135deg, #171717 0%, #0a0a0a 100%)",
           display: "flex",
           flexDirection: "column",
@@ -170,7 +184,6 @@ export async function GET(req: NextRequest) {
           style={{
             color: "white",
             fontSize: "120px",
-            fontWeight: 800,
             lineHeight: 0.8,
             marginBottom: "24px",
             display: "flex",
@@ -186,7 +199,6 @@ export async function GET(req: NextRequest) {
             color: "#94a3b8",
             fontSize: "32px",
             display: "flex",
-            fontWeight: 500,
             marginBottom: "80px",
           }}
         >
@@ -197,6 +209,7 @@ export async function GET(req: NextRequest) {
     {
       width: 1200,
       height: 630,
+      fonts: [{ name: "Inter", data: fontData, style: "normal" }],
     },
   );
 }

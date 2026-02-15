@@ -1,16 +1,30 @@
+import { optimizeImageUrl } from "@/lib/utils";
 import { ImageResponse } from "@vercel/og";
 import { NextRequest } from "next/server";
 
 export const runtime = "edge";
+
+const fontPromise = fetch(
+  new URL("../../../assets/InterSubset.ttf", import.meta.url),
+  {cache: "force-cache"}
+).then((res) => res.arrayBuffer());
+
+async function getFontData(): Promise<ArrayBuffer> {
+  return fontPromise;
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   const fullName = searchParams.get("fullName") || "Anonymous";
   const userName = searchParams.get("userName") || "@anonymous";
-  const avatar =
-    searchParams.get("avatar") || "https://placehold.net/avatar.png";
+  const avatar = searchParams.get("avatar") || "https://placehold.net/avatar.png";
   const role = searchParams.get("role") || "user";
+
+  
+  const avatarSize = 280;
+  const fontData = await getFontData();
+  const optimizedAvatar = optimizeImageUrl(avatar, avatarSize, avatarSize);
 
   return new ImageResponse(
     <div
@@ -19,8 +33,7 @@ export async function GET(req: NextRequest) {
         height: "630px",
         display: "flex",
         background: "white",
-        fontFamily:
-          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        fontFamily: "Inter",
         position: "relative",
       }}
     >
@@ -73,7 +86,6 @@ export async function GET(req: NextRequest) {
           <div
             style={{
               fontSize: "32px",
-              fontWeight: 700,
               display: "flex",
               letterSpacing: "-0.02em",
               color: "#111111",
@@ -95,13 +107,16 @@ export async function GET(req: NextRequest) {
           {/* Title - Large for social media */}
           <div
             style={{
-              fontSize: "72px",
-              fontWeight: 800,
+              fontSize: "62px",
               lineHeight: 1.1,
               color: "#111111",
-              display: "flex",
+              display: "-webkit-box", // key for line clamping
+              WebkitLineClamp: 2, // number of lines to clamp
+              WebkitBoxOrient: "vertical", // vertical orientation
+              overflow: "hidden", // hides overflowing text
+              textOverflow: "ellipsis", // adds "..." at the end
               flexWrap: "wrap",
-              marginBottom: "16px",
+              marginBottom: "38px",
               maxWidth: "700px",
               letterSpacing: "-0.02em",
             }}
@@ -168,9 +183,9 @@ export async function GET(req: NextRequest) {
           }}
         >
           <img
-            src={avatar}
-            width="280"
-            height="280"
+            src={optimizedAvatar}
+            width={avatarSize}
+            height={avatarSize}
             style={{
               width: "100%",
               height: "100%",
@@ -185,6 +200,7 @@ export async function GET(req: NextRequest) {
     {
       width: 1200,
       height: 630,
+      fonts: [{ name: "Inter", data: fontData, style: "normal" }],
     },
   );
 }

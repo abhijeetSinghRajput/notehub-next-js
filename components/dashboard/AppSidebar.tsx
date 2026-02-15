@@ -83,6 +83,7 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
               <SidebarTrigger
                 tooltip={"Ctrl + B"}
                 aria-label="close sidebar"
+                className="bg-muted/50 size-11 rounded-full border sm:border-none sm:size-8 sm:bg-transparent sm:rounded-md"
               />
               <Link
                 onClick={() => isMobile && setOpen(false)}

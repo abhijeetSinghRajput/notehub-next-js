@@ -1,7 +1,17 @@
+import { optimizeImageUrl } from "@/lib/utils";
 import { ImageResponse } from "@vercel/og";
 import { NextRequest } from "next/server";
 
 export const runtime = "edge";
+
+const fontPromise = fetch(
+  new URL("../../../assets/InterSubset.ttf", import.meta.url),
+  {cache: "force-cache"}
+).then((res) => res.arrayBuffer());
+
+async function getFontData(): Promise<ArrayBuffer> {
+  return fontPromise;
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -12,18 +22,21 @@ export async function GET(req: NextRequest) {
   const authorUsername = searchParams.get("authorUsername") || "@anonymous";
   const authorAvatar = searchParams.get("authorAvatar") || "https://placehold.net/avatar.png";
 
-  return new ImageResponse(
+  const avatarSize = 280;
+  const fontData = await getFontData();
+  const optimizedAvatar = optimizeImageUrl(authorAvatar, avatarSize, avatarSize);
+
+  const response = new ImageResponse(
     <div
       style={{
         width: "1200px",
         height: "630px",
         display: "flex",
         background: "white",
-        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-        position: "relative",
+        fontFamily: "Inter",
       }}
     >
-      {/* Left Section - Content */}
+      {/* Left Section */}
       <div
         style={{
           flex: 2,
@@ -34,7 +47,6 @@ export async function GET(req: NextRequest) {
           padding: "60px 80px",
         }}
       >
-        {/* Logo at top */}
         <div
           style={{
             display: "flex",
@@ -46,33 +58,23 @@ export async function GET(req: NextRequest) {
             width="48"
             height="48"
             viewBox="0 0 128 128"
-            fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ display: "flex" }}
           >
-            <g clipPath="url(#clip0_79_2)">
-              <circle cx="64" cy="64" r="64" fill="black" />
-              <path
-                opacity="0.5"
-                d="M56.32 43.5202C56.32 35.0371 49.4431 28.1602 40.96 28.1602C32.4769 28.1602 25.6 35.0371 25.6 43.5202V84.4802C25.6 92.9632 32.4769 99.8402 40.96 99.8402C49.4431 99.8402 56.32 92.9632 56.32 84.4802V43.5202Z"
-                fill="#D9D9D9"
-              />
-              <path
-                d="M84.48 28.1602C92.963 28.1602 99.84 35.0371 99.84 43.5202V84.4802C99.84 84.7484 99.831 85.0152 99.8174 85.2802C99.8917 89.2174 98.4617 93.1836 95.51 96.2403C89.6171 102.342 79.8919 102.51 73.7899 96.6176L30.4949 54.8077C24.3927 48.9148 24.2221 39.1899 30.115 33.0876C36.0079 26.9856 45.7328 26.8174 51.8348 32.71L69.12 49.4002V43.5202C69.12 35.0371 75.9969 28.1602 84.48 28.1602Z"
-                fill="#D9D9D9"
-              />
-            </g>
-            <defs>
-              <clipPath id="clip0_79_2">
-                <rect width="128" height="128" fill="white" />
-              </clipPath>
-            </defs>
+            <circle cx="64" cy="64" r="64" fill="black" />
+            <path
+              opacity="0.5"
+              d="M56.32 43.52c0-8.48-6.88-15.36-15.36-15.36s-15.36 6.88-15.36 15.36v40.96c0 8.48 6.88 15.36 15.36 15.36s15.36-6.88 15.36-15.36V43.52Z"
+              fill="#D9D9D9"
+            />
+            <path
+              d="M84.48 28.16c8.48 0 15.36 6.88 15.36 15.36v40.96c0 .27-.01.54-.02.8.07 3.94-1.36 7.9-4.31 10.96-5.89 6.1-15.62 6.27-21.72.38l-43.3-41.81c-6.1-5.89-6.27-15.62-.38-21.72 5.89-6.1 15.62-6.27 21.72-.38l17.29 16.69v-5.88c0-8.48 6.88-15.36 15.36-15.36Z"
+              fill="#D9D9D9"
+            />
           </svg>
 
           <div
             style={{
               fontSize: "32px",
-              fontWeight: 700,
               display: "flex",
               letterSpacing: "-0.02em",
               color: "#111111",
@@ -82,7 +84,6 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
 
-        {/* Main content centered vertically */}
         <div
           style={{
             display: "flex",
@@ -91,16 +92,17 @@ export async function GET(req: NextRequest) {
             flex: 1,
           }}
         >
-          {/* Title - Large for social media */}
           <div
             style={{
-              fontSize: "80px",
-              fontWeight: 800,
+              fontSize: "62px",
               lineHeight: 1.1,
               color: "#111111",
-              display: "flex",
-              flexWrap: "wrap",
-              marginBottom: "16px",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              marginBottom: "24px",
               maxWidth: "700px",
               letterSpacing: "-0.02em",
             }}
@@ -110,11 +112,10 @@ export async function GET(req: NextRequest) {
 
           <div
             style={{
-              fontSize: "58px",
+              fontSize: "48px",
               lineHeight: 1.1,
               color: "#666666",
               display: "flex",
-              flexWrap: "wrap",
               marginBottom: "48px",
               maxWidth: "700px",
               letterSpacing: "-0.02em",
@@ -123,7 +124,6 @@ export async function GET(req: NextRequest) {
             /{collection}
           </div>
 
-          {/* Author - Large enough to read */}
           <div
             style={{
               display: "flex",
@@ -133,8 +133,7 @@ export async function GET(req: NextRequest) {
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div
                 style={{
-                  fontSize: "40px",
-                  fontWeight: 600,
+                  fontSize: "38px",
                   color: "#111111",
                   display: "flex",
                 }}
@@ -155,20 +154,17 @@ export async function GET(req: NextRequest) {
         </div>
       </div>
 
-      {/* Right Section - Dark Gradient with Large Image */}
+      {/* Right Section */}
       <div
         style={{
-          flex:  1,
+          flex: 1,
           background: "linear-gradient(135deg, #171717 0%, #0a0a0a 100%)",
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           padding: "40px",
-          position: "relative",
         }}
       >
-        {/* Large Image Container - About half the height of the card */}
         <div
           style={{
             width: "280px",
@@ -177,21 +173,19 @@ export async function GET(req: NextRequest) {
             overflow: "hidden",
             display: "flex",
             boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
-            marginBottom: "24px",
             border: "4px solid rgba(255, 255, 255, 0.1)",
           }}
         >
           <img
-            src={authorAvatar}
-            width="280"
-            height="280"
+            src={optimizedAvatar}
+            width={avatarSize}
+            height={avatarSize}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              display: "flex",
             }}
-            alt="Collection"
+            alt="Author"
           />
         </div>
       </div>
@@ -199,6 +193,14 @@ export async function GET(req: NextRequest) {
     {
       width: 1200,
       height: 630,
+      fonts: [{ name: "Inter", data: fontData, style: "normal" }],
     },
   );
+
+  response.headers.set(
+    "Cache-Control",
+    "public, immutable, no-transform, s-maxage=31536000, max-age=31536000",
+  );
+
+  return response;
 }

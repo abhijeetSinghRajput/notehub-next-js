@@ -362,3 +362,36 @@ export const getCanonicalUrl = (): string => {
 
   return `${url.origin}${pathname}`;
 };
+
+/**
+ * Optimize image URL based on CDN provider (Cloudinary, Google User Content, etc.)
+ * @param url - Original image URL
+ * @param width - Target width in pixels
+ * @param height - Target height in pixels
+ * @returns Optimized image URL with transformation parameters
+ */
+export function optimizeImageUrl(url: string, width = 280, height = 280): string {
+  if (!url) return "";
+
+  try {
+    const urlObj = new URL(url);
+
+    // Cloudinary optimization
+    if (urlObj.hostname.includes("cloudinary.com")) {
+      const parts = url.split("/upload/");
+      if (parts.length === 2) {
+        return `${parts[0]}/upload/w_${width},h_${height},c_fill,q_auto:good,f_auto/${parts[1]}`;
+      }
+    }
+
+    // Google User Content
+    if (urlObj.hostname.includes("googleusercontent.com")) {
+      const baseUrl = url.split("=s")[0].split("=w")[0];
+      return `${baseUrl}=s${width}-c`;
+    }
+
+    return url;
+  } catch (e) {
+    return url;
+  }
+}

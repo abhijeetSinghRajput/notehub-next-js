@@ -70,6 +70,11 @@ export default function AppBreadcrumbs() {
     if (routes.length === 0) return { visible: [], hidden: [] };
     const total = routes.length;
 
+    // Special case: if only 2 routes and first is '/', always show both (logo + current)
+    if (total === 2 && routes[0].path === "/") {
+      return { visible: routes, hidden: [] };
+    }
+
     if (total <= visibleBreadcrumbs) {
       return { visible: routes, hidden: [] };
     }
@@ -135,17 +140,17 @@ export default function AppBreadcrumbs() {
               </>
             )}
 
-            <BreadcrumbItem>
+            <BreadcrumbItem className={cn(idx === visible.length - 1 && "min-w-0")}>
               <Link
                 href={route.path}
                 className={cn(
-                  "truncate flex items-center gap-2 min-w-0",
-                  idx === visible.length - 1 ? "text-foreground" : "",
+                  "flex items-center gap-2 min-w-0",
+                  idx === visible.length - 1 ? "text-foreground truncate" : "",
                   route.path === "/" ? "logo" : "",
                 )}
               >
                 {route.path === "/" && (
-                  <div className="size-6 bg-[#171717] rounded-full">
+                  <div className="size-6 bg-[#171717] rounded-full shrink-0">
                     <img
                       src="/n.svg"
                       alt="NoteHub Logo"
@@ -153,7 +158,18 @@ export default function AppBreadcrumbs() {
                     />
                   </div>
                 )}
-                <span className="truncate">{route.name}</span>
+                <span
+                  className={cn(
+                    "truncate",
+                    route.path === "/"
+                      ? pathname === "/"
+                        ? "inline"
+                        : "hidden" // hide home name if not on /
+                      : "inline", // all other route names visible
+                  )}
+                >
+                  {route.name}
+                </span>
               </Link>
             </BreadcrumbItem>
 
