@@ -2,6 +2,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CollectionPageClient from "./CollectionPageClient";
+import { getDefaultMetadata } from "@/lib/metadata";
 
 type Props = {
   params: Promise<{
@@ -21,29 +22,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
 
     if (!response.ok) {
-      return {
-        title: "Collection Not Found",
-        description: "This collection could not be found.",
-      };
+      return getDefaultMetadata({
+        title: `${collectionSlug} by ${username}`,
+        description: `View collection on NoteHub`,
+        noIndex: true, // Private collection
+      });
     }
 
     const data = await response.json();
     const { collection, author } = data;
-    
+
     // Extract first few notes for keywords
-    const noteNames = collection.notes?.slice(0, 5).map((note: any) => note.name) || [];
+    const noteNames =
+      collection.notes?.slice(0, 5).map((note: any) => note.name) || [];
     const keywords = [
       collection.name,
       ...noteNames,
       `${author.fullName}'s collection`,
       "study notes",
       "educational content",
-      "learning resources"
+      "learning resources",
     ].join(", ");
 
     // Get first note preview for description
-    const firstNotes = collection.notes?.slice(0, 3).map((note: any) => note.name).join(", ");
-    const description = `Explore ${collection.name} collection by ${author.fullName}. Contains ${collection.noteCount} notes on ${firstNotes || 'various topics'}. Perfect for learning and revision.`;
+    const firstNotes = collection.notes
+      ?.slice(0, 3)
+      .map((note: any) => note.name)
+      .join(", ");
+    const description = `Explore ${collection.name} collection by ${author.fullName}. Contains ${collection.noteCount} notes on ${firstNotes || "various topics"}. Perfect for learning and revision.`;
 
     // Build OG image URL with enhanced data
     const ogImageParams = new URLSearchParams({
@@ -51,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       totalNotes: collection.noteCount?.toString() || "0",
       authorName: author.fullName || "User",
       authorUsername: `@${author.userName}`,
-      authorAvatar: author.avatar || '',
+      authorAvatar: author.avatar || "",
       collectionId: collection._id, // Optional: for tracking
     });
 
@@ -67,7 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${collection.name} by ${author.fullName}`,
       description: description,
       keywords: keywords,
-      
+
       // Open Graph
       openGraph: {
         title: collection.name,
@@ -84,7 +90,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ],
         type: "website",
       },
-      
+
       // Twitter Card
       twitter: {
         card: "summary_large_image",
@@ -94,12 +100,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         creator: `@${author.userName}`,
         site: "@NoteHub", // Add your site's Twitter handle
       },
-      
+
       // Canonical URL
       alternates: {
         canonical: collectionUrl,
       },
-      
+
       // Additional useful meta tags
       other: {
         "og:locale": "en_US",
@@ -137,15 +143,15 @@ export default async function CollectionPage({ params }: Props) {
         notFound();
       }
       // Pass error status to client component
-      return <CollectionPageClient error={response.status} />;
+      return <CollectionPageClient />;
     }
 
     const data = await response.json();
-    
+
     // Pass all data to client component
     return <CollectionPageClient initialData={data} />;
   } catch (error) {
     console.error("Error loading collection page:", error);
-    return <CollectionPageClient error={500} />;
+    return <CollectionPageClient />;
   }
 }

@@ -1,6 +1,7 @@
 // app/[username]/[collectionSlug]/[noteSlug]/page.tsx
 import { Metadata } from "next";
 import NotePageClient from "./NotePageClient";
+import { getDefaultMetadata } from "@/lib/metadata";
 
 // ✅ FIX: Add proper TypeScript types and await params
 type Props = {
@@ -18,18 +19,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const noteApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/note/${username}/${collectionSlug}/${noteSlug}`;
 
-    console.log("Fetching metadata from:", noteApiUrl);
-
     const response = await fetch(noteApiUrl, {
       next: { revalidate: 3600 }, // Cache for 1 hour
     });
 
     if (!response.ok) {
-      console.error("Metadata fetch failed:", response.status);
-      return {
-        title: "Note Not Found",
-        description: "This note could not be found.",
-      };
+      return getDefaultMetadata({
+        title: `${noteSlug} by ${username}`,
+        description: `View Notes on NoteHub`,
+        noIndex: true, // Private note
+      });
     }
 
     const { note, author } = await response.json();

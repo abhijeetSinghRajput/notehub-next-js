@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import UserPageClient from "./UserPageClient";
 import { IUser } from "@/types/model";
+import { getDefaultMetadata } from "@/lib/metadata";
 
 type Props = {
   params: Promise<{
@@ -21,10 +22,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
 
     if (!response.ok) {
-      return {
-        title: "User Not Found",
+      return getDefaultMetadata({
+        title: `${username}`,
         description: "This user profile could not be found.",
-      };
+        noIndex: true, // Private collection
+      });
     }
 
     const user: IUser = await response.json();

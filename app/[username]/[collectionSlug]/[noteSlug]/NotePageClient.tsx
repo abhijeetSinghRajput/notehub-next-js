@@ -87,7 +87,7 @@ const NotePageClient = () => {
   const isAuthor = useMemo(() => {
     // Ensure both objects exist before comparing
     if (!authUser || !note) return false;
-    return String(authUser._id) === String(note.userId);
+    return String(authUser._id) === String(author?._id);
   }, [authUser, note]);
 
   const isAdmin = useMemo(() => {
@@ -96,8 +96,6 @@ const NotePageClient = () => {
   }, [authUser]);
 
   const isOwner = useMemo(() => isAuthor || isAdmin, [isAuthor, isAdmin]);
-
-  console.log(authUser?._id, note?.userId, isAuthor, isAdmin, isOwner);
 
   const handleTocItemClick = useCallback((itemId: string) => {
     document.getElementById(itemId)?.scrollIntoView({ behavior: "smooth" });
@@ -400,11 +398,9 @@ const NotePageClient = () => {
                 <div className="font-semibold flex gap-4 text-primary! items-center text-sm">
                   <div className="flex gap-2 items-center">
                     <span>{author?.fullName}</span>
-                    <span>
-                      {author?.role === "admin" && (
-                        <BadgeIcon className="size-4 text-blue-500" />
-                      )}
-                    </span>
+                    {author?.role === "admin" && (
+                      <BadgeIcon className="size-4 text-blue-500" />
+                    )}
                   </div>
                   {isOwner && (
                     <Badge
@@ -418,7 +414,7 @@ const NotePageClient = () => {
                         <Lock
                           size={16}
                           strokeWidth={3}
-                          className="fill-destructive/20 stroke-destructive"
+                          className="size-4! fill-destructive/20 stroke-destructive"
                         />
                       )}
                     </Badge>
