@@ -1,5 +1,49 @@
 @reference "tailwindcss";
 
+:root {
+  --c-graBacSec: #f0efed;
+  --c-broBacSec: #f5ede9;
+  --c-oraBacSec: #fbebde;
+  --c-yelBacSec: #f9f3dc;
+  --c-greBacSec: #e8f1ec;
+  --c-bluBacSec: #e5f2fc;
+  --c-purBacSec: #f3ebf9;
+  --c-pinBacSec: #fae9f1;
+  --c-redBacSec: #fce9e7;
+
+  --c-graTexSec: #7d7a75;
+  --c-broTexSec: #9f765a;
+  --c-oraTexSec: #d27b2d;
+  --c-yelTexSec: #cb9434;
+  --c-greTexSec: #50946e;
+  --c-bluTexSec: #387dc9;
+  --c-purTexSec: #9a6bb4;
+  --c-pinTexSec: #c14c8a;
+  --c-redTexSec: #cf5148;
+}
+
+.dark {
+  --c-graBacSec: #383836;
+  --c-broBacSec: #45362d;
+  --c-oraBacSec: #53361f;
+  --c-yelBacSec: #504425;
+  --c-greBacSec: #263d30;
+  --c-bluBacSec: #233850;
+  --c-purBacSec: #3c2d47;
+  --c-pinBacSec: #4e2b3c;
+  --c-redBacSec: #502c29;
+
+  --c-graTexSec: #7d7a75;
+  --c-broTexSec: #9f765a;
+  --c-oraTexSec: #d27b2d;
+  --c-yelTexSec: #cb9434;
+  --c-greTexSec: #50946e;
+  --c-bluTexSec: #387dc9;
+  --c-purTexSec: #9a6bb4;
+  --c-pinTexSec: #c14c8a;
+  --c-redTexSec: #cf5148;
+}
+
 .ProseMirror {
   white-space: pre-wrap;
 }
@@ -287,6 +331,11 @@ div:has(> .tiptap.ProseMirror) {
   margin: 0;
 }
 
+.ProseMirror td:not(:first-child),
+.ProseMirror th:not(:first-child) {
+  @apply border-l;
+}
+
 .tiptap tr:not(:last-child) {
   @apply border-b;
 }
@@ -355,28 +404,17 @@ div:has(> .tiptap.ProseMirror) {
 .tippy-arrow::before {
   @apply hidden;
 }
+
 .tippy-content {
+  width: 256px;
   background-color: var(--popover);
   color: var(--popover-foreground);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-md);
-  border-radius: 0.5rem;
-  padding: 0.25rem;
+  border-radius: 0.75rem;
   max-height: 18.75rem;
-  overflow-y: auto;
-  padding: 4px !important;
 }
-.tippy-content {
-  width: 256px;
-  background: var(--popover);
-  color: var(--popover-foreground);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-md);
-  padding: 4px;
-  max-height: 300px;
-  overflow-y: auto;
-}
+
 .tippy-content::-webkit-scrollbar {
   @apply w-1 h-1;
 }
@@ -550,7 +588,7 @@ button:disabled {
   @apply text-zinc-50 inline-flex h-9 w-9 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
 }
 
-.bubble-menu button:focus-visible{
+.bubble-menu button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--ring);
 }

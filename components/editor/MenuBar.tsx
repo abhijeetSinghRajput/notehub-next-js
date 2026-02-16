@@ -34,6 +34,7 @@ import AddImageDialog from "./AddImageDialog";
 import { useDraftStore } from "@/app/stores/useDraftStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useRouter } from "next/navigation";
+import TextColorDropdown from "./TextColorDropdown";
 
 export const MenuBar = ({ noteId }: { noteId: string }) => {
   const { editor } = useCurrentEditor();
@@ -133,7 +134,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   };
 
   return (
-    <div className="controll-group p-2 mb-2 sticky top-0 z-10 bg-background border-b border-input">
+    <div className="controll-group p-2 mb-2 sticky top-16 z-10 bg-background border-b border-input">
       <div className="Button-group flex flex-wrap gap-1">
         {FORMATTING_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
@@ -148,6 +149,9 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             {icon}
           </Button>
         ))}
+        
+        <TextColorDropdown editor={editor}/>
+
         {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
             tooltip={tooltip}
@@ -228,34 +232,6 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
           </Button>
         ))}
         <SelectHeading editor={editor} />
-
-        <ColorPicker
-          icon={<HighlighterIcon />}
-          tooltipMessage="Highlighter"
-          colors={COLORS}
-          activeColor={COLORS.find((color) =>
-            editor.isActive("highlight", { color }),
-          ) || ""}
-          onColorSelect={(color) =>
-            editor.chain().focus().setHighlight({ color }).run()
-          }
-          onUnsetColor={() => editor.chain().focus().unsetHighlight().run()}
-          isActive={(color) => editor.isActive("highlight", { color })}
-        />
-
-        <ColorPicker
-          icon={<Palette />}
-          tooltipMessage="Set Color"
-          colors={COLORS}
-          activeColor={COLORS.find((color) =>
-            editor.isActive("textStyle", { color }),
-          ) || ""}
-          onColorSelect={(color) =>
-            editor.chain().focus().setColor(color).run()
-          }
-          onUnsetColor={() => editor.chain().focus().unsetColor().run()}
-          isActive={(color) => editor.isActive("textStyle", { color })}
-        />
 
         <div className="border rounded-lg">
           <TablePopover

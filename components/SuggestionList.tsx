@@ -1,29 +1,38 @@
-"use client"
+"use client";
 import React, {
   useState,
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useRef,
 } from "react";
 import { Button } from "@/components/ui/button";
 import { useEditorStore } from "@/app/stores/useEditorStore";
 
-const SuggestionList = forwardRef<
-  { onKeyDown: (event: KeyboardEvent) => boolean },
-  {
-    items?: Array<{
-      command: string;
-      dialog?: string;
-      props?: Record<string, unknown>;
-      icon?: React.ReactNode;
-      label?: string;
-    }>;
-    editor: any;
-    command: () => void;
-    range: any;
-  }
->(({ items = [], editor, command, range }, ref) => {
+interface SuggestionItem {
+  command: string;
+  dialog?: string;
+  props?: Record<string, unknown>;
+  icon?: React.ReactNode;
+  label?: string;
+  shortcut?: string;
+}
+
+interface SuggestionListProps {
+  items?: SuggestionItem[];
+  editor: any;
+  command: () => void;
+  range: any;
+}
+
+interface SuggestionListRef {
+  onKeyDown: (event: KeyboardEvent) => boolean;
+}
+
+const SuggestionList = forwardRef<SuggestionListRef, SuggestionListProps>(
+  ({ items = [], editor, command, range }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const selectedItemRef = useRef<HTMLButtonElement>(null);
 
     // Select the item and execute the command
     const selectItem = (index: number) => {
@@ -35,7 +44,14 @@ const SuggestionList = forwardRef<
 
       // CUSTOM → open dialog
       if (item.command === "custom" && item.dialog) {
-        useEditorStore.getState().openDialog(item.dialog as "openImageDialog" | "openMathDialog" | "openLinkDialog");
+        useEditorStore
+          .getState()
+          .openDialog(
+            item.dialog as
+              | "openImageDialog"
+              | "openMathDialog"
+              | "openLinkDialog",
+          );
         command(); // close suggestion popup
         return;
       }
@@ -82,22 +98,34 @@ const SuggestionList = forwardRef<
       setSelectedIndex(0);
     }, [items]);
 
+    // Scroll selected item into view
+    useEffect(() => {
+      if (selectedItemRef.current) {
+        selectedItemRef.current.scrollIntoView({
+          block: "nearest",
+          behavior: "smooth",
+        });
+      }
+    }, [selectedIndex]);
+
     if (items.length === 0) {
       return null; // Don't render anything if there are no items
     }
 
     return (
-      <div className="suggestion-list space-y-1">
-        {items.map((item: any, index: number) => (
+      <div className="suggestion-list p-2 space-y-1 max-h-75 overflow-y-auto">
+        {items.map((item: SuggestionItem, index: number) => (
           <Button
             key={index}
+            ref={index === selectedIndex ? selectedItemRef : null}
             variant="ghost"
             className={`w-full hover:bg-accent/50 justify-between py-1.5 px-2 h-8 text-muted-foreground ${
               index === selectedIndex
                 ? "bg-accent hover:bg-accent text-accent-foreground"
                 : ""
             }`}
-            onClick={() => selectItem(index)} // Using selectItem here
+            onClick={() => selectItem(index)}
+            onMouseEnter={() => setSelectedIndex(index)}
           >
             <div className="flex items-center gap-2">
               {item.icon}
@@ -110,7 +138,9 @@ const SuggestionList = forwardRef<
         ))}
       </div>
     );
-  }
+  },
 );
+
+SuggestionList.displayName = "SuggestionList";
 
 export default SuggestionList;
