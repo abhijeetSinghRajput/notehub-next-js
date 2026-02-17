@@ -16,6 +16,12 @@ import {
   TableCell,
   TableHeader,
 } from "@tiptap/extension-table";
+import {
+  findTable,
+  moveTableColumn,
+  moveTableRow,
+  selectedRect,
+} from "prosemirror-tables";
 import { Placeholder } from "@tiptap/extensions";
 import { SlashCommand } from "@/components/SlashCommand";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
@@ -105,6 +111,130 @@ const AutoPairExtension = Extension.create({
   },
 });
 
+const TableActionsExtension = Extension.create({
+  name: "tableActions",
+
+  addCommands() {
+    const sortColumn = (direction: "asc" | "desc") =>
+      ({ state, dispatch }: { state: any; dispatch?: any }) => {
+        const tableInfo = findTable(state.selection.$from);
+        if (!tableInfo) return false;
+
+        const rect = selectedRect(state);
+        const tableNode = tableInfo.node;
+        const columnIndex = rect.left;
+
+        const rows = [] as any[];
+        for (let i = 0; i < tableNode.childCount; i += 1) {
+          rows.push(tableNode.child(i));
+        }
+
+        const firstRow = rows[0];
+        const hasHeaderRow = Boolean(
+          firstRow &&
+          firstRow.content.content.some(
+            (cell: any) => cell.type.name === "tableHeader",
+          ),
+        );
+
+        const headerRows = hasHeaderRow ? rows.slice(0, 1) : [];
+        const bodyRows = hasHeaderRow ? rows.slice(1) : rows;
+
+        const normalizeValue = (value: string) => value.trim().toLowerCase();
+        const getCellValue = (row: any) => {
+          if (columnIndex >= row.childCount) return "";
+          const cell = row.child(columnIndex);
+          return cell?.textContent ?? "";
+        };
+
+        const sortedRows = bodyRows
+          .map((row, index) => ({
+            row,
+            index,
+            value: getCellValue(row),
+          }))
+          .sort((a, b) => {
+            const valueA = normalizeValue(a.value);
+            const valueB = normalizeValue(b.value);
+
+            const numberA = Number(valueA.replace(/,/g, ""));
+            const numberB = Number(valueB.replace(/,/g, ""));
+
+            let comparison = 0;
+            if (Number.isFinite(numberA) && Number.isFinite(numberB)) {
+              comparison = numberA - numberB;
+            } else {
+              comparison = valueA.localeCompare(valueB);
+            }
+
+            if (comparison === 0) {
+              return a.index - b.index;
+            }
+
+            return direction === "asc" ? comparison : -comparison;
+          })
+          .map((entry) => entry.row);
+
+        const nextRows = [...headerRows, ...sortedRows];
+        const nextTable = tableNode.type.create(tableNode.attrs, nextRows);
+
+        const tr = state.tr.replaceWith(
+          tableInfo.pos,
+          tableInfo.pos + tableNode.nodeSize,
+          nextTable,
+        );
+
+        if (dispatch) dispatch(tr);
+        return true;
+      };
+
+    return {
+      moveColumnLeft:
+        () =>
+        ({ state, dispatch }: { state: any; dispatch?: any }) => {
+          const tableInfo = findTable(state.selection.$from);
+          if (!tableInfo) return false;
+          const rect = selectedRect(state);
+          const from = rect.left;
+          if (from <= 0) return false;
+          return moveTableColumn({ from, to: from - 1 })(state, dispatch);
+        },
+      moveColumnRight:
+        () =>
+        ({ state, dispatch }: { state: any; dispatch?: any }) => {
+          const tableInfo = findTable(state.selection.$from);
+          if (!tableInfo) return false;
+          const rect = selectedRect(state);
+          const from = rect.left;
+          if (from >= rect.map.width - 1) return false;
+          return moveTableColumn({ from, to: from + 1 })(state, dispatch);
+        },
+      moveRowUp:
+        () =>
+        ({ state, dispatch }: { state: any; dispatch?: any }) => {
+          const tableInfo = findTable(state.selection.$from);
+          if (!tableInfo) return false;
+          const rect = selectedRect(state);
+          const from = rect.top;
+          if (from <= 0) return false;
+          return moveTableRow({ from, to: from - 1 })(state, dispatch);
+        },
+      moveRowDown:
+        () =>
+        ({ state, dispatch }: { state: any; dispatch?: any }) => {
+          const tableInfo = findTable(state.selection.$from);
+          if (!tableInfo) return false;
+          const rect = selectedRect(state);
+          const from = rect.top;
+          if (from >= rect.map.height - 1) return false;
+          return moveTableRow({ from, to: from + 1 })(state, dispatch);
+        },
+      sortColumnAsc: () => sortColumn("asc"),
+      sortColumnDesc: () => sortColumn("desc"),
+    };
+  },
+});
+
 const CustomCodeBlock = CodeBlockLowlight.extend({
   addNodeView() {
     return ReactNodeViewRenderer(CodeBlockComponent);
@@ -158,6 +288,7 @@ export const extensions = [
   Table.configure({
     resizable: true,
   }),
+  TableActionsExtension,
   TableRow,
   TableHeader,
   TableCell,

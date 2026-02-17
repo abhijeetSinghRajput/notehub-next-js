@@ -4,10 +4,12 @@ import {
     AlignJustify,
     AlignLeft,
     AlignRight,
-    ArrowDownToLine,
-    ArrowLeftToLine,
-    ArrowRightToLine,
-    ArrowUpToLine,
+    ArrowDown,
+    ArrowDownAZ,
+    ArrowUp,
+    ArrowUpAZ,
+    ChevronLeft,
+    ChevronRight,
     Bold,
     Code,
     CodeSquare,
@@ -26,6 +28,10 @@ import {
     UnderlineIcon,
     Undo,
 } from 'lucide-react'
+import InsertColLeftIcon from '@/components/icons/InsertColLeftIcon';
+import InsertColRightIcon from '@/components/icons/InsertColRightIcon';
+import InsertRowBelowIcon from '@/components/icons/InsertRowBelowIcon';
+import InsertRowAboveIcon from '@/components/icons/InsertRowAboveIcon';
 
 // export const COLORS = ['#fb7185', '#fdba74', '#d9f99d', '#a7f3d0', '#a5f3fc', '#a5b4fc', '#808080'];
 export const COLORS = [
@@ -187,12 +193,22 @@ export const TABLE_BUTTONS = [
 
 export const TABLE_ROW_CONTROLS = [
     {
-        icon: <ArrowUpToLine />,
+        icon: <ArrowUp />,
+        command: "moveRowUp",
+        tooltip: "Move row up",
+    },
+    {
+        icon: <ArrowDown />,
+        command: "moveRowDown",
+        tooltip: "Move row down",
+    },
+    {
+        icon: <InsertRowAboveIcon />,
         command: "addRowBefore",
         tooltip: "Add row before",
     },
     {
-        icon: <ArrowDownToLine />,
+        icon: <InsertRowBelowIcon />,
         command: "addRowAfter",
         tooltip: "Add row after",
     },
@@ -205,14 +221,34 @@ export const TABLE_ROW_CONTROLS = [
 
 export const TABLE_COLUMN_CONTROLS = [
     {
-        icon: <ArrowLeftToLine />,
+        icon: <ChevronLeft />,
+        command: "moveColumnLeft",
+        tooltip: "Move column left",
+    },
+    {
+        icon: <ChevronRight />,
+        command: "moveColumnRight",
+        tooltip: "Move column right",
+    },
+    {
+        icon: <InsertColLeftIcon />,
         command: "addColumnBefore",
         tooltip: "Add column before",
     },
     {
-        icon: <ArrowRightToLine />,
+        icon: <InsertColRightIcon />,
         command: "addColumnAfter",
         tooltip: "Add column after",
+    },
+    {
+        icon: <ArrowDownAZ />,
+        command: "sortColumnAsc",
+        tooltip: "Sort column A-Z",
+    },
+    {
+        icon: <ArrowUpAZ />,
+        command: "sortColumnDesc",
+        tooltip: "Sort column Z-A",
     },
     {
         icon: <Trash />,

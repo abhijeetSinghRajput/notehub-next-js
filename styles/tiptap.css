@@ -324,52 +324,69 @@ div:has(> .tiptap.ProseMirror) {
   @apply border my-12;
 }
 
-/* Table-specific styling */
 .tiptap table {
-  @apply w-full mb-6 border-collapse overflow-hidden;
+  border-collapse: collapse;
+  border-spacing: 0;
   table-layout: auto;
-  margin: 0;
+  width: max-content;   /* shrink-wrap; remove if you want full-width */
+  max-width: 100%;
+  margin: 0 0 1.5rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: block;       /* enables horizontal scroll on overflow */
+  font-size: 14px;
+  line-height: 20px;
 }
 
-.ProseMirror td:not(:first-child),
-.ProseMirror th:not(:first-child) {
-  @apply border-l;
+/* ── Rows ── */
+.tiptap tr {
+  isolation: isolate;
 }
 
-.tiptap tr:not(:last-child) {
-  @apply border-b;
-}
-
+/* ── Cells (shared) ── */
+.ProseMirror td,
+.ProseMirror th,
 .tiptap td,
 .tiptap th {
-  @apply p-2 whitespace-nowrap;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  text-align: start;
+  min-width: 160px;
+  min-height: 32px;
+  padding: 7px 9px;
   position: relative;
+  white-space: break-spaces;
+  word-break: break-word;
+  background-color: var(--background, #fff);
+  color: rgba(55, 53, 47, 1);
 }
 
+/* remove any default bottom-margin on direct children */
 .tiptap td > *,
 .tiptap th > * {
   margin-bottom: 0;
 }
 
+/* ── Header cells ── */
 .tiptap th {
-  background-color: color-mix(in oklch, var(--accent) 70%, transparent);
   font-weight: 600;
   text-align: left;
+  background-color: color-mix(in oklch, var(--accent) 70%, transparent);
 }
 
-.tiptap td {
-  background-color: var(--background);
+/* ── Empty-cell placeholder colour ── */
+.tiptap td:empty,
+.tiptap th:empty {
+  color: rgba(55, 53, 47, 0.4);
 }
 
-.tiptap .selectedCell:after {
-  background: var(--gray-2);
+/* ── Selected cell overlay (ProseMirror) ── */
+.tiptap .selectedCell::after {
   content: "";
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  pointer-events: none;
   position: absolute;
+  inset: 0;                          /* shorthand for top/right/bottom/left: 0 */
+  background: rgba(35, 130, 226, 0.2);
+  pointer-events: none;
   z-index: 2;
 }
 
@@ -386,6 +403,42 @@ div:has(> .tiptap.ProseMirror) {
 .tiptap .tableWrapper {
   margin: 1.5rem 0;
   overflow-x: auto;
+}
+
+/* ── Table Handle Controls ── */
+.tiptap-table-handle-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  transition: opacity 120ms ease;
+  pointer-events: none;
+}
+
+.tiptap-table-handle {
+  position: fixed;
+  pointer-events: auto;
+}
+
+.tiptap-table-handle-button {
+  background-color: var(--popover);
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  border-radius: 9999px;
+  box-shadow: var(--shadow-sm);
+  padding: 0;
+}
+
+.tiptap-table-handle-button:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.tiptap-table-handle-layer::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
 }
 
 /* ✅ Fixed resize cursor */

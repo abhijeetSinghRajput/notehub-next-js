@@ -11,8 +11,9 @@ import { migrateMathStrings } from "@tiptap/extension-mathematics";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import { useParams } from "next/navigation";
 import NoteSkeleton from "@/components/sekeletons/NoteSkeleton";
-import EditorBubbleMenu from "@/components/editor/EditorBubbleMenu";
 import { MenuBar } from "@/components/editor/MenuBar";
+import EditorBubbleMenu from "@/components/editor/EditorBubbleMenu";
+import TableHandles from "@/components/editor/TableHandles";
 import { extensions } from "@/components/editor/config/extensions.config";
 import { Inbox } from "lucide-react";
 import { INote } from "@/types/model";
@@ -159,6 +160,7 @@ const Tiptap = () => {
       }}
     >
       <EditorBubbleMenu />
+      <TableHandles />
     </EditorProvider>
   );
 };
