@@ -410,21 +410,35 @@ div:has(> .tiptap.ProseMirror) {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 50;
+  z-index: 51;
   transition: opacity 120ms ease;
   pointer-events: none;
 }
 
+.tiptap-table-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background-color: color-mix(in oklch, var(--background) 30%, transparent);
+  pointer-events: auto;
+}
+
 .tiptap-table-handle {
   position: fixed;
+  z-index: 55;
   pointer-events: auto;
+}
+
+.tiptap-table-handle--add-row,
+.tiptap-table-handle--add-column {
+  z-index: 52;
 }
 
 .tiptap-table-handle-button {
   background-color: var(--popover);
   border: 1px solid var(--border);
   color: var(--muted-foreground);
-  border-radius: 9999px;
+  /* border-radius: 9999px; */
   box-shadow: var(--shadow-sm);
   padding: 0;
 }
@@ -432,6 +446,23 @@ div:has(> .tiptap.ProseMirror) {
 .tiptap-table-handle-button:hover {
   background-color: var(--accent);
   color: var(--accent-foreground);
+}
+
+.tiptap td.tiptap-table-row-highlight,
+.tiptap th.tiptap-table-row-highlight,
+.tiptap td.tiptap-table-column-highlight,
+.tiptap th.tiptap-table-column-highlight {
+  background: rgba(35, 130, 226, 0.2) !important;
+}
+
+.tiptap td.tiptap-table-focused-cell,
+.tiptap th.tiptap-table-focused-cell {
+  outline: 2px solid rgba(35, 130, 226, 0.85);
+  outline-offset: -2px;
+}
+
+.tiptap table.tiptap-table-menu-active .selectedCell::after {
+  background: transparent;
 }
 
 .tiptap-table-handle-layer::after {

@@ -20,6 +20,8 @@ interface TablePopoverProps {
     triggerTooltip?: string;
     triggerSize?: VariantProps<typeof buttonVariants>["size"];
     triggerVariant?: VariantProps<typeof buttonVariants>["variant"];
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
 export const TablePopover = ({
@@ -30,43 +32,64 @@ export const TablePopover = ({
     triggerTooltip,
     triggerSize = "icon",
     triggerVariant = "ghost",
+    open,
+    onOpenChange,
 }: TablePopoverProps) => {
+    const canRunController = (controller: TableController) => {
+        const canChain = editor.can().chain().focus() as any;
+        const command = canChain[controller.command];
+        if (typeof command !== "function") return false;
+        if (controller.params) {
+            return command(controller.params).run();
+        }
+        return command().run();
+    };
+
     return (
-        <Popover>
+        <Popover open={open} onOpenChange={onOpenChange}>
             <PopoverTrigger asChild>
-                                <Button
-                                    variant={triggerVariant}
-                                    size={triggerSize}
-                                    tooltip={triggerTooltip}
-                                    className={triggerClassName}
-                                >
+                <Button
+                    variant={triggerVariant}
+                    size={triggerSize}
+                    tooltip={triggerTooltip}
+                    className={triggerClassName}
+                >
                     {triggerIcon}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="bg-popover border border-input rounded-lg  p-1 w-min" align="start">
-                {
-                    controllers.map((controller: TableController, index: number) => (
+            <PopoverContent
+                className="bg-popover border border-input rounded-lg p-1 w-min"
+                style={{ zIndex: 70 }}
+                align="start"
+            >
+                {controllers.map((controller: TableController, index: number) => {
+                    const isDisabled = !canRunController(controller);
+
+                    return (
                         <Button
                             key={index}
                             variant="ghost"
+                            disabled={isDisabled}
                             className="w-full justify-start p-2 font-normal leading-tight h-8"
-                                                        onClick={() => {
-                                                            const chain = editor.chain().focus() as any;
-                                                            const command = chain[controller.command];
-                                                            if (typeof command !== "function") return;
-                                                            if (controller.params) {
-                                                                command(controller.params).run();
-                                                            } else {
-                                                                command().run();
-                                                            }
-                                                        }}
+                            onClick={() => {
+                                if (isDisabled) return;
+                                const chain = editor.chain().focus() as any;
+                                const command = chain[controller.command];
+                                if (typeof command !== "function") return;
+                                if (controller.params) {
+                                    command(controller.params).run();
+                                } else {
+                                    command().run();
+                                }
+                                onOpenChange?.(false);
+                            }}
                         >
                             {controller.icon} {controller.tooltip}
                         </Button>
-                    ))
-                }
+                    );
+                })}
             </PopoverContent>
         </Popover>
-    )
-}
+    );
+};
 

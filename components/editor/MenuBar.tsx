@@ -134,7 +134,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   };
 
   return (
-    <div className="controll-group p-2 mb-2 sticky top-16 z-10 bg-background border-b border-input">
+    <div className="controll-group flex justify-center p-2 mb-2 sticky top-16 z-10 bg-background border-b border-input">
       <div className="Button-group flex flex-wrap gap-1">
         {FORMATTING_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button

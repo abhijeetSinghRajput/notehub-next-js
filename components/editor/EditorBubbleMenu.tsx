@@ -1,11 +1,12 @@
 import { useCurrentEditor, useEditorState } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
-import { TextSelection } from "@tiptap/pm/state";
+import { NodeSelection, TextSelection } from "@tiptap/pm/state";
 import AlignLeftIcon from "../icons/AlignLeftIcon";
 import AlignCenterIcon from "../icons/AlignCenterIcon";
 import AlignRightIcon from "../icons/AlignRightIcon";
 import { Bold, Italic, Strikethrough, Underline } from "lucide-react";
 import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
 
 export default function EditorBubbleMenu() {
   const { editor } = useCurrentEditor();
@@ -16,18 +17,25 @@ export default function EditorBubbleMenu() {
     editor.chain().focus().updateAttributes("image", { align }).run();
   };
 
-  const { align } = useEditorState({
+  const { align, isImageSelected } = useEditorState({
     editor,
     selector: ({ editor }) => {
-      const { $from } = editor.state.selection;
-      const node = $from.parent;
-      return node?.type.name === "image"
-        ? { align: node.attrs.align ?? "center" }
-        : { align: null };
+      const { selection } = editor.state;
+
+      const selectedImageNode =
+        selection instanceof NodeSelection && selection.node.type.name === "image"
+          ? selection.node
+          : null;
+
+      const isImageActive = selectedImageNode !== null || editor.isActive("image");
+      const imageAttributes = editor.getAttributes("image");
+
+      return {
+        isImageSelected: isImageActive,
+        align: isImageActive ? imageAttributes.align ?? "center" : null,
+      };
     },
   });
-
-  const isImage = editor.isActive("image");
 
   const imageActions = [
     { tooltip: "Left", onClick: () => setAlign("left"), isActive: align === "left", Icon: AlignLeftIcon },
@@ -57,16 +65,15 @@ export default function EditorBubbleMenu() {
             !editor.isActive("image") &&
             !editor.isActive("table");
 
-          const isImageSelected = editor.isActive("image");
-
           return hasTextSelection || isImageSelected;
         }}
       >
         <div className="bubble-menu bg-zinc-900 p-1 flex items-center gap-1 border border-zinc-800 rounded-xl">
-          {(isImage ? imageActions : formatActions).map((item, index) => (
+          {(isImageSelected ? imageActions : formatActions).map((item, index) => (
             <Button
               key={index}
-              className={item.isActive ? "is-active" : ""}
+              variant={"ghost"}
+              className={cn("hover:bg-zinc-800 dark:hover:bg-zinc-800", item.isActive && "is-active")}
               onClick={item.onClick}
             >
               <item.Icon className="h-4 w-4" />

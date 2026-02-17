@@ -38,6 +38,19 @@ import TableOfContents, {
 } from "@tiptap/extension-table-of-contents";
 import { ResizableImageExtension } from "../ResizableImageExtension";
 
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    tableActions: {
+      moveColumnLeft: () => ReturnType;
+      moveColumnRight: () => ReturnType;
+      moveRowUp: () => ReturnType;
+      moveRowDown: () => ReturnType;
+      sortColumnAsc: () => ReturnType;
+      sortColumnDesc: () => ReturnType;
+    };
+  }
+}
+
 const lowlight = createLowlight(all);
 
 const TabExtension = Extension.create({
