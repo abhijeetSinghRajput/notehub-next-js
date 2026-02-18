@@ -70,7 +70,7 @@ export function LinkDialog({ editor }: { editor: Editor }) {
         <Button
           tooltip="Insert Link"
           size="icon"
-          variant="outline"
+          variant="ghost"
           onClick={() => openDialog("openLinkDialog")}
           disabled={!editor.can().setLink({ href: "" })}
           aria-label="Insert Link"

@@ -5,28 +5,19 @@ import { Button } from "../ui/button";
 import {
   UploadCloudIcon,
   Loader2,
-  HighlighterIcon,
-  Palette,
   TableIcon,
-  Ellipsis,
-  EllipsisVertical,
   CloudDownloadIcon,
 } from "lucide-react";
-import TooltipWrapper from "../TooltipWrapper";
 import { SelectHeading } from "./SelectHeading";
-import { ColorPicker } from "./ColorPicker";
 import { TablePopover } from "./TablePopover";
 import {
   FORMATTING_BUTTONS,
-  LIST_BUTTONS,
   LIST_CONTROL_BUTTONS,
   BLOCK_BUTTONS,
   CONTROL_BUTTONS,
-  ALIGNMENT_BUTTONS,
   TABLE_BUTTONS,
   TABLE_ROW_CONTROLS,
   TABLE_COLUMN_CONTROLS,
-  COLORS,
 } from "./config/menu.config";
 import { LinkDialog } from "./LinkDialog";
 const MathDialog = React.lazy(() => import("./MathDialog"));
@@ -35,10 +26,14 @@ import { useDraftStore } from "@/app/stores/useDraftStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useRouter } from "next/navigation";
 import TextColorDropdown from "./TextColorDropdown";
+import TableRowIcon from "../icons/TableRowIcon";
+import TableColIcon from "../icons/TableColIcon";
+import ListDropdown from "./ListDropdown";
+import TextAlignDropdown from "./TextAlignDropdown";
 
 export const MenuBar = ({ noteId }: { noteId: string }) => {
   const { editor } = useCurrentEditor();
-  const {authUser} = useAuthStore();
+  const { authUser } = useAuthStore();
   const router = useRouter();
   const { updateContent, status, getNoteContent } = useNoteStore();
   const { clearDraft } = useDraftStore();
@@ -134,8 +129,21 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   };
 
   return (
-    <div className="controll-group flex justify-center p-2 mb-2 sticky top-16 z-10 bg-background border-b border-input">
-      <div className="Button-group flex flex-wrap gap-1">
+    <div className="controll-group flex justify-center mb-2 sticky top-16 z-10 bg-background border-b border-input">
+      <div className="p-2 Button-group flex gap-1 overflow-y-auto hide-scrollbar">
+        <Button
+          tooltip={"Ctrl + S"}
+          disabled={!noteId || status.noteContent.state === "saving"}
+          onClick={handleContentSave}
+        >
+          {status.noteContent.state === "saving" ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <UploadCloudIcon />
+          )}
+          Save
+        </Button>
+
         {FORMATTING_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
             tooltip={tooltip}
@@ -149,8 +157,11 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             {icon}
           </Button>
         ))}
-        
-        <TextColorDropdown editor={editor}/>
+
+        <TextColorDropdown editor={editor} />
+        <SelectHeading editor={editor} />
+        <ListDropdown editor={editor} />
+        <TextAlignDropdown editor={editor} />
 
         {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
@@ -161,21 +172,9 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             onClick={() => (editor.chain().focus() as any)[command]().run()}
             variant={editor.isActive(name) ? "secondary" : "ghost"}
             disabled={
-              name === "code" && !(editor.can().chain().focus() as any)[command]().run()
+              name === "code" &&
+              !(editor.can().chain().focus() as any)[command]().run()
             }
-          >
-            {icon}
-          </Button>
-        ))}
-
-        {LIST_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
-          <Button
-            tooltip={tooltip}
-            aria-label={tooltip}
-            key={index}
-            size="icon"
-            onClick={() => (editor.chain().focus() as any)[command]().run()}
-            variant={editor.isActive(name) ? "secondary" : "ghost"}
           >
             {icon}
           </Button>
@@ -196,7 +195,8 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
               }
             }}
             disabled={
-              !(editor.can() as any)[command](name[0]) && !(editor.can() as any)[command](name[1])
+              !(editor.can() as any)[command](name[0]) &&
+              !(editor.can() as any)[command](name[1])
             }
           >
             {icon}
@@ -216,38 +216,24 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             {icon}
           </Button>
         ))}
-
-        {ALIGNMENT_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
-          <Button
-            tooltip={tooltip}
-            aria-label={tooltip}
-            key={index}
-            size="icon"
-            onClick={() => (editor.chain().focus() as any)[command](name).run()}
-            variant={
-              editor.isActive({ textAlign: name }) ? "secondary" : "ghost"
-            }
-          >
-            {icon}
-          </Button>
-        ))}
-        <SelectHeading editor={editor} />
-
-        <div className="border rounded-lg">
+        <div className="border rounded-lg shrink-0">
           <TablePopover
             editor={editor}
+            triggerTooltip={"table option"}
             controllers={TABLE_BUTTONS}
             triggerIcon={<TableIcon />}
           />
           <TablePopover
             editor={editor}
+            triggerTooltip={"column option"}
             controllers={TABLE_COLUMN_CONTROLS}
-            triggerIcon={<Ellipsis />}
+            triggerIcon={<TableColIcon />}
           />
           <TablePopover
             editor={editor}
+            triggerTooltip={"row option"}
             controllers={TABLE_ROW_CONTROLS}
-            triggerIcon={<EllipsisVertical />}
+            triggerIcon={<TableRowIcon />}
           />
         </div>
 
@@ -257,20 +243,6 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
         </Suspense>
         <LinkDialog editor={editor} />
 
-        <Button
-          tooltip={"Ctrl + S"}
-          disabled={!noteId || status.noteContent.state === "saving"}
-          onClick={handleContentSave}
-        >
-          {status.noteContent.state === "saving" ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <>
-              <UploadCloudIcon />
-              Save
-            </>
-          )}
-        </Button>
         <Button
           tooltip={"Revert Back"}
           size="icon"

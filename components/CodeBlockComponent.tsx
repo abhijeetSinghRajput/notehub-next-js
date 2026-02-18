@@ -51,9 +51,9 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] bg-zinc-800 border-zinc-800 p-0" align="start">
-            <Command className="bg-transparent text-zinc-50 border-zinc-800">
-              <CommandInput placeholder="Search language..." className="h-9 placeholder:text-zinc-400" />
+          <PopoverContent className="w-50 bg-neutral-800 border-neutral-800 p-0" align="start">
+            <Command className="bg-transparent text-neutral-50 border-neutral-800">
+              <CommandInput placeholder="Search language..." className="h-9 placeholder:text-neutral-400" />
               <CommandList>
                 <CommandEmpty>No language found.</CommandEmpty>
                 <CommandGroup>

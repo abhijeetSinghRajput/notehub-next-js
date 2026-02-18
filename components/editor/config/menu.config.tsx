@@ -27,6 +27,7 @@ import {
     Trash,
     UnderlineIcon,
     Undo,
+    ListTodo,
 } from 'lucide-react'
 import InsertColLeftIcon from '@/components/icons/InsertColLeftIcon';
 import InsertColRightIcon from '@/components/icons/InsertColRightIcon';
@@ -74,20 +75,23 @@ export const FORMATTING_BUTTONS = [
 
 export const LIST_BUTTONS = [
     {
+        label: 'ordered list',
         name: 'orderedList',
         icon: <ListOrdered />,
         command: 'toggleOrderedList',
         tooltip: "Ctrl + Shift + 7",
     },
     {
+        label: 'bullet list',
         name: 'bulletList',
         icon: <List />,
         command: 'toggleBulletList',
         tooltip: "Ctrl + Shift + 8",
     },
     {
+        label: 'task list',
         name: 'taskList',
-        icon: <ListChecks />,
+        icon: <ListTodo />,
         command: 'toggleTaskList',
         tooltip: "Ctrl + Shift + 9",
     }
@@ -114,13 +118,13 @@ export const BLOCK_BUTTONS = [
         name: 'codeBlock',
         icon: <CodeSquare />,
         command: 'toggleCodeBlock',
-        tooltip: 'Code Block"',
+        tooltip: 'Code Block',
     },
     {
         name: 'code',
         icon: <Code />,
         command: 'toggleCode',
-        tooltip: 'Code',
+        tooltip: 'Inline Code',
     },
     {
         name: 'blockquote',
@@ -145,24 +149,28 @@ export const CONTROL_BUTTONS = [
 
 export const ALIGNMENT_BUTTONS = [
     {
+        label: 'align left',
         name: 'left',
         icon: <AlignLeft />,
         command: 'setTextAlign',
         tooltip: 'Ctrl + Shift + L',
     },
     {
+        label: 'align center',
         name: 'center',
         icon: <AlignCenter />,
         command: 'setTextAlign',
         tooltip: 'Ctrl + Shift + E',
     },
     {
+        label: 'align right',
         name: 'right',
         icon: <AlignRight />,
         command: 'setTextAlign',
         tooltip: 'Ctrl + Shift + R',
     },
     {
+        label: 'align justify',
         name: 'justify',
         icon: <AlignJustify />,
         command: 'setTextAlign',

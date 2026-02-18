@@ -14,8 +14,8 @@ const InsertRowBelowIcon = () => {
           fill="currentColor"
         ></path>
         <path
-          fill-rule="evenodd"
-          clip-rule="evenodd"
+          fillRule="evenodd"
+          clipRule="evenodd"
           d="M19 2C20.6569 2 22 3.34315 22 5V9C22 10.6569 20.6569 12 19 12H5C3.34315 12 2 10.6569 2 9V5C2 3.34315 3.34315 2 5 2H19ZM5 4C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H11V4H5ZM13 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4H13V10Z"
           fill="currentColor"
         ></path></svg>

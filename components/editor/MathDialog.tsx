@@ -153,7 +153,7 @@ export default function MathDialog({ editor }: { editor: Editor }) {
           tooltip="Equation"
           aria-label="open equation dialog"
           size="icon"
-          variant="outline"
+          variant="ghost"
           onClick={() => {
             // If user manually opens the dialog via button, we treat it as insert (no edit)
             setEditMode("inline");

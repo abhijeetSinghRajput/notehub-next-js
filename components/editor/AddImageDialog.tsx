@@ -32,7 +32,7 @@ const AddImageDialog = ({ editor }: { editor: Editor }) => {
       }
     >
       <DialogTrigger asChild>
-        <Button size="icon" variant="outline">
+        <Button size="icon" variant="ghost">
           <ImageIcon />
         </Button>
       </DialogTrigger>

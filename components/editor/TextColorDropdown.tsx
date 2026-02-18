@@ -106,7 +106,7 @@ export const ColorPickerDropdown: React.FC<ColorPickerProps> = ({ editor }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2">
+        <Button variant="ghost" className="gap-1 px-2">
           <div
             className="w-5 h-5 rounded flex items-center justify-center text-sm font-semibold border"
             style={{

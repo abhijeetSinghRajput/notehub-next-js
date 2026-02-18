@@ -10,8 +10,8 @@ const InsertRowAboveIcon = () => {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M19 12C20.6569 12 22 13.3431 22 15V19C22 20.6569 20.6569 22 19 22H5C3.34315 22 2 20.6569 2 19V15C2 13.3431 3.34315 12 5 12H19ZM5 14C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H11V14H5ZM13 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14H13V20Z"
         fill="currentColor"
       ></path>

@@ -9,8 +9,8 @@ import {
 import { Button } from "../ui/button";
 import { findTable, TableMap } from "prosemirror-tables";
 
-const HANDLE_SIZE = 22;
-const HANDLE_GAP = 6;
+const HANDLE_SIZE = 20;
+const HANDLE_GAP = 0;
 const HOVER_PADDING = 10;
 
 const clamp = (value: number, min: number) => Math.max(value, min);

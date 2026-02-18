@@ -10,8 +10,8 @@ const InsertColRightIcon = () => {
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          fill-rule="evenodd"
-          clip-rule="evenodd"
+          fillRule="evenodd"
+          clipRule="evenodd"
           d="M9 2C10.6569 2 12 3.34315 12 5V19C12 20.6569 10.6569 22 9 22H5C3.34315 22 2 20.6569 2 19V5C2 3.34315 3.34315 2 5 2H9ZM4 19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V13H4V19ZM5 4C4.44772 4 4 4.44772 4 5V11H10V5C10 4.44772 9.55228 4 9 4H5Z"
           fill="currentColor"
         ></path>
