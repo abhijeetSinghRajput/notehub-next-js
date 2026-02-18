@@ -19,11 +19,21 @@ function DropdownMenuPortal({
 }
 
 function DropdownMenuTrigger({
+  onPointerDown,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
   return (
     <DropdownMenuPrimitive.Trigger
       data-slot="dropdown-menu-trigger"
+      onPointerDown={(event) => {
+        onPointerDown?.(event)
+
+        if (event.defaultPrevented) return
+
+        if (event.pointerType === "touch") {
+          event.preventDefault()
+        }
+      }}
       {...props}
     />
   )

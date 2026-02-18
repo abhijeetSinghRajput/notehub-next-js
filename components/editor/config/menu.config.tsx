@@ -33,6 +33,7 @@ import InsertColLeftIcon from '@/components/icons/InsertColLeftIcon';
 import InsertColRightIcon from '@/components/icons/InsertColRightIcon';
 import InsertRowBelowIcon from '@/components/icons/InsertRowBelowIcon';
 import InsertRowAboveIcon from '@/components/icons/InsertRowAboveIcon';
+import BlockquoteIcon from '@/components/icons/BlockquoteIcon';
 
 // export const COLORS = ['#fb7185', '#fdba74', '#d9f99d', '#a7f3d0', '#a5f3fc', '#a5b4fc', '#808080'];
 export const COLORS = [
@@ -69,6 +70,12 @@ export const FORMATTING_BUTTONS = [
         icon: < Strikethrough />,
         command: 'toggleStrike',
         tooltip: 'Ctrl + Shift + S',
+    },
+    {
+        name: 'code',
+        icon: <Code />,
+        command: 'toggleCode',
+        tooltip: 'Inline Code',
     },
 ]
 
@@ -121,14 +128,8 @@ export const BLOCK_BUTTONS = [
         tooltip: 'Code Block',
     },
     {
-        name: 'code',
-        icon: <Code />,
-        command: 'toggleCode',
-        tooltip: 'Inline Code',
-    },
-    {
         name: 'blockquote',
-        icon: <Quote />,
+        icon: <BlockquoteIcon />,
         command: 'toggleBlockquote',
         tooltip: 'blockquote',
     },

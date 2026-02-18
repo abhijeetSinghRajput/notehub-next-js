@@ -7,7 +7,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { ImageIcon } from "lucide-react";
+import { ImagePlusIcon } from "lucide-react";
 import FileDropZone from "../FileDropZone";
 import { useEditorStore } from "@/app/stores/useEditorStore";
 
@@ -21,7 +21,7 @@ const AddImageDialog = ({ editor }: { editor: Editor }) => {
       }
       closeDialog("openImageDialog");
     },
-    [editor]
+    [editor],
   );
 
   return (
@@ -33,7 +33,7 @@ const AddImageDialog = ({ editor }: { editor: Editor }) => {
     >
       <DialogTrigger asChild>
         <Button size="icon" variant="ghost">
-          <ImageIcon />
+          <ImagePlusIcon />
         </Button>
       </DialogTrigger>
 

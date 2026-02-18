@@ -30,6 +30,7 @@ import TableRowIcon from "../icons/TableRowIcon";
 import TableColIcon from "../icons/TableColIcon";
 import ListDropdown from "./ListDropdown";
 import TextAlignDropdown from "./TextAlignDropdown";
+import AddNodeDropdown from "./AddNodeDropdown";
 
 export const MenuBar = ({ noteId }: { noteId: string }) => {
   const { editor } = useCurrentEditor();
@@ -144,42 +145,53 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
           Save
         </Button>
 
-        {FORMATTING_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
-          <Button
-            tooltip={tooltip}
-            aria-label={tooltip}
-            key={index}
-            size="icon"
-            onClick={() => (editor.chain().focus() as any)[command]().run()}
-            disabled={!(editor.can().chain().focus() as any)[command]().run()}
-            variant={editor.isActive(name) ? "secondary" : "ghost"}
-          >
-            {icon}
-          </Button>
-        ))}
+        <div className="hidden md:flex gap-0.5 border-r pr-1">
+          {FORMATTING_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
+            <Button
+              tooltip={tooltip}
+              aria-label={tooltip}
+              key={index}
+              size="icon"
+              onClick={() => (editor.chain().focus() as any)[command]().run()}
+              disabled={!(editor.can().chain().focus() as any)[command]().run()}
+              variant={editor.isActive(name) ? "secondary" : "ghost"}
+            >
+              {icon}
+            </Button>
+          ))}
+          <LinkDialog editor={editor} />
+        </div>
+
+        <AddNodeDropdown editor={editor} className="md:hidden" />
 
         <TextColorDropdown editor={editor} />
         <SelectHeading editor={editor} />
         <ListDropdown editor={editor} />
         <TextAlignDropdown editor={editor} />
 
-        {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
-          <Button
-            tooltip={tooltip}
-            aria-label={tooltip}
-            key={index}
-            size="icon"
-            onClick={() => (editor.chain().focus() as any)[command]().run()}
-            variant={editor.isActive(name) ? "secondary" : "ghost"}
-            disabled={
-              name === "code" &&
-              !(editor.can().chain().focus() as any)[command]().run()
-            }
-          >
-            {icon}
-          </Button>
-        ))}
-
+        <div className="hidden md:flex gap-0.5 border-x px-1">
+          {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
+            <Button
+              tooltip={tooltip}
+              aria-label={tooltip}
+              key={index}
+              size="icon"
+              onClick={() => (editor.chain().focus() as any)[command]().run()}
+              variant={editor.isActive(name) ? "secondary" : "ghost"}
+              disabled={
+                name === "code" &&
+                !(editor.can().chain().focus() as any)[command]().run()
+              }
+            >
+              {icon}
+            </Button>
+          ))}
+          <AddImageDialog editor={editor} />
+          <Suspense fallback={null}>
+            <MathDialog editor={editor} />
+          </Suspense>
+        </div>
+        
         {LIST_CONTROL_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
             tooltip={tooltip}
@@ -236,13 +248,6 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             triggerIcon={<TableRowIcon />}
           />
         </div>
-
-        <AddImageDialog editor={editor} />
-        <Suspense fallback={null}>
-          <MathDialog editor={editor} />
-        </Suspense>
-        <LinkDialog editor={editor} />
-
         <Button
           tooltip={"Revert Back"}
           size="icon"
