@@ -365,6 +365,14 @@ div:has(> .tiptap.ProseMirror) {
 .tiptap td > *,
 .tiptap th > * {
   margin-bottom: 0;
+  margin-top: 0;
+}
+
+/* Ensure paragraphs in table cells have proper height */
+.tiptap td p,
+.tiptap th p {
+  min-height: 1.4em;
+  margin: 0;
 }
 
 /* ── Header cells ── */

@@ -50,17 +50,23 @@ export default function AppBreadcrumbs() {
     const tempRoutes: RouteItem[] = [{ name: "NoteHub", path: "/" }];
     let path = "/";
 
-    segments.forEach((segment, index) => {
+    for (let i = 0; i < segments.length; i++) {
+      let segment = segments[i];
       path += `${segment}/`;
-      // Customize display names if needed
-      let name = segment;
-      if (segment === "note" && segments[index + 1]) {
-        const noteId = segments[index + 1];
-        name = `Note ${noteId}`; // or fetch note title dynamically
-        path += `${noteId}/`;
+      
+      if (segment === "note") {
+        const noteId = segments[++i];
+        if (noteId) {
+          path += `${noteId}/`;
+          // TODO: Implement getNoteName to fetch note title dynamically
+          const noteName = `Note ${noteId}`;
+          tempRoutes.push({ name: noteName, path });
+        }
+      } else {
+        const name = segment;
+        tempRoutes.push({ name, path });
       }
-      tempRoutes.push({ name, path });
-    });
+    }
 
     return tempRoutes;
   }, [pathname]);
