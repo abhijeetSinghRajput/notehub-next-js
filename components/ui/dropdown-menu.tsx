@@ -4,10 +4,44 @@ import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
+type DropdownMenuContextValue = {
+  open: boolean
+  setOpen: (nextOpen: boolean) => void
+}
+
+const DropdownMenuContext = React.createContext<DropdownMenuContextValue | null>(null)
+
 function DropdownMenu({
+  open: openProp,
+  defaultOpen,
+  onOpenChange,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
-  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
+  const isControlled = openProp !== undefined
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen ?? false)
+
+  const open = isControlled ? openProp : uncontrolledOpen
+
+  const setOpen = React.useCallback(
+    (nextOpen: boolean) => {
+      if (!isControlled) {
+        setUncontrolledOpen(nextOpen)
+      }
+      onOpenChange?.(nextOpen)
+    },
+    [isControlled, onOpenChange],
+  )
+
+  return (
+    <DropdownMenuContext.Provider value={{ open, setOpen }}>
+      <DropdownMenuPrimitive.Root
+        data-slot="dropdown-menu"
+        open={open}
+        onOpenChange={setOpen}
+        {...props}
+      />
+    </DropdownMenuContext.Provider>
+  )
 }
 
 function DropdownMenuPortal({
@@ -20,19 +54,25 @@ function DropdownMenuPortal({
 
 function DropdownMenuTrigger({
   onPointerDown,
+  onClick,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
+  const dropdownMenuContext = React.useContext(DropdownMenuContext)
+
   return (
     <DropdownMenuPrimitive.Trigger
       data-slot="dropdown-menu-trigger"
       onPointerDown={(event) => {
         onPointerDown?.(event)
 
+        event.preventDefault()
+      }}
+      onClick={(event) => {
+        onClick?.(event)
+
         if (event.defaultPrevented) return
 
-        if (event.pointerType === "touch") {
-          event.preventDefault()
-        }
+        dropdownMenuContext?.setOpen(!dropdownMenuContext.open)
       }}
       {...props}
     />
