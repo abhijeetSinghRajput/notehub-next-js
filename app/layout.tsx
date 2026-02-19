@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Merriweather, Roboto, Source_Serif_4 } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 import "./globals.css";
 
 import "katex/dist/katex.min.css";
@@ -137,6 +139,7 @@ export default function RootLayout({
             </CollaboratorManagerProvider>
 
             <Toaster />
+            <SpeedInsights />
           </ThemeProvider>
         </AuthProvider>
       </body>
