@@ -48,6 +48,11 @@
   white-space: pre-wrap;
 }
 
+.ProseMirror a {
+  pointer-events: none;
+  cursor: text;
+}
+
 .ProseMirror code {
   tab-size: 2;
   -moz-tab-size: 2;
@@ -358,7 +363,6 @@ div:has(> .tiptap.ProseMirror) {
   white-space: break-spaces;
   word-break: break-word;
   background-color: var(--background, #fff);
-  color: rgba(55, 53, 47, 1);
 }
 
 /* remove any default bottom-margin on direct children */

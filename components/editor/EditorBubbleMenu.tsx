@@ -4,12 +4,21 @@ import { NodeSelection, TextSelection } from "@tiptap/pm/state";
 import AlignLeftIcon from "../icons/AlignLeftIcon";
 import AlignCenterIcon from "../icons/AlignCenterIcon";
 import AlignRightIcon from "../icons/AlignRightIcon";
-import { Bold, Code, Italic, Strikethrough, Underline } from "lucide-react";
+import {
+  Bold,
+  Code,
+  Italic,
+  LinkIcon,
+  Strikethrough,
+  Underline,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useEditorStore } from "@/app/stores/useEditorStore";
 
 export default function EditorBubbleMenu() {
   const { editor } = useCurrentEditor();
+  const { openDialog } = useEditorStore();
   if (!editor) return null;
 
   // -------- Image alignment --------
@@ -23,16 +32,18 @@ export default function EditorBubbleMenu() {
       const { selection } = editor.state;
 
       const selectedImageNode =
-        selection instanceof NodeSelection && selection.node.type.name === "image"
+        selection instanceof NodeSelection &&
+        selection.node.type.name === "image"
           ? selection.node
           : null;
 
-      const isImageActive = selectedImageNode !== null || editor.isActive("image");
+      const isImageActive =
+        selectedImageNode !== null || editor.isActive("image");
       const imageAttributes = editor.getAttributes("image");
 
       return {
         isImageSelected: isImageActive,
-        align: isImageActive ? imageAttributes.align ?? "center" : null,
+        align: isImageActive ? (imageAttributes.align ?? "center") : null,
       };
     },
   });
@@ -42,21 +53,36 @@ export default function EditorBubbleMenu() {
       tooltip: "Left",
       onClick: () => setAlign("left"),
       isActive: align === "left",
-      isDisabled: !editor.can().chain().focus().updateAttributes("image", { align: "left" }).run(),
+      isDisabled: !editor
+        .can()
+        .chain()
+        .focus()
+        .updateAttributes("image", { align: "left" })
+        .run(),
       Icon: AlignLeftIcon,
     },
     {
       tooltip: "Center",
       onClick: () => setAlign("center"),
       isActive: align === "center",
-      isDisabled: !editor.can().chain().focus().updateAttributes("image", { align: "center" }).run(),
+      isDisabled: !editor
+        .can()
+        .chain()
+        .focus()
+        .updateAttributes("image", { align: "center" })
+        .run(),
       Icon: AlignCenterIcon,
     },
     {
       tooltip: "Right",
       onClick: () => setAlign("right"),
       isActive: align === "right",
-      isDisabled: !editor.can().chain().focus().updateAttributes("image", { align: "right" }).run(),
+      isDisabled: !editor
+        .can()
+        .chain()
+        .focus()
+        .updateAttributes("image", { align: "right" })
+        .run(),
       Icon: AlignRightIcon,
     },
   ];
@@ -99,6 +125,9 @@ export default function EditorBubbleMenu() {
     },
   ];
 
+  const BASE_CLASS =
+    "hover:bg-neutral-800 active:bg-transparent dark:hover:bg-neutral-800 dark:active:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed";
+
   return (
     <>
       <BubbleMenu
@@ -117,25 +146,36 @@ export default function EditorBubbleMenu() {
           return hasTextSelection || isImageSelected;
         }}
       >
-        <div className="bubble-menu bg-neutral-900 p-1 flex items-center gap-1 border border-neutral-800 rounded-xl">
-          {(isImageSelected ? imageActions : inlineActions).map((item, index) => (
-            <Button
-              key={index}
-              variant={"ghost"}
-              disabled={
-                "command" in item
-                  ? !((editor.can().chain().focus() as any)[item.command]().run())
-                  : item.isDisabled
-              }
-              className={cn(
-                "hover:bg-neutral-800 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed",
-                item.isActive && "is-active",
-              )}
-              onClick={item.onClick}
-            >
-              <item.Icon className="h-4 w-4" />
-            </Button>
-          ))}
+        <div className="bubble-menu bg-neutral-900 p-1 flex items-center border border-neutral-800 rounded-xl">
+          {(isImageSelected ? imageActions : inlineActions).map(
+            (item, index) => (
+              <Button
+                key={index}
+                variant={"ghost"}
+                disabled={
+                  "command" in item
+                    ? !(editor.can().chain().focus() as any)
+                        [item.command]()
+                        .run()
+                    : item.isDisabled
+                }
+                className={cn(BASE_CLASS, item.isActive && "is-active")}
+                onClick={item.onClick}
+              >
+                <item.Icon className="h-4 w-4" />
+              </Button>
+            ),
+          )}
+
+          <span className="bg-border h-8 w-px mx-2"/>
+          
+          <Button
+            variant={"ghost"}
+            className={cn(BASE_CLASS, editor.isActive("link") && "is-active")}
+            onClick={() => openDialog("openLinkDialog")}
+          >
+            <LinkIcon />
+          </Button>
         </div>
       </BubbleMenu>
     </>

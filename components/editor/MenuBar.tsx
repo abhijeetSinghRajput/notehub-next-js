@@ -130,8 +130,8 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   };
 
   return (
-    <div className="controll-group flex justify-center mb-2 sticky top-16 z-10 bg-background border-b border-input">
-      <div className="p-2 Button-group flex gap-1 overflow-y-auto hide-scrollbar">
+    <div className="controll-group overflow-y-auto flex justify-center mb-2 sticky top-16 z-10 bg-background border-b border-input">
+      <div className="p-2 Button-group flex gap-1">
         <Button
           tooltip={"Ctrl + S"}
           disabled={!noteId || status.noteContent.state === "saving"}
