@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     canonical: "/login",
   },
   robots: {
-    index: false,
+    index: true,
     follow: true,
   },
   openGraph: {

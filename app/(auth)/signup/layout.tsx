@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     canonical: "/signup",
   },
   robots: {
-    index: false,
+    index: true,
     follow: true,
   },
   openGraph: {
