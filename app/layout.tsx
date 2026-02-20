@@ -15,10 +15,8 @@ import { ThemeShortcut } from "@/components/theme-shortcut";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CollaboratorManagerProvider } from "@/contex/CollaboratorManagerContext";
 import { CollaboratorsDialog } from "@/components/CollaboratorsDialog";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import DashboardHeader from "@/components/DashboardHeader";
-import AppSidebar from "@/components/dashboard/AppSidebar";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import AppShell from "@/components/providers/AppShell";
 
 import { Toaster } from "sonner";
 
@@ -128,13 +126,7 @@ export default function RootLayout({
             <CollaboratorManagerProvider>
               <TooltipProvider>
                 <CollaboratorsDialog />
-                <SidebarProvider>
-                  <AppSidebar />
-                  <SidebarInset>
-                    <DashboardHeader />
-                    {children}
-                  </SidebarInset>
-                </SidebarProvider>
+                <AppShell>{children}</AppShell>
               </TooltipProvider>
             </CollaboratorManagerProvider>
 

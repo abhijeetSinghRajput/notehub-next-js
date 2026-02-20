@@ -1,0 +1,14 @@
+import { Metadata } from "next";
+import { ReactNode } from "react";
+
+export const metadata: Metadata = {
+  title: "Forgot Password",
+  description: "Reset your NoteHub password securely.",
+  alternates: {
+    canonical: "/forgot-password",
+  },
+};
+
+export default function ForgotPasswordLayout({ children }: { children: ReactNode }) {
+  return children;
+}
