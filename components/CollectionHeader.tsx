@@ -1,6 +1,7 @@
 // src > pages > collection > CollectionHeader
 import AvatarStack from "@/components/CollaboratorAvatars";
 import BadgeIcon from "@/components/icons/BadgeIcon";
+import SharePopoverWrapper from "@/components/ShareNotePopover.client";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +16,14 @@ interface CollectionHeaderProps {
   user: IUser;
   collection: ICollection;
   isOwner: boolean;
+  shareLink: string;
 }
 
 export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
   user,
   collection,
   isOwner,
+  shareLink,
 }) => {
   if (!user) return null;
   const { openDialog } = useCollaboratorManager();
@@ -31,43 +34,46 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
   return (
     <div className="flex w-full flex-col gap-6">
       {/* User Profile Section */}
-      <div className="flex items-center gap-4">
-        <Dialog>
-          <DialogTrigger>
-            <Avatar className="h-16 w-16 border-2 border-primary/20">
-              <AvatarImage
+      <div className="flex items-center justify-between gap-4 w-full">
+        <div className="flex items-center gap-4">
+          <Dialog>
+            <DialogTrigger>
+              <Avatar className="h-16 w-16 border-2 border-primary/20">
+                <AvatarImage
+                  src={user?.avatar}
+                  alt={user?.fullName || "User Profile Photo"}
+                />
+                <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                  {user?.fullName?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </DialogTrigger>
+            <DialogContent
+              className="rounded-full max-w-96 max-h-96 p-0 overflow-hidden"
+              style={{ borderRadius: "50%" }}
+            >
+              <img
+                className="w-full h-full"
                 src={user?.avatar}
-                alt={user?.fullName || "User Profile Photo"}
+                alt={user?.fullName}
               />
-              <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                {user?.fullName?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </DialogTrigger>
-          <DialogContent
-            className="rounded-full max-w-96 max-h-96 p-0 overflow-hidden"
-            style={{ borderRadius: "50%" }}
-          >
-            <img
-              className="w-full h-full"
-              src={user?.avatar}
-              alt={user?.fullName}
-            />
-          </DialogContent>
-        </Dialog>
-        <div>
-          <Link href={`/${user?.userName}`} className="block">
-            <h2 className="flex gap-2.5 items-center text-lg sm:text-xl md:text-2xl font-bold tracking-tight">
-              {user?.fullName}
-              {user.role === "admin" && (
-                <BadgeIcon className="size-4 sm:size-5 text-blue-500" />
-              )}
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground transition-colors">
-              @{user?.userName}
-            </p>
-          </Link>
+            </DialogContent>
+          </Dialog>
+          <div>
+            <Link href={`/${user?.userName}`} className="block">
+              <h2 className="flex gap-2.5 items-center text-lg sm:text-xl md:text-2xl font-bold tracking-tight">
+                {user?.fullName}
+                {user.role === "admin" && (
+                  <BadgeIcon className="size-4 sm:size-5 text-blue-500" />
+                )}
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground transition-colors">
+                @{user?.userName}
+              </p>
+            </Link>
+          </div>
         </div>
+        <SharePopoverWrapper shareLink={shareLink} triggerVariant="ghost" />
       </div>
 
       {collection && (

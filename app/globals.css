@@ -208,6 +208,7 @@
 
 ::selection {
   background-color: #2383e247;
+  color: var(--foreground) !important;
 }
 
 :root {

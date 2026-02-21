@@ -43,12 +43,12 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import EditorTypographyControls from "@/components/editor/EditorTypographyControls";
-import ShareNotePopover from "@/components/ShareNotePopover.client";
+import SharePopover from "@/components/SharePopover.client";
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import type { INote, IUser } from "@/types/model";
 
 const MemoEditorTypographyControls = memo(EditorTypographyControls);
-const MemoShareNotePopover = memo(ShareNotePopover);
+const MemoSharePopover = memo(SharePopover);
 const MemoScrollTopButton = memo(ScrollTopButton);
 const MemoFooter = memo(Footer);
 
@@ -622,7 +622,7 @@ const FloatingActionButtons = memo<FloatingActionButtonsProps>(
           </Popover>
         )}
         <MemoEditorTypographyControls />
-        <MemoShareNotePopover
+        <MemoSharePopover
           shareLink={`${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${noteSlug}`}
         />
         {isOwner && (

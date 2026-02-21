@@ -36,6 +36,7 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
   const [errorStatus, setErrorStatus] = useState<number | null>(initialError || null);
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [collectionShareLink, setCollectionShareLink] = useState("");
   
   const { status, collections: ownerCollections } = useNoteStore();
   const { authUser } = useAuthStore();
@@ -79,6 +80,15 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!username || !collectionSlug) return;
+
+    setCollectionShareLink(
+      `${window.location.origin}/${username}/${collectionSlug}`,
+    );
+  }, [username, collectionSlug]);
 
   // Fetch data if not provided via props (client-side navigation)
   useEffect(() => {
@@ -128,6 +138,7 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
             user={author as IUser}
             collection={collection}
             isOwner={isOwner}
+            shareLink={collectionShareLink}
           />
         </div>
         

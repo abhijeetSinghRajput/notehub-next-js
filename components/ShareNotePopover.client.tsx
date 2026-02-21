@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { ShareNotePopover } from "./ShareNotePopover";
+import { SharePopover } from "./ShareNotePopover";
 
-function ShareNotePopoverWrapper({ shareLink }: { shareLink: string }) {
+function SharePopoverWrapper({
+  shareLink,
+  triggerVariant,
+}: {
+  shareLink: string;
+  triggerVariant?: React.ComponentProps<typeof SharePopover>["triggerVariant"];
+}) {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
@@ -14,12 +20,13 @@ function ShareNotePopoverWrapper({ shareLink }: { shareLink: string }) {
   };
 
   return (
-    <ShareNotePopover
+    <SharePopover
       shareLink={shareLink}
       copied={copied}
       onCopy={copyToClipboard}
+      triggerVariant={triggerVariant}
     />
   );
 }
 
-export default ShareNotePopoverWrapper;
+export default SharePopoverWrapper;

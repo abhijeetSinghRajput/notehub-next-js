@@ -28,6 +28,7 @@ import TooltipWrapper from "@/components/TooltipWrapper";
 import SortSelector from "@/components/SortSelector";
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import { ICollection, IUser } from "@/types/model";
+import SharePopoverWrapper from "@/components/ShareNotePopover.client";
 
 const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   const { username } = useParams();
@@ -59,6 +60,7 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   const [previewCover, setPreviewCover] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [profileShareLink, setProfileShareLink] = useState("");
 
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -97,6 +99,15 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
 
     fetchData();
   }, [username, authUser, ownerCollections, isOwner, getAllCollections]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const profilePath = typeof username === "string" ? username : user?.userName;
+    if (!profilePath) return;
+
+    setProfileShareLink(`${window.location.origin}/${profilePath}`);
+  }, [username, user?.userName]);
 
   const handleUploadImage = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -386,7 +397,7 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex m-0 justify-between w-full items-start">
+            <div className="flex m-0 justify-between w-full items-start gap-2">
               <div>
                 <h1 className="text-base sm:text-xl font-semibold flex items-center gap-2">
                   {user?.fullName}
@@ -398,17 +409,23 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
                   @{user?.userName}
                 </p>
               </div>
-              {isOwner && (
-                <TooltipWrapper message="Edit Profile">
-                  <Link
-                    href="/settings/profile"
-                    aria-label="Edit profile"
-                    className="hover:bg-muted rounded-md size-10 flex justify-center items-center"
-                  >
-                    <Pencil size={18} />
-                  </Link>
-                </TooltipWrapper>
-              )}
+              <div className="flex items-center gap-2">
+                {isOwner && (
+                  <TooltipWrapper message="Edit Profile">
+                    <Link
+                      href="/settings/profile"
+                      aria-label="Edit profile"
+                      className="hover:bg-muted rounded-full size-10 flex justify-center items-center"
+                    >
+                      <Pencil size={18} />
+                    </Link>
+                  </TooltipWrapper>
+                )}
+                <SharePopoverWrapper
+                  shareLink={profileShareLink}
+                  triggerVariant="ghost"
+                />
+              </div>
             </div>
           </div>
         </CardContent>

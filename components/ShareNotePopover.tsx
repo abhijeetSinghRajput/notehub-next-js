@@ -56,19 +56,26 @@ const socialMedia = [
   },
 ];
 
-interface ShareNotePopoverProps {
+interface SharePopoverProps {
   shareLink: string;
   copied: boolean;
   onCopy: () => void;
+  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
 }
 
-export function ShareNotePopover({ shareLink, copied, onCopy }: ShareNotePopoverProps) {
+export function SharePopover({
+  shareLink,
+  copied,
+  onCopy,
+  triggerVariant = "default",
+}: SharePopoverProps) {
   if (!shareLink?.trim()) return null;
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button
           tooltip="Share"
+          variant={triggerVariant}
           className="size-11 rounded-full"
           aria-label="Share note"
         >
