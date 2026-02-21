@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import EditorTypographyControls from "@/components/editor/EditorTypographyControls";
-import SharePopover from "@/components/SharePopover.client";
+import SharePopover from "@/components/ShareNotePopover.client";
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import type { INote, IUser } from "@/types/model";
 
