@@ -130,7 +130,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   };
 
   return (
-    <div className="controll-group overflow-y-auto flex justify-center mb-2 sticky top-16 z-10 bg-background border-b border-input">
+    <div className="controll-group overflow-x-auto flex justify-center mb-2 sticky top-16 z-50 bg-background border-b border-input">
       <div className="p-2 Button-group flex gap-1">
         <Button
           tooltip={"Ctrl + S"}
