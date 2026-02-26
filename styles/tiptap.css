@@ -412,11 +412,6 @@ div:has(> .tiptap.ProseMirror) {
   z-index: 10;
 }
 
-.tiptap .tableWrapper {
-  margin: 1.5rem 0;
-  overflow-x: auto;
-}
-
 /* ── Table Handle Controls ── */
 .tiptap-table-handle-layer {
   position: fixed;

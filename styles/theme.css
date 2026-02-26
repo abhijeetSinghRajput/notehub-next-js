@@ -451,9 +451,4 @@
     color: var(--foreground);
     font-family: "Roboto", sans-serif;
   }
-
-  .logo {
-    /* @apply font-semibold; */
-    font-family: "Audiowide";
-  }
 }

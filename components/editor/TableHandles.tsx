@@ -1,463 +1,359 @@
+"use client";
+
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useCurrentEditor } from "@tiptap/react";
-import { useEffect, useRef, useState } from "react";
 import { GripHorizontal, GripVertical, Plus } from "lucide-react";
-import { TablePopover } from "./TablePopover";
-import {
-  TABLE_COLUMN_CONTROLS,
-  TABLE_ROW_CONTROLS,
-} from "./config/menu.config";
-import { Button } from "../ui/button";
 import { findTable, TableMap } from "prosemirror-tables";
+import { TablePopover } from "./TablePopover";
+import { TABLE_COLUMN_CONTROLS, TABLE_ROW_CONTROLS } from "./config/menu.config";
+import { Button } from "../ui/button";
 
 const HANDLE_SIZE = 20;
-const HANDLE_GAP = 0;
-const HOVER_PADDING = 10;
+const GAP = 3;
 
-const clamp = (value: number, min: number) => Math.max(value, min);
+/**
+ * Synchronous position math — no async, no floating-ui, no stale closures.
+ *
+ * All handles are position:fixed top:0 left:0 and move via transform:translate3d.
+ * getBoundingClientRect() is always viewport-relative, which is exactly what
+ * position:fixed needs. Called synchronously inside a rAF so coords are always
+ * fresh at paint time.
+ */
+function applyPositions(
+  cell:      HTMLTableCellElement,
+  table:     HTMLTableElement,
+  colEl:     HTMLDivElement,
+  rowEl:     HTMLDivElement,
+  addRowEl:  HTMLDivElement,
+  addColEl:  HTMLDivElement,
+) {
+  const tr = table.getBoundingClientRect();
+  const cr = cell.getBoundingClientRect();
+  const rr = (cell.parentElement as HTMLTableRowElement | null)
+               ?.getBoundingClientRect() ?? cr;
+
+  // Clamp so handles never go above/left of viewport edge
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // ── Col grip: horizontally centered on active column, sits above table ────
+  const colX = Math.min(
+    Math.max(cr.left + cr.width / 2 - HANDLE_SIZE / 2, 4),
+    vw - HANDLE_SIZE - 4,
+  );
+  const colY = Math.max(tr.top - HANDLE_SIZE - GAP, 4);
+  colEl.style.transform = `translate3d(${Math.round(colX)}px,${Math.round(colY)}px,0)`;
+
+  // ── Row grip: vertically centered on active row, sits left of table ───────
+  const rowX = Math.max(tr.left - HANDLE_SIZE - GAP, 4);
+  const rowY = Math.min(
+    Math.max(rr.top + rr.height / 2 - HANDLE_SIZE / 2, 4),
+    vh - HANDLE_SIZE - 4,
+  );
+  rowEl.style.transform = `translate3d(${Math.round(rowX)}px,${Math.round(rowY)}px,0)`;
+
+  // ── Add-row: full table width, just below table ───────────────────────────
+  addRowEl.style.width     = `${Math.round(tr.width)}px`;
+  addRowEl.style.transform = `translate3d(${Math.round(tr.left)}px,${Math.round(tr.bottom + GAP)}px,0)`;
+
+  // ── Add-col: full table height, just right of table ───────────────────────
+  addColEl.style.height    = `${Math.round(tr.height)}px`;
+  addColEl.style.transform = `translate3d(${Math.round(tr.right + GAP)}px,${Math.round(tr.top)}px,0)`;
+}
 
 export default function TableHandles() {
   const { editor } = useCurrentEditor();
-  const [isVisible, setIsVisible] = useState(false);
-  const [isEndVisible, setIsEndVisible] = useState(false);
-  const [isRowMenuOpen, setIsRowMenuOpen] = useState(false);
-  const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false);
-  const [columnPos, setColumnPos] = useState({ left: 0, top: 0 });
-  const [rowPos, setRowPos] = useState({ left: 0, top: 0 });
-  const [endRowHandle, setEndRowHandle] = useState({
-    left: 0,
-    top: 0,
-    width: HANDLE_SIZE,
-  });
-  const [endColHandle, setEndColHandle] = useState({
-    left: 0,
-    top: 0,
-    height: HANDLE_SIZE,
-  });
 
-  const activeCellRef = useRef<HTMLTableCellElement | null>(null);
-  const activeTableRef = useRef<HTMLTableElement | null>(null);
-  const isHandleHoverRef = useRef(false);
-  const rafRef = useRef<number | null>(null);
+  const colRef    = useRef<HTMLDivElement>(null);
+  const rowRef    = useRef<HTMLDivElement>(null);
+  const addRowRef = useRef<HTMLDivElement>(null);
+  const addColRef = useRef<HTMLDivElement>(null);
+
+  // React state: only visibility booleans — never coordinates
+  const [visible,   setVisible]   = useState(false);
+  const [isRowMenu, setIsRowMenu] = useState(false);
+  const [isColMenu, setIsColMenu] = useState(false);
+
+  const cellRef      = useRef<HTMLTableCellElement | null>(null);
+  const tableRef     = useRef<HTMLTableElement    | null>(null);
+  const lastCellRef  = useRef<HTMLTableCellElement | null>(null);
+  const isHoveredRef = useRef(false);
+  const isMenuRef    = useRef(false);
+  const rafRef       = useRef<number | null>(null);
+
+  useEffect(() => {
+    isMenuRef.current = isRowMenu || isColMenu;
+  }, [isRowMenu, isColMenu]);
 
   if (!editor) return null;
 
-  const updatePositions = (
-    cell: HTMLTableCellElement,
-    table: HTMLTableElement,
-  ) => {
-    const cellRect = cell.getBoundingClientRect();
-    const rowRect = cell.parentElement?.getBoundingClientRect() ?? cellRect;
-    const tableRect = table.getBoundingClientRect();
-
-    if (
-      cellRect.width === 0 ||
-      cellRect.height === 0 ||
-      tableRect.width === 0 ||
-      tableRect.height === 0
-    ) {
-      return;
-    }
-
-    const columnLeft = cellRect.left + cellRect.width / 2 - HANDLE_SIZE / 2;
-    const columnTop = clamp(tableRect.top - HANDLE_GAP - HANDLE_SIZE, 8);
-
-    const rowLeft = clamp(tableRect.left - HANDLE_GAP - HANDLE_SIZE, 8);
-    const rowTop = rowRect.top + rowRect.height / 2 - HANDLE_SIZE / 2;
-
-    const tableWidth = Math.max(tableRect.width, HANDLE_SIZE);
-    const tableHeight = Math.max(tableRect.height, HANDLE_SIZE);
-
-    const endRowLeft = tableRect.left;
-    const endRowTop = tableRect.bottom + HANDLE_GAP;
-
-    const endColLeft = tableRect.right + HANDLE_GAP;
-    const endColTop = tableRect.top;
-
-    setColumnPos({ left: columnLeft, top: columnTop });
-    setRowPos({ left: rowLeft, top: rowTop });
-    setEndRowHandle({ left: endRowLeft, top: endRowTop, width: tableWidth });
-    setEndColHandle({ left: endColLeft, top: endColTop, height: tableHeight });
-  };
-
-  const scheduleUpdate = (
-    cell: HTMLTableCellElement,
-    table: HTMLTableElement,
-  ) => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-    }
-
+  // ── Schedule a synchronous position update inside rAF ─────────────────────
+  const scheduleUpdate = useCallback(() => {
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
-      updatePositions(cell, table);
-    });
-  };
+      rafRef.current = null;
 
-  const syncFromFirstTableCell = () => {
-    const firstCell = editor.view.dom.querySelector(
-      "table td, table th",
-    ) as HTMLTableCellElement | null;
-    const table = firstCell?.closest("table") as HTMLTableElement | null;
-    if (!firstCell || !table) {
-      setIsEndVisible(false);
-      return false;
-    }
+      const cell  = cellRef.current;
+      const table = tableRef.current;
+      const colEl    = colRef.current;
+      const rowEl    = rowRef.current;
+      const addRowEl = addRowRef.current;
+      const addColEl = addColRef.current;
 
-    activeCellRef.current = firstCell;
-    activeTableRef.current = table;
-    scheduleUpdate(firstCell, table);
-    setIsEndVisible(true);
-    return true;
-  };
+      if (!cell || !table || !colEl || !rowEl || !addRowEl || !addColEl) return;
 
-  const getSelectionCell = () => {
-    const { from } = editor.state.selection;
-    const nodeAtPos = editor.view.nodeDOM(from);
-    const element =
-      nodeAtPos instanceof HTMLElement
-        ? nodeAtPos
-        : nodeAtPos?.parentElement ?? null;
-    return element?.closest("td, th") as HTMLTableCellElement | null;
-  };
+      const tr = table.getBoundingClientRect();
 
-  const selectCellAt = (row: number, col: number) => {
-    const tableInfo = findTable(editor.state.selection.$from);
-    if (!tableInfo) return false;
-    const map = TableMap.get(tableInfo.node);
-    const safeRow = Math.min(Math.max(row, 0), map.height - 1);
-    const safeCol = Math.min(Math.max(col, 0), map.width - 1);
-    const pos =
-      tableInfo.start +
-      map.positionAt(safeRow, safeCol, tableInfo.node);
-    editor.commands.setTextSelection(pos);
-    return true;
-  };
-
-  const clearMenuHighlights = () => {
-    const table = activeTableRef.current;
-    if (!table) return;
-    table.classList.remove("tiptap-table-menu-active");
-    table
-      .querySelectorAll(
-        ".tiptap-table-row-highlight, .tiptap-table-column-highlight, .tiptap-table-focused-cell",
-      )
-      .forEach((element) => {
-        element.classList.remove(
-          "tiptap-table-row-highlight",
-          "tiptap-table-column-highlight",
-          "tiptap-table-focused-cell",
-        );
-      });
-  };
-
-  const applyMenuHighlights = () => {
-    const table = activeTableRef.current;
-    const cell = activeCellRef.current;
-
-    if (!table || !cell) {
-      clearMenuHighlights();
-      return;
-    }
-
-    clearMenuHighlights();
-
-    table.classList.toggle(
-      "tiptap-table-menu-active",
-      isRowMenuOpen || isColumnMenuOpen,
-    );
-
-    if (isRowMenuOpen) {
-      const row = cell.parentElement as HTMLTableRowElement | null;
-      row
-        ?.querySelectorAll("td, th")
-        .forEach((rowCell) => rowCell.classList.add("tiptap-table-row-highlight"));
-    }
-
-    if (isColumnMenuOpen) {
-      const columnIndex = cell.cellIndex;
-      if (columnIndex >= 0) {
-        table.querySelectorAll("tr").forEach((tableRow) => {
-          const rowCells = (tableRow as HTMLTableRowElement).cells;
-          if (rowCells.length === 0) return;
-          const targetCell = rowCells.item(
-            Math.min(columnIndex, rowCells.length - 1),
-          );
-          targetCell?.classList.add("tiptap-table-column-highlight");
-        });
+      // Table fully off-screen → hide all
+      if (tr.width === 0 || tr.bottom < 0 || tr.top > window.innerHeight) {
+        [colEl, rowEl, addRowEl, addColEl].forEach(el => { el.style.opacity = "0"; });
+        return;
       }
-    }
 
-    cell.classList.add("tiptap-table-focused-cell");
-  };
+      // Apply positions synchronously — all 4 in one rAF tick
+      applyPositions(cell, table, colEl, rowEl, addRowEl, addColEl);
 
-  const handleAddRowAtEnd = () => {
-    const tableInfo = findTable(editor.state.selection.$from);
-    if (!tableInfo) return;
-    const map = TableMap.get(tableInfo.node);
-    if (!selectCellAt(map.height - 1, 0)) return;
-    editor.chain().focus().addRowAfter().run();
-  };
+      // Show all
+      [colEl, rowEl, addRowEl, addColEl].forEach(el => { el.style.opacity = "1"; });
+    });
+  }, []);
 
-  const handleAddColumnAtEnd = () => {
-    const tableInfo = findTable(editor.state.selection.$from);
-    if (!tableInfo) return;
-    const map = TableMap.get(tableInfo.node);
-    if (!selectCellAt(0, map.width - 1)) return;
-    editor.chain().focus().addColumnAfter().run();
-  };
+  const activate = useCallback((
+    cell:  HTMLTableCellElement,
+    table: HTMLTableElement,
+  ) => {
+    cellRef.current  = cell;
+    tableRef.current = table;
+    setVisible(true);
+    scheduleUpdate();
+  }, [scheduleUpdate]);
+
+  const hide = useCallback(() => {
+    if (isHoveredRef.current || isMenuRef.current) return;
+    setVisible(false);
+    lastCellRef.current = null;
+  }, []);
+
+  // ── Highlights — pure DOM, zero setState ─────────────────────────────────
+  const clearHL = useCallback(() => {
+    tableRef.current
+      ?.querySelectorAll(".tth-hl-r,.tth-hl-c,.tth-hl-cell")
+      .forEach(el => el.classList.remove("tth-hl-r", "tth-hl-c", "tth-hl-cell"));
+    tableRef.current?.classList.remove("tth-active");
+  }, []);
 
   useEffect(() => {
-    const editorDom = editor.view.dom;
+    clearHL();
+    const t = tableRef.current, c = cellRef.current;
+    if (!t || !c) return;
+    t.classList.toggle("tth-active", isRowMenu || isColMenu);
+    if (isRowMenu)
+      c.parentElement?.querySelectorAll("td,th")
+        .forEach(el => el.classList.add("tth-hl-r"));
+    if (isColMenu) {
+      const idx = c.cellIndex;
+      t.querySelectorAll("tr").forEach(tr => {
+        (tr as HTMLTableRowElement)
+          .cells[Math.min(idx, (tr as HTMLTableRowElement).cells.length - 1)]
+          ?.classList.add("tth-hl-c");
+      });
+    }
+    c.classList.add("tth-hl-cell");
+  }, [isRowMenu, isColMenu, clearHL]);
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target) return;
-
-      const cell = target.closest("td, th") as HTMLTableCellElement | null;
-      const table = target.closest("table") as HTMLTableElement | null;
-
-      if (cell && table) {
-        activeCellRef.current = cell;
-        activeTableRef.current = table;
-        scheduleUpdate(cell, table);
-        setIsVisible(true);
-        setIsEndVisible(true);
-        return;
-      }
-
-      const activeTable = activeTableRef.current;
-      if (activeTable) {
-        const rect = activeTable.getBoundingClientRect();
-        const insidePaddedArea =
-          event.clientX >= rect.left - HOVER_PADDING &&
-          event.clientX <= rect.right + HOVER_PADDING &&
-          event.clientY >= rect.top - HOVER_PADDING &&
-          event.clientY <= rect.bottom + HOVER_PADDING;
-
-        if (insidePaddedArea || isHandleHoverRef.current) {
-          setIsVisible(true);
-          return;
-        }
-      }
-
-      if (!isHandleHoverRef.current) {
-        setIsVisible(false);
-      }
-    };
-
-    const handleMouseLeave = () => {
-      if (!isHandleHoverRef.current) {
-        setIsVisible(false);
-      }
-    };
-
-    const handleScroll = () => {
-      if (activeCellRef.current && activeTableRef.current) {
-        scheduleUpdate(activeCellRef.current, activeTableRef.current);
-      }
-    };
-
-    const handleSelectionUpdate = () => {
-      if (!editor.isActive("table")) {
-        const activeTable = activeTableRef.current;
-        const hasActiveTableInDom = Boolean(
-          activeTable && editor.view.dom.contains(activeTable),
-        );
-
-        if (!hasActiveTableInDom && !syncFromFirstTableCell()) {
-          activeCellRef.current = null;
-          activeTableRef.current = null;
-        }
-
-        setIsVisible(false);
-        setIsEndVisible(Boolean(activeTableRef.current));
-        setIsRowMenuOpen(false);
-        setIsColumnMenuOpen(false);
-        clearMenuHighlights();
-        return;
-      }
-
-      const cell = getSelectionCell();
-      const table = cell?.closest("table") as HTMLTableElement | null;
-      if (cell && table) {
-        activeCellRef.current = cell;
-        activeTableRef.current = table;
-        scheduleUpdate(cell, table);
-        setIsVisible(true);
-        setIsEndVisible(true);
-        applyMenuHighlights();
-      }
-    };
-
-    const handleCellClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target) return;
-      const cell = target.closest("td, th") as HTMLTableCellElement | null;
-      const table = target.closest("table") as HTMLTableElement | null;
-      if (!cell || !table) return;
-
-      activeCellRef.current = cell;
-      activeTableRef.current = table;
-      scheduleUpdate(cell, table);
-      setIsVisible(true);
-      setIsEndVisible(true);
-      applyMenuHighlights();
-    };
-
-    const handleCellMouseDown = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target) return;
-      const cell = target.closest("td, th") as HTMLTableCellElement | null;
-      const table = target.closest("table") as HTMLTableElement | null;
-      if (!cell || !table) return;
-
-      activeCellRef.current = cell;
-      activeTableRef.current = table;
-      scheduleUpdate(cell, table);
-    };
-
-    editorDom.addEventListener("mousemove", handleMouseMove);
-    editorDom.addEventListener("mouseleave", handleMouseLeave);
-    editorDom.addEventListener("mousedown", handleCellMouseDown);
-    editorDom.addEventListener("click", handleCellClick);
-    window.addEventListener("scroll", handleScroll, true);
-    editor.on("selectionUpdate", handleSelectionUpdate);
-    editor.on("update", handleSelectionUpdate);
-    syncFromFirstTableCell();
-
-    return () => {
-      editorDom.removeEventListener("mousemove", handleMouseMove);
-      editorDom.removeEventListener("mouseleave", handleMouseLeave);
-      editorDom.removeEventListener("mousedown", handleCellMouseDown);
-      editorDom.removeEventListener("click", handleCellClick);
-      window.removeEventListener("scroll", handleScroll, true);
-      editor.off("selectionUpdate", handleSelectionUpdate);
-      editor.off("update", handleSelectionUpdate);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      clearMenuHighlights();
-    };
+  // ── Add row / col ─────────────────────────────────────────────────────────
+  const addRow = useCallback(() => {
+    const info = findTable(editor.state.selection.$from);
+    if (!info) return;
+    const map = TableMap.get(info.node);
+    const pos = info.start + map.positionAt(map.height - 1, 0, info.node);
+    editor.chain().focus().setTextSelection(pos).addRowAfter().run();
   }, [editor]);
 
+  const addCol = useCallback(() => {
+    const info = findTable(editor.state.selection.$from);
+    if (!info) return;
+    const map = TableMap.get(info.node);
+    const pos = info.start + map.positionAt(0, map.width - 1, info.node);
+    editor.chain().focus().setTextSelection(pos).addColumnAfter().run();
+  }, [editor]);
+
+  const closeMenus = useCallback(() => {
+    setIsRowMenu(false);
+    setIsColMenu(false);
+  }, []);
+
+  // ── Event wiring ──────────────────────────────────────────────────────────
   useEffect(() => {
-    applyMenuHighlights();
-  }, [isRowMenuOpen, isColumnMenuOpen]);
+    if (!editor) return;
+    const dom = editor.view.dom;
 
-  const handleRowMenuOpenChange = (open: boolean) => {
-    setIsRowMenuOpen(open);
-    if (open) {
-      setIsColumnMenuOpen(false);
-      setIsVisible(true);
-    }
-  };
+    const onMove = (e: MouseEvent) => {
+      const el    = e.target instanceof HTMLElement ? e.target : (e.target as Node | null)?.parentElement;
+      const cell  = el?.closest<HTMLTableCellElement>("td,th") ?? null;
+      const table = cell?.closest<HTMLTableElement>("table") ?? null;
 
-  const handleColumnMenuOpenChange = (open: boolean) => {
-    setIsColumnMenuOpen(open);
-    if (open) {
-      setIsRowMenuOpen(false);
-      setIsVisible(true);
-    }
-  };
+      if (cell && table) {
+        if (cell !== lastCellRef.current) {
+          lastCellRef.current = cell;
+          activate(cell, table);
+        }
+        return;
+      }
 
-  const closeMenus = () => {
-    setIsRowMenuOpen(false);
-    setIsColumnMenuOpen(false);
-  };
+      // Stay visible when hovering just outside the table (within padding)
+      const t = tableRef.current;
+      if (t) {
+        const r = t.getBoundingClientRect();
+        if (
+          e.clientX >= r.left - 16 && e.clientX <= r.right  + 16 &&
+          e.clientY >= r.top  - 16 && e.clientY <= r.bottom + 16
+        ) return;
+      }
 
-  const handleEnter = () => {
-    isHandleHoverRef.current = true;
-    setIsVisible(true);
-  };
+      lastCellRef.current = null;
+      hide();
+    };
 
-  const handleLeave = () => {
-    isHandleHoverRef.current = false;
-  };
+    const onLeave = () => {
+      lastCellRef.current = null;
+      hide();
+    };
 
-  const isLayerVisible = isVisible || isEndVisible;
-  const isMenuOpen = isRowMenuOpen || isColumnMenuOpen;
+    // Scroll: always recompute — this is what keeps handles tracking the table
+    const onScroll = () => {
+      if (!cellRef.current || !tableRef.current) return;
+      scheduleUpdate();
+    };
+
+    const onSelection = () => {
+      if (!editor.isActive("table")) {
+        if (!isMenuRef.current) { hide(); clearHL(); closeMenus(); }
+        return;
+      }
+      const node = editor.view.nodeDOM(editor.state.selection.from);
+      const el   = node instanceof HTMLElement ? node : (node as Node | null)?.parentElement;
+      const cell  = el?.closest<HTMLTableCellElement>("td,th") ?? null;
+      const table = cell?.closest<HTMLTableElement>("table") ?? null;
+      if (cell && table) activate(cell, table);
+    };
+
+    dom.addEventListener("mousemove",  onMove);
+    dom.addEventListener("mouseleave", onLeave);
+    // capture:true catches scroll on any scrollable ancestor, not just window
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    editor.on("selectionUpdate", onSelection);
+    editor.on("update",          onSelection);
+
+    return () => {
+      dom.removeEventListener("mousemove",  onMove);
+      dom.removeEventListener("mouseleave", onLeave);
+      window.removeEventListener("scroll", onScroll, { capture: true });
+      editor.off("selectionUpdate", onSelection);
+      editor.off("update",          onSelection);
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      clearHL();
+    };
+  }, [editor, activate, hide, scheduleUpdate, clearHL, closeMenus]);
+
+  const menuOpen = isRowMenu || isColMenu;
 
   return (
-    <div
-      className="tiptap-table-handle-layer"
-      style={{
-        opacity: isLayerVisible ? 1 : 0,
-        pointerEvents: isLayerVisible ? "auto" : "none",
-      }}
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-    >
-      {isMenuOpen && (
+    <>
+      {menuOpen && (
         <div
-          className="tiptap-table-menu-backdrop"
-          onMouseDown={closeMenus}
+          style={{ position: "fixed", inset: 0, zIndex: 49 }}
+          onMouseDown={e => { e.preventDefault(); closeMenus(); }}
         />
       )}
-      <div
-        className="tiptap-table-handle tiptap-table-handle--column"
-        style={{ left: columnPos.left, top: columnPos.top }}
-      >
-        <TablePopover
-          editor={editor}
-          controllers={TABLE_COLUMN_CONTROLS}
-          triggerIcon={<GripHorizontal />}
-          triggerSize="icon-xs"
-          triggerVariant="ghost"
-          triggerClassName="tiptap-table-handle-button"
-          open={isColumnMenuOpen}
-          onOpenChange={handleColumnMenuOpenChange}
-        />
-      </div>
-      <div
-        className="tiptap-table-handle tiptap-table-handle--row"
-        style={{ left: rowPos.left, top: rowPos.top }}
-      >
-        <TablePopover
-          editor={editor}
-          controllers={TABLE_ROW_CONTROLS}
-          triggerIcon={<GripVertical />}
-          triggerSize="icon-xs"
-          triggerVariant="ghost"
-          triggerClassName="tiptap-table-handle-button"
-          open={isRowMenuOpen}
-          onOpenChange={handleRowMenuOpenChange}
-        />
-      </div>
-      <div
-        className="tiptap-table-handle tiptap-table-handle--add-row"
-        style={{
-          left: endRowHandle.left,
-          top: endRowHandle.top,
-          width: endRowHandle.width,
-          height: HANDLE_SIZE,
-        }}
-      >
-        <Button
-          size="xs"
-          variant="ghost"
-          tooltip="Add row at end"
-          className="tiptap-table-handle-button h-full w-full rounded-none"
-          onClick={handleAddRowAtEnd}
+
+      {/* Outer wrapper: pointer-events:none — never blocks editor */}
+      <div style={{
+        position: "fixed", inset: 0,
+        zIndex: 50,
+        pointerEvents: "none",
+        opacity: visible ? 1 : 0,
+        transition: "opacity 80ms ease",
+      }}>
+
+        {/* Col grip */}
+        <div ref={colRef} style={handleStyle(55)}
+          onMouseEnter={() => { isHoveredRef.current = true; }}
+          onMouseLeave={() => { isHoveredRef.current = false; hide(); }}
         >
-          <Plus />
-        </Button>
-      </div>
-      <div
-        className="tiptap-table-handle tiptap-table-handle--add-column"
-        style={{
-          left: endColHandle.left,
-          top: endColHandle.top,
-          width: HANDLE_SIZE,
-          height: endColHandle.height,
-        }}
-      >
-        <Button
-          size="xs"
-          variant="ghost"
-          tooltip="Add column at end"
-          className="tiptap-table-handle-button h-full w-full rounded-none"
-          onClick={handleAddColumnAtEnd}
+          <TablePopover
+            editor={editor}
+            controllers={TABLE_COLUMN_CONTROLS}
+            triggerIcon={<GripHorizontal className="size-3" />}
+            triggerSize="icon-xs"
+            triggerVariant="ghost"
+            triggerClassName="tth-btn"
+            open={isColMenu}
+            onOpenChange={o => { setIsColMenu(o); if (o) setIsRowMenu(false); }}
+          />
+        </div>
+
+        {/* Row grip */}
+        <div ref={rowRef} style={handleStyle(55)}
+          onMouseEnter={() => { isHoveredRef.current = true; }}
+          onMouseLeave={() => { isHoveredRef.current = false; hide(); }}
         >
-          <Plus />
-        </Button>
+          <TablePopover
+            editor={editor}
+            controllers={TABLE_ROW_CONTROLS}
+            triggerIcon={<GripVertical className="size-3" />}
+            triggerSize="icon-xs"
+            triggerVariant="ghost"
+            triggerClassName="tth-btn"
+            open={isRowMenu}
+            onOpenChange={o => { setIsRowMenu(o); if (o) setIsColMenu(false); }}
+          />
+        </div>
+
+        {/* Add row */}
+        <div ref={addRowRef} style={{ ...handleStyle(52), height: HANDLE_SIZE }}
+          onMouseEnter={() => { isHoveredRef.current = true; }}
+          onMouseLeave={() => { isHoveredRef.current = false; hide(); }}
+        >
+          <Button size="xs" variant="ghost" tooltip="Add row"
+            className="tth-btn h-full w-full rounded-none"
+            onMouseDown={e => e.preventDefault()}
+            onClick={addRow}
+          >
+            <Plus className="size-3" />
+          </Button>
+        </div>
+
+        {/* Add col */}
+        <div ref={addColRef} style={{ ...handleStyle(52), width: HANDLE_SIZE }}
+          onMouseEnter={() => { isHoveredRef.current = true; }}
+          onMouseLeave={() => { isHoveredRef.current = false; hide(); }}
+        >
+          <Button size="xs" variant="ghost" tooltip="Add column"
+            className="tth-btn h-full w-full rounded-none"
+            onMouseDown={e => e.preventDefault()}
+            onClick={addCol}
+          >
+            <Plus className="size-3" />
+          </Button>
+        </div>
+
       </div>
-    </div>
+    </>
   );
+}
+
+// Shared base style for all handle elements
+function handleStyle(zIndex: number): React.CSSProperties {
+  return {
+    position:    "fixed",
+    top:         0,
+    left:        0,
+    zIndex,
+    pointerEvents: "auto",
+    opacity:     0,
+    willChange:  "transform",
+    // No transition on transform — instant tracking is the goal
+    transition:  "opacity 80ms ease",
+  };
 }

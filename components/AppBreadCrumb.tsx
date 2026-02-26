@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LogoIcon from "./icons/LogoIcon";
 
 interface RouteItem {
   name: string;
@@ -156,13 +157,7 @@ export default function AppBreadcrumbs() {
                 )}
               >
                 {route.path === "/" && (
-                  <div className="size-6 bg-[#171717] rounded-full shrink-0">
-                    <img
-                      src="/n.svg"
-                      alt="NoteHub Logo"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
+                  <LogoIcon/>
                 )}
                 <span
                   className={cn(

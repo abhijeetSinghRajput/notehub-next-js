@@ -23,6 +23,7 @@ import { useLocalStorage } from "@/app/stores/useLocalStorage";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { ModeToggleMini } from "@/components/mode-toggle";
 import LogoIcon from "../icons/LogoIcon";
+import Logo from "../Logo";
 
 const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
   const { getAllCollections, collections } = useNoteStore();
@@ -90,7 +91,7 @@ const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {
                 href="/"
                 className="truncate font flex gap-2 items-center"
               >
-                <LogoIcon />
+                <Logo size={12}/>
               </Link>
             </div>
 

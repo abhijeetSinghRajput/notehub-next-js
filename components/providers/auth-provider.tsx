@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       >
         <div className="flex flex-col gap-2 items-center justify-center h-screen">
           <Logo className="text-xl text-foreground/70"/>
-          <Loader className="animate-spin" />
+          <Loader className="animate-spin text-muted-foreground" />
         </div>
       </ThemeProvider>
     );
