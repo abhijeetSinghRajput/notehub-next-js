@@ -19,6 +19,7 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import AppShell from "@/components/providers/AppShell";
 
 import { Toaster } from "sonner";
+import { NavigationLoader } from "@/components/NavigationLoader";
 
 const baseUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.trim() || "http://localhost:3000";
@@ -120,6 +121,8 @@ export default function RootLayout({
           antialiased
         `}
       >
+        <NavigationLoader />
+
         <AuthProvider>
           <ThemeProvider defaultTheme="system" storageKey="theme">
             <ThemeShortcut />

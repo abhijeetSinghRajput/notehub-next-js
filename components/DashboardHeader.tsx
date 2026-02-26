@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import AddNoteDrawer from "@/components/AddNoteDrawer";
 import { SearchButton } from "@/components/SearchButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggleMini } from "@/components/mode-toggle";
@@ -21,12 +20,7 @@ import { useGithubStore } from "@/app/stores/useGithubStore";
 import Link from "next/link";
 import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "next/navigation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+import AddNoteDialog from "./AddNoteDialog";
 
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
@@ -72,7 +66,7 @@ const DashboardHeader = () => {
             </div>
           ) : (
             <>
-              <AddNoteDrawer
+              <AddNoteDialog
                 trigger={
                   <Button
                     tooltip="Create Notes"

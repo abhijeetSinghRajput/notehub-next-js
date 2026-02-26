@@ -1,4 +1,4 @@
-import AddNoteDrawer from "@/components/AddNoteDrawer";
+import AddNoteDialog from "@/components/AddNoteDialog";
 import { Button } from "@/components/ui/button";
 import { ReactNode } from "react";
 
@@ -23,7 +23,7 @@ export const EmptyState = ({
         {description}
       </p>
       {showCreateButton && (
-        <AddNoteDrawer
+        <AddNoteDialog
           trigger={
             <Button tooltip="Create Notes">Create your first note</Button>
           }

@@ -2,22 +2,22 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import ChooseCollection from "./addNote/ChooseCollection";
 import CreateCollection from "./addNote/CreateCollection";
 import AddNote from "./addNote/AddNote";
 import { ICollection } from "@/types/model";
 
-type AddNoteDrawerProps = {
+type AddNoteDialogProps = {
   trigger: ReactNode;
 };
 
-const AddNoteDrawer = ({ trigger }: AddNoteDrawerProps) => {
+const AddNoteDialog = ({ trigger }: AddNoteDialogProps) => {
   const [open, setOpen] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState<ICollection | null>(null);
   const [activeTab, setActiveTab] = useState("choose-collection");
@@ -27,7 +27,7 @@ const AddNoteDrawer = ({ trigger }: AddNoteDrawerProps) => {
   };
 
   return (
-    <Drawer
+    <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
@@ -37,13 +37,13 @@ const AddNoteDrawer = ({ trigger }: AddNoteDrawerProps) => {
         }
       }}
     >
-      <DrawerTrigger asChild>{trigger}</DrawerTrigger>
-      <DrawerContent className="h-[80vh]">
-        <DrawerTitle className="sr-only">Add note to collection</DrawerTitle>
-        <DrawerDescription className="sr-only">
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="h-[80vh] max-w-2xl gap-0 overflow-hidden p-0">
+        <DialogTitle className="sr-only">Add note to collection</DialogTitle>
+        <DialogDescription className="sr-only">
           Choose or create a collection, then add a new note.
-        </DrawerDescription>
-        <div className="mx-auto w-full max-w-2xl overflow-y-auto">
+        </DialogDescription>
+        <div className="mx-auto h-full min-h-0 w-full overflow-y-auto">
           {activeTab === "choose-collection" ? (
             <ChooseCollection
               setActiveTab={handleTabChange}
@@ -63,9 +63,9 @@ const AddNoteDrawer = ({ trigger }: AddNoteDrawerProps) => {
             />
           )}
         </div>
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default AddNoteDrawer;
+export default AddNoteDialog;

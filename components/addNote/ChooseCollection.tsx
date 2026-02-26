@@ -33,7 +33,7 @@ const ChooseCollection: React.FC<ChooseCollectionProps> = ({
   };
 
   return (
-    <Command className="max-w-3xl  mx-auto bg-transparent flex flex-col h-[70vh] rounded-none">
+    <Command className="mx-auto flex h-full min-h-0 max-w-3xl flex-col rounded-none bg-transparent">
       <div className="shrink-0 py-4">
         <CommandInput
           wrapperClassName={cn("gap-3 border-none", collections?.length === 0 && "hidden")}

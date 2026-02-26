@@ -130,132 +130,144 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   };
 
   return (
-    <div className="controll-group overflow-y-auto flex justify-center mb-2 sticky top-16 z-10 bg-background border-b border-input">
-      <div className="p-2 Button-group flex gap-1">
-        <Button
-          tooltip={"Ctrl + S"}
-          disabled={!noteId || status.noteContent.state === "saving"}
-          onClick={handleContentSave}
-        >
-          {status.noteContent.state === "saving" ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <UploadCloudIcon />
-          )}
-          Save
-        </Button>
+    <div className="controll-group sticky top-16 z-10 bg-background border-b border-input">
+      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+        <div className="p-2 Button-group flex gap-1 w-max mx-auto">
+          <Button
+            tooltip={"Ctrl + S"}
+            disabled={!noteId || status.noteContent.state === "saving"}
+            onClick={handleContentSave}
+          >
+            {status.noteContent.state === "saving" ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <UploadCloudIcon />
+            )}
+            Save
+          </Button>
 
-        <div className="hidden md:flex gap-0.5 border-r pr-1">
-          {FORMATTING_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
+          <div className="hidden md:flex gap-0.5 border-r pr-1">
+            {FORMATTING_BUTTONS.map(
+              ({ icon, command, tooltip, name }, index) => (
+                <Button
+                  tooltip={tooltip}
+                  aria-label={tooltip}
+                  key={index}
+                  size="icon"
+                  onClick={() =>
+                    (editor.chain().focus() as any)[command]().run()
+                  }
+                  disabled={
+                    !(editor.can().chain().focus() as any)[command]().run()
+                  }
+                  variant={editor.isActive(name) ? "secondary" : "ghost"}
+                >
+                  {icon}
+                </Button>
+              ),
+            )}
+            <LinkDialog editor={editor} />
+          </div>
+
+          <AddNodeDropdown editor={editor} className="md:hidden" />
+
+          <TextColorDropdown editor={editor} />
+          <SelectHeading editor={editor} />
+          <ListDropdown editor={editor} />
+          <TextAlignDropdown editor={editor} />
+
+          <div className="hidden md:flex gap-0.5 border-x px-1">
+            {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
+              <Button
+                tooltip={tooltip}
+                aria-label={tooltip}
+                key={index}
+                size="icon"
+                onClick={() => (editor.chain().focus() as any)[command]().run()}
+                variant={editor.isActive(name) ? "secondary" : "ghost"}
+                disabled={
+                  name === "code" &&
+                  !(editor.can().chain().focus() as any)[command]().run()
+                }
+              >
+                {icon}
+              </Button>
+            ))}
+            <AddImageDialog editor={editor} />
+            <Suspense fallback={null}>
+              <MathDialog editor={editor} />
+            </Suspense>
+          </div>
+
+          {LIST_CONTROL_BUTTONS.map(
+            ({ icon, command, tooltip, name }, index) => (
+              <Button
+                tooltip={tooltip}
+                aria-label={tooltip}
+                key={index}
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                  if ((editor.can() as any)[command](name[0])) {
+                    (editor.chain().focus() as any)[command](name[0]).run();
+                  } else if ((editor.can() as any)[command](name[1])) {
+                    (editor.chain().focus() as any)[command](name[1]).run();
+                  }
+                }}
+                disabled={
+                  !(editor.can() as any)[command](name[0]) &&
+                  !(editor.can() as any)[command](name[1])
+                }
+              >
+                {icon}
+              </Button>
+            ),
+          )}
+
+          {CONTROL_BUTTONS.map(({ icon, command, tooltip }, index) => (
             <Button
               tooltip={tooltip}
               aria-label={tooltip}
               key={index}
               size="icon"
+              variant="ghost"
               onClick={() => (editor.chain().focus() as any)[command]().run()}
               disabled={!(editor.can().chain().focus() as any)[command]().run()}
-              variant={editor.isActive(name) ? "secondary" : "ghost"}
             >
               {icon}
             </Button>
           ))}
-          <LinkDialog editor={editor} />
-        </div>
 
-        <AddNodeDropdown editor={editor} className="md:hidden" />
+          <div className="border rounded-lg shrink-0">
+            <TablePopover
+              editor={editor}
+              triggerTooltip={"table option"}
+              controllers={TABLE_BUTTONS}
+              triggerIcon={<TableIcon />}
+            />
+            <TablePopover
+              editor={editor}
+              triggerTooltip={"column option"}
+              controllers={TABLE_COLUMN_CONTROLS}
+              triggerIcon={<TableColIcon />}
+            />
+            <TablePopover
+              editor={editor}
+              triggerTooltip={"row option"}
+              controllers={TABLE_ROW_CONTROLS}
+              triggerIcon={<TableRowIcon />}
+            />
+          </div>
 
-        <TextColorDropdown editor={editor} />
-        <SelectHeading editor={editor} />
-        <ListDropdown editor={editor} />
-        <TextAlignDropdown editor={editor} />
-
-        <div className="hidden md:flex gap-0.5 border-x px-1">
-          {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
-            <Button
-              tooltip={tooltip}
-              aria-label={tooltip}
-              key={index}
-              size="icon"
-              onClick={() => (editor.chain().focus() as any)[command]().run()}
-              variant={editor.isActive(name) ? "secondary" : "ghost"}
-              disabled={
-                name === "code" &&
-                !(editor.can().chain().focus() as any)[command]().run()
-              }
-            >
-              {icon}
-            </Button>
-          ))}
-          <AddImageDialog editor={editor} />
-          <Suspense fallback={null}>
-            <MathDialog editor={editor} />
-          </Suspense>
-        </div>
-        
-        {LIST_CONTROL_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
           <Button
-            tooltip={tooltip}
-            aria-label={tooltip}
-            key={index}
+            tooltip={"Revert Back"}
             size="icon"
-            variant="ghost"
-            onClick={() => {
-              if ((editor.can() as any)[command](name[0])) {
-                (editor.chain().focus() as any)[command](name[0]).run();
-              } else if ((editor.can() as any)[command](name[1])) {
-                (editor.chain().focus() as any)[command](name[1]).run();
-              }
-            }}
-            disabled={
-              !(editor.can() as any)[command](name[0]) &&
-              !(editor.can() as any)[command](name[1])
-            }
+            variant="outline"
+            onClick={handleRevert}
           >
-            {icon}
+            <CloudDownloadIcon />
           </Button>
-        ))}
-
-        {CONTROL_BUTTONS.map(({ icon, command, tooltip }, index) => (
-          <Button
-            tooltip={tooltip}
-            aria-label={tooltip}
-            key={index}
-            size="icon"
-            variant="ghost"
-            onClick={() => (editor.chain().focus() as any)[command]().run()}
-            disabled={!(editor.can().chain().focus() as any)[command]().run()}
-          >
-            {icon}
-          </Button>
-        ))}
-        <div className="border rounded-lg shrink-0">
-          <TablePopover
-            editor={editor}
-            triggerTooltip={"table option"}
-            controllers={TABLE_BUTTONS}
-            triggerIcon={<TableIcon />}
-          />
-          <TablePopover
-            editor={editor}
-            triggerTooltip={"column option"}
-            controllers={TABLE_COLUMN_CONTROLS}
-            triggerIcon={<TableColIcon />}
-          />
-          <TablePopover
-            editor={editor}
-            triggerTooltip={"row option"}
-            controllers={TABLE_ROW_CONTROLS}
-            triggerIcon={<TableRowIcon />}
-          />
         </div>
-        <Button
-          tooltip={"Revert Back"}
-          size="icon"
-          variant="outline"
-          onClick={handleRevert}
-        >
-          <CloudDownloadIcon />
-        </Button>
       </div>
     </div>
   );
