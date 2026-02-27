@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState, useRef, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
@@ -8,73 +7,88 @@ function NavigationLoaderInner() {
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
   const prevRoute = useRef(`${pathname}${searchParams}`);
+  const hideTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const safetyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  const show = () => {
+    if (hideTimeout.current) clearTimeout(hideTimeout.current);
+    if (safetyTimeout.current) clearTimeout(safetyTimeout.current);
     setVisible(true);
+    // Safety net: never stay stuck longer than 8 seconds
+    safetyTimeout.current = setTimeout(() => setVisible(false), 8000);
+  };
 
-    const hide = () => setVisible(false);
+  const hide = (delay = 100) => {
+    if (hideTimeout.current) clearTimeout(hideTimeout.current);
+    if (safetyTimeout.current) clearTimeout(safetyTimeout.current);
+    hideTimeout.current = setTimeout(() => setVisible(false), delay);
+  };
 
-    if (document.readyState === "complete") {
-      const timeout = window.setTimeout(hide, 300);
-      return () => window.clearTimeout(timeout);
-    }
-
-    window.addEventListener("load", hide, { once: true });
-    const fallback = window.setTimeout(hide, 1500);
-
-    return () => {
-      window.removeEventListener("load", hide);
-      window.clearTimeout(fallback);
-    };
-  }, []);
-
-  // Hide when route finishes loading
+  // Hide when route actually finishes changing
   useEffect(() => {
     const current = `${pathname}${searchParams}`;
     if (current !== prevRoute.current) {
       prevRoute.current = current;
-      setVisible(false);
+      hide();
     }
   }, [pathname, searchParams]);
 
-  // Show on any internal <a> click
+  // Show on internal link clicks
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      const anchor = (e.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
+      // Skip modified clicks (new tab, new window)
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      // Skip non-left-click (middle click opens new tab)
+      if (e.button !== 0) return;
+
+      const anchor = (e.target as HTMLElement).closest("a[href]");
       if (!anchor) return;
+
+      // Skip target="_blank" and download links
+      if (anchor.getAttribute("target") === "_blank") return;
+      if (anchor.hasAttribute("download")) return;
+
       const href = anchor.getAttribute("href") ?? "";
-      const isInternal =
-        href.startsWith("/") &&
-        !href.startsWith("//") &&
-        !href.startsWith("#");
-      if (isInternal && href !== prevRoute.current) setVisible(true);
+
+      // Skip external, hash-only, and non-path links
+      if (!href.startsWith("/") || href.startsWith("//")) return;
+      if (href.startsWith("#")) return;
+
+      // Strip hash from href before comparing (e.g. /page#section)
+      const hrefPath = href.split("#")[0];
+      if (!hrefPath || hrefPath === prevRoute.current) return;
+
+      show();
     };
+
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
-  // Show on programmatic navigations too (router.push/replace trigger history updates)
+  // Show on router.push() — but not replaceState (Next.js calls it internally)
+  // and not popstate (back/forward to cached pages is instant)
   useEffect(() => {
     const originalPushState = window.history.pushState;
-    const originalReplaceState = window.history.replaceState;
 
     window.history.pushState = function (...args) {
-      setVisible(true);
+      const newUrl = typeof args[2] === "string" ? args[2] : null;
+      // Only show if actually navigating to a different route
+      if (newUrl && newUrl.split("?")[0] !== prevRoute.current.split("?")[0]) {
+        show();
+      }
       return originalPushState.apply(this, args);
     };
 
-    window.history.replaceState = function (...args) {
-      setVisible(true);
-      return originalReplaceState.apply(this, args);
-    };
-
-    const handlePopState = () => setVisible(true);
-    window.addEventListener("popstate", handlePopState);
-
     return () => {
       window.history.pushState = originalPushState;
-      window.history.replaceState = originalReplaceState;
-      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimeout.current) clearTimeout(hideTimeout.current);
+      if (safetyTimeout.current) clearTimeout(safetyTimeout.current);
     };
   }, []);
 
@@ -111,8 +125,6 @@ function NavigationLoaderInner() {
             borderRadius: "9999px",
             background:
               "linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.3) 15%, rgba(99, 102, 241, 1) 40%, rgba(139, 92, 246, 1) 55%, rgba(217, 70, 239, 1) 70%, rgba(99, 102, 241, 0.4) 88%, transparent 100%)",
-            boxShadow:
-              "0 0 16px 3px rgba(139, 92, 246, 0.7), 0 0 6px 1px rgba(217, 70, 239, 0.5)",
             animation: "nav-slide 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite",
           }}
         />
@@ -121,13 +133,12 @@ function NavigationLoaderInner() {
             position: "absolute",
             top: 0,
             left: "-38%",
+
             width: "38%",
             height: "100%",
             borderRadius: "9999px",
             background:
               "linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.3) 15%, rgba(99, 102, 241, 1) 40%, rgba(139, 92, 246, 1) 55%, rgba(217, 70, 239, 1) 70%, rgba(99, 102, 241, 0.4) 88%, transparent 100%)",
-            boxShadow:
-              "0 0 16px 3px rgba(139, 92, 246, 0.7), 0 0 6px 1px rgba(217, 70, 239, 0.5)",
             animation: "nav-slide 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite",
             animationDelay: "1.05s",
           }}
@@ -137,7 +148,6 @@ function NavigationLoaderInner() {
   );
 }
 
-// Suspense wrapper is required because useSearchParams needs it in App Router
 export function NavigationLoader() {
   return (
     <Suspense fallback={null}>
