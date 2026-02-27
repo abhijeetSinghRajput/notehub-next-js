@@ -14,6 +14,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
+import ImageLightbox from "@/components/ImageLightbox";
 
 const Photos = () => {
   const {
@@ -30,6 +31,7 @@ const Photos = () => {
 
   const [previewavatar, setPreviewavatar] = useState<string | null>(null);
   const [previewCover, setPreviewCover] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleUploadImage = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -75,6 +77,9 @@ const Photos = () => {
 
   return (
     <Card>
+      {selectedImage && (
+        <ImageLightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
+      )}
       <CardHeader>
         <CardTitle>Photos & Cover</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
@@ -86,7 +91,14 @@ const Photos = () => {
         <div className="space-y-4">
           <Label>Your Photo</Label>
           <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
-            <Avatar className="relative size-44 shrink-0">
+            <Avatar
+              className="relative size-44 shrink-0 cursor-pointer"
+              onClick={() =>
+                setSelectedImage(previewavatar || authUser?.avatar || "/avatar.svg")
+              }
+              role="button"
+              aria-label="Open profile photo"
+            >
               <Image
                 src={previewavatar || authUser?.avatar || "/avatar.svg"}
                 alt="User Avatar"
@@ -164,7 +176,14 @@ const Photos = () => {
         <div className="space-y-4">
           <Label>Profile Page Cover</Label>
           <div className="flex flex-col sm:flex-col gap-8 items-start">
-            <div className="relative w-full h-48 rounded-xl overflow-hidden">
+            <div
+              className="relative w-full h-48 rounded-xl overflow-hidden cursor-pointer"
+              onClick={() =>
+                setSelectedImage(previewCover || authUser?.cover || "/profile-cover.svg")
+              }
+              role="button"
+              aria-label="Open cover photo"
+            >
               <Image
                 src={previewCover || authUser?.cover || "/profile-cover.svg"}
                 alt="background-cover-image"

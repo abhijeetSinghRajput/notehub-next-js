@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useMemo, useRef } from "react";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { ArticleCard } from "@/components/ArticleCard";
 import { getCanonicalUrl, noteToArticle } from "@/lib/utils";
@@ -12,7 +12,10 @@ const HomePage = () => {
   const { notes, pagination, getPublicNotes, status } = useNoteStore();
 
   // Transform notes with proper fallbacks
-  const articles = notes.map((note) => noteToArticle(note as PopulatedNote));
+  const articles = useMemo(
+    () => notes.map((note) => noteToArticle(note as PopulatedNote)),
+    [notes],
+  );
 
   // Infinite scroll handler
   const handleObserver = useCallback(

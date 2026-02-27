@@ -6,11 +6,12 @@ import TooltipWrapper from "@/components/TooltipWrapper";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import ImageLightbox from "@/components/ImageLightbox";
 import { useCollaboratorManager } from "@/contex/CollaboratorManagerContext";
 import { ICollection, IUser } from "@/types/model";
 import { Pencil, Plus } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 interface CollectionHeaderProps {
   user: IUser;
@@ -27,38 +28,33 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
 }) => {
   if (!user) return null;
   const { openDialog } = useCollaboratorManager();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const hasCollaborators = collection?.collaborators?.length > 0;
   const showCollaboratorSection = isOwner || hasCollaborators;
 
   return (
     <div className="flex w-full flex-col gap-6">
+      {selectedImage && (
+        <ImageLightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
+      )}
       {/* User Profile Section */}
       <div className="flex items-center justify-between gap-4 w-full">
         <div className="flex items-center gap-4">
-          <Dialog>
-            <DialogTrigger>
-              <Avatar className="h-16 w-16 border-2 border-primary/20">
-                <AvatarImage
-                  src={user?.avatar}
-                  alt={user?.fullName || "User Profile Photo"}
-                />
-                <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                  {user?.fullName?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </DialogTrigger>
-            <DialogContent
-              className="rounded-full max-w-96 max-h-96 p-0 overflow-hidden"
-              style={{ borderRadius: "50%" }}
-            >
-              <img
-                className="w-full h-full"
-                src={user?.avatar}
-                alt={user?.fullName}
-              />
-            </DialogContent>
-          </Dialog>
+          <Avatar
+            className="h-16 w-16 border-2 border-primary/20 cursor-pointer"
+            onClick={() => setSelectedImage(user?.avatar || "/avatar.svg")}
+            role="button"
+            aria-label="Open profile photo"
+          >
+            <AvatarImage
+              src={user?.avatar}
+              alt={user?.fullName || "User Profile Photo"}
+            />
+            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+              {user?.fullName?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <Link href={`/${user?.userName}`} className="block">
               <h2 className="flex gap-2.5 items-center text-lg sm:text-xl md:text-2xl font-bold tracking-tight">

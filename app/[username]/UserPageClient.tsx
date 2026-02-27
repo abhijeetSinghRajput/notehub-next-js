@@ -2,10 +2,9 @@
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, ImageOff, Pencil, ShieldCheck, ArrowRight } from "lucide-react";
+import { Pencil, ShieldCheck, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import imageCompression from "browser-image-compression";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -15,34 +14,18 @@ import {
   ProfilePageSkeleton,
 } from "@/components/sekeletons/ProfilePageSkeleton";
 import { useLocalStorage } from "@/app/stores/useLocalStorage";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CollectionCard from "@/components/CollectionCard";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import SortSelector from "@/components/SortSelector";
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import { ICollection, IUser } from "@/types/model";
 import SharePopoverWrapper from "@/components/ShareNotePopover.client";
+import ImageLightbox from "@/components/ImageLightbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   const { username } = useParams();
-  const {
-    authUser,
-    uploadUserAvatar,
-    removeUserAvatar,
-    isUploadingAvatar,
-    isRemovingAvatar,
-    isUploadingCover,
-    isRemovingCover,
-    uploadUserCover,
-    removeUserCover,
-  } = useAuthStore();
+  const { authUser } = useAuthStore();
   const {
     getAllCollections,
     collections: ownerCollections,
@@ -52,12 +35,7 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   const [collections, setCollections] = useState<ICollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { pinnedCollections } = useLocalStorage();
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
-  const [currentImageType, setCurrentImageType] = useState<
-    "avatar" | "cover" | null
-  >(null);
-  const [previewavatar, setPreviewavatar] = useState<string | null>(null);
-  const [previewCover, setPreviewCover] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [profileShareLink, setProfileShareLink] = useState("");
@@ -108,49 +86,6 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
 
     setProfileShareLink(`${window.location.origin}/${profilePath}`);
   }, [username, user?.userName]);
-
-  const handleUploadImage = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
-    onUpload: (file: File) => Promise<any>,
-  ) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    const file = files[0];
-    try {
-      // Set image preview (optional)
-      const previewURL = URL.createObjectURL(file);
-      setPreview(previewURL);
-
-      let finalFile = file;
-
-      // 🗜️ Compress only if size > 1MB
-      if (file.size > 1024 * 1024) {
-        const options = {
-          maxSizeMB: 0.5,
-          maxWidthOrHeight: 1920,
-          useWebWorker: true,
-        };
-        finalFile = await imageCompression(file, options);
-      }
-      await onUpload(finalFile);
-      setPreview(null);
-    } catch (error) {
-      console.error("Error compressing or uploading:\n", error);
-    } finally {
-      e.target.value = ""; // Reset file input
-    }
-  };
-
-  const handleRemoveImage = async (
-    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
-    onRemove: () => Promise<any>,
-  ) => {
-    const result = await onRemove();
-    if (result) {
-      setPreview(null);
-    }
-  };
 
   const pinnedSet = React.useMemo(
     () => new Set(pinnedCollections),
@@ -204,133 +139,11 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
     );
   }
 
-  const disableImageRemove =
-    currentImageType === "avatar"
-      ? isRemovingAvatar || !user?.avatar // disable for avatar
-      : isRemovingCover || !user?.cover; // disable for cover
-
-  const disableImageUpload =
-    currentImageType === "avatar" ? isUploadingAvatar : isUploadingCover;
-
-  const noPhoto =
-    currentImageType === "avatar"
-      ? !Boolean(user?.avatar) && !previewCover
-      : !Boolean(user?.cover) && !previewavatar;
-
   return (
     <div className="p-4">
-      {/* Image Dialog */}
-      <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
-        <DialogContent className="p-0 overflow-hidden max-w-[100vw] sm:max-w-none w-auto">
-          <DialogHeader className="p-0 hidden">
-            <DialogTitle>
-              {currentImageType === "avatar" ? "Profile Photo" : "Cover Photo"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="flex flex-col p-0">
-            {noPhoto ? (
-              <div className="relative w-75 h-75 p-4">
-                <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground h-full">
-                  <div className="p-8 rounded-full bg-input/30">
-                    <ImageOff className="size-16 stroke-1" />
-                  </div>
-                  <p className="text-center text-sm">No {currentImageType}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-primary/5 flex justify-center items-center">
-                <img
-                  src={
-                    (currentImageType === "avatar"
-                      ? user?.avatar
-                      : user?.cover) || "/avatar.svg"
-                  }
-                  alt={`user ${currentImageType}`}
-                  className="max-w-[100vw] max-h-[80vh] min-h-75 object-contain"
-                  style={{
-                    width:
-                      currentImageType === "avatar"
-                        ? "min(400px, 100vw)"
-                        : "min(800px, 100vw)",
-                    height: "auto",
-                  }}
-                />
-              </div>
-            )}
-
-            {isOwner && (
-              <DialogFooter className="p-4 border-t sticky bottom-0 bg-background">
-                <div className="grid grid-cols-2 gap-2 w-full">
-                  <label
-                    htmlFor={currentImageType ?? undefined}
-                    className="contents"
-                  >
-                    <input
-                      type="file"
-                      id={currentImageType ?? undefined}
-                      accept="image/*"
-                      className="hidden"
-                      disabled={disableImageUpload}
-                      onChange={(e) =>
-                        handleUploadImage(
-                          e,
-                          currentImageType === "avatar"
-                            ? setPreviewavatar
-                            : setPreviewCover,
-                          currentImageType === "avatar"
-                            ? uploadUserAvatar
-                            : uploadUserCover,
-                        )
-                      }
-                    />
-                    <Button
-                      asChild
-                      className={cn(
-                        "button cursor-pointer w-full",
-                        disableImageUpload && "disabled",
-                      )}
-                    >
-                      <span>
-                        {disableImageUpload ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Uploading
-                          </>
-                        ) : (
-                          "Upload"
-                        )}
-                      </span>
-                    </Button>
-                  </label>
-
-                  <Button
-                    onClick={() =>
-                      handleRemoveImage(
-                        currentImageType === "avatar"
-                          ? setPreviewavatar
-                          : setPreviewCover,
-                        currentImageType === "avatar"
-                          ? removeUserAvatar
-                          : removeUserCover,
-                      )
-                    }
-                    disabled={disableImageRemove}
-                    variant="secondary"
-                    className="w-full"
-                  >
-                    {isRemovingAvatar || isRemovingCover ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      "Remove"
-                    )}
-                  </Button>
-                </div>
-              </DialogFooter>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {selectedImage && (
+        <ImageLightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
+      )}
 
       {/* Profile Card */}
       <Card
@@ -343,8 +156,7 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
           className="relative rounded-none max-h-48 h-full w-full overflow-hidden cursor-pointer"
           style={{ aspectRatio: "3/1" }}
           onClick={() => {
-            setCurrentImageType("cover");
-            setIsImageDialogOpen(true);
+            setSelectedImage(user?.cover || "/profile-cover.svg");
           }}
         >
           <AvatarImage
@@ -370,8 +182,7 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
             <Avatar
               className="relative shadow-md w-28 h-28 sm:w-48 sm:h-48 shrink-0 border-4 sm:border-8 border-background -mt-14 rounded-full cursor-pointer"
               onClick={() => {
-                setCurrentImageType("avatar");
-                setIsImageDialogOpen(true);
+                setSelectedImage(user?.avatar || "/avatar.svg");
               }}
               role="button"
               aria-label="View profile photo"

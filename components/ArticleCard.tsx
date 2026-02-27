@@ -17,7 +17,6 @@ import {
   Lock,
   MoreVertical,
 } from "lucide-react";
-import { Dialog, DialogContent } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import NotesOption from "./NotesOption";
@@ -27,6 +26,7 @@ import { Input } from "./ui/input";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import BadgeIcon from "./icons/BadgeIcon";
 import { ICollection, INote, IUser } from "@/types/model";
+import ImageLightbox from "./ImageLightbox";
 
 // Lazy load heavy components for better performance
 const Accordion = lazy(() =>
@@ -200,7 +200,7 @@ CardHeaderContent.displayName = "CardHeaderContent";
 const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
   const [api, setApi] = useState<EmblaCarouselType>();
   const [current, setCurrent] = useState(0);
-  const [openImageIndex, setOpenImageIndex] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [enableCarousel, setEnableCarousel] = useState(false);
 
   const handleSetApi = useCallback((emblaApi?: EmblaCarouselType) => {
@@ -252,10 +252,10 @@ const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
         <Carousel className="w-full relative" setApi={handleSetApi}>
           <CarouselContent>
             {images.map((img: ImageData, index: number) => (
-              <CarouselItem key={index}>
+              <CarouselItem key={`${img.src}-${index}`}>
                 <div
                   className="aspect-video bg-muted rounded-lg overflow-hidden cursor-pointer"
-                  onClick={() => setOpenImageIndex(index)}
+                  onClick={() => setSelectedImage(img.src)}
                 >
                   <img
                     src={img.src}
@@ -296,23 +296,12 @@ const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
         </Carousel>
       </div>
 
-      <Dialog
-        open={openImageIndex !== null}
-        onOpenChange={(open) => !open && setOpenImageIndex(null)}
-      >
-        <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 border-none">
-          {openImageIndex !== null && (
-            <div className="flex items-center justify-center w-full h-full">
-              <img
-                src={images[openImageIndex].src}
-                alt={images[openImageIndex].alt}
-                className="object-contain max-w-full max-h-[80vh]"
-                loading="eager"
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {selectedImage && (
+        <ImageLightbox
+          src={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
     </>
   );
 });
