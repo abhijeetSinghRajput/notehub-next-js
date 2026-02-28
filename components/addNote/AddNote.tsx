@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
-import { ChevronLeft, Globe, Loader2, Lock } from "lucide-react";
+import { ChevronLeft, Lock } from "lucide-react";
 import { LabeledInput } from "@/components/labeled-input";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
-import { useNoteStore } from "@/app/stores/useNoteStore";
 import FileIcon from "../icons/FileIcon";
 import { useRouter } from "next/navigation";
-import { ICollection } from "@/types/model";
+import { ICollection, INote } from "@/types/model";
 import { cn } from "@/lib/utils";
+import { useDraftStore } from "@/app/stores/useDraftStore";
 
 interface AddNoteProps {
   setSelectedCollection: (collection: ICollection | null) => void;
@@ -26,25 +26,34 @@ const AddNote: React.FC<AddNoteProps> = ({
   const router = useRouter();
   const [noteName, setNoteName] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
-  const { createNote, status } = useNoteStore();
-
-  const isCreatingNote = status.note.state === "creating";
+  const { setDraft } = useDraftStore();
 
   const handleAddNote = async () => {
-    if (!noteName.trim() || isCreatingNote || !selectedCollection) return;
+    if (!noteName.trim() || !selectedCollection) return;
 
-    const noteId = await createNote({
+    const draftId = `draft-${crypto.randomUUID()}`;
+    const now = new Date().toISOString();
+    const draft: INote = {
+      _id: draftId,
       name: noteName,
-      collectionId: selectedCollection._id,
       content: `<h1>${noteName}</h1>`,
+      collectionId: selectedCollection._id,
+      userId: "",
       visibility,
-    });
+      collaborators: [],
+      slug: draftId,
+      contentUpdatedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setDraft(draftId, draft);
 
     setNoteName("");
     setOpen(false);
     setSelectedCollection(null);
     setActiveTab("choose-collection");
-    router.push(`/note/${noteId}/editor`);
+    router.push(`/note/${draftId}/editor`);
   };
 
   const handleBackToCollections = () => {
@@ -53,7 +62,7 @@ const AddNote: React.FC<AddNoteProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && noteName.trim() && !isCreatingNote) {
+    if (e.key === "Enter" && noteName.trim()) {
       e.preventDefault();
       handleAddNote();
     }
@@ -169,9 +178,8 @@ const AddNote: React.FC<AddNoteProps> = ({
           <Button
             className="flex-1 gap-2 h-12 rounded-xl"
             onClick={handleAddNote}
-            disabled={!noteName.trim() || isCreatingNote}
+            disabled={!noteName.trim()}
           >
-            {isCreatingNote && <Loader2 className="h-4 w-4 animate-spin" />}
             Create Note
           </Button>
         </div>

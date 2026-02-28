@@ -25,6 +25,7 @@ import AddImageDialog from "./AddImageDialog";
 import { useDraftStore } from "@/app/stores/useDraftStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import TextColorDropdown from "./TextColorDropdown";
 import TableRowIcon from "../icons/TableRowIcon";
 import TableColIcon from "../icons/TableColIcon";
@@ -36,8 +37,8 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   const { editor } = useCurrentEditor();
   const { authUser } = useAuthStore();
   const router = useRouter();
-  const { updateContent, status, getNoteContent } = useNoteStore();
-  const { clearDraft } = useDraftStore();
+  const { updateContent, status, getNoteContent, createNote } = useNoteStore();
+  const { clearDraft, getDraft, setDraft } = useDraftStore();
 
   // Force re-render on editor changes so isActive(...) reflects immediately
   const [__menuVersion, set__menuVersion] = useState(0);
@@ -76,7 +77,11 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault(); // stop browser save
-        if (noteId && status.noteContent.state !== "saving") {
+        if (
+          noteId &&
+          status.noteContent.state !== "saving" &&
+          status.note.state !== "creating"
+        ) {
           handleContentSave();
         }
       }
@@ -84,9 +89,11 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [noteId, status.noteContent.state, editor]);
+  }, [noteId, status.noteContent.state, status.note.state, editor]);
 
   const handleContentSave = async () => {
+    if (!noteId) return;
+
     let content = editor
       .getHTML()
       .replace(/[^\S\r\n]/g, " ")
@@ -96,6 +103,42 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
       .replace(/<\/pre>/g, "</pre></div>");
 
     if (isEmptyContent(content)) content = "";
+
+    const isDraftNote = noteId.startsWith("draft-");
+    if (isDraftNote) {
+      const draft = getDraft(noteId);
+      const collectionId =
+        typeof draft?.collectionId === "string"
+          ? draft.collectionId
+          : String(draft?.collectionId?._id ?? "");
+
+      if (!draft || !collectionId) {
+        toast.error("Draft metadata missing. Please create the note again.");
+        return;
+      }
+
+      const createdNoteId = await createNote({
+        name: draft.name || "Untitled",
+        collectionId,
+        content,
+        visibility: draft.visibility || "private",
+      });
+
+      if (!createdNoteId) return;
+
+      const now = new Date().toISOString();
+      setDraft(createdNoteId, {
+        ...draft,
+        _id: createdNoteId,
+        content,
+        contentUpdatedAt: now,
+        updatedAt: now,
+      });
+      clearDraft(noteId);
+      router.replace(`/note/${createdNoteId}/editor`);
+      return;
+    }
+
     await updateContent({
       content,
       noteId: noteId,
@@ -116,6 +159,16 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   const handleRevert = async () => {
     if (!noteId || !authUser?._id) return;
 
+    if (noteId.startsWith("draft-")) {
+      const draft = getDraft(noteId);
+      if (draft) {
+        editor.commands.setContent(draft.content || "");
+      } else {
+        editor.commands.clearContent();
+      }
+      return;
+    }
+
     // 1️⃣ Fetch fresh content from store (server or cache)
     const note = await getNoteContent(noteId);
 
@@ -135,10 +188,15 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
         <div className="p-2 Button-group flex gap-1 w-max mx-auto">
           <Button
             tooltip={"Ctrl + S"}
-            disabled={!noteId || status.noteContent.state === "saving"}
+            disabled={
+              !noteId ||
+              status.noteContent.state === "saving" ||
+              status.note.state === "creating"
+            }
             onClick={handleContentSave}
           >
-            {status.noteContent.state === "saving" ? (
+            {status.noteContent.state === "saving" ||
+            status.note.state === "creating" ? (
               <Loader2 className="animate-spin" />
             ) : (
               <UploadCloudIcon />

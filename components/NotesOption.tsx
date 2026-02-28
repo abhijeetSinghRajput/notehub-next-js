@@ -126,14 +126,14 @@ const NotesOption = React.memo<NotesOptionProps>(
         },
         {
           id: "delete",
-          icon: <Trash2 className="size-4" />,
+          icon: <Trash2 className="size-4 text-destructive" />,
           label: "Delete Note",
           onClick: () => {
             setIsDeleteDialogOpen(true);
             setDropdownOpen(false);
           },
           className:
-            "font-normal p-2 h-auto w-full justify-start gap-2 text-red-500 hover:bg-red-400/20 hover:text-red-500",
+            "font-normal p-2 h-auto w-full justify-start gap-2 text-destructive hover:bg-red-400/20 hover:text-destructive",
         },
       ],
       [
@@ -259,8 +259,6 @@ const NotesOption = React.memo<NotesOptionProps>(
             ))}
 
             <DropdownMenuSeparator />
-            <Separator orientation="horizontal" className="my-1" />
-
             <DropdownMenuItem
               onClick={dropdownItems[4].onClick}
               className={dropdownItems[4].className}
