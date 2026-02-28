@@ -20,7 +20,7 @@ import hljs from "highlight.js";
 import { createRoot } from "react-dom/client";
 import { toast } from "sonner";
 import katex from "katex";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import ImageLightbox from "@/components/ImageLightbox";
 import Footer from "@/components/Footer";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -58,7 +58,12 @@ const NotePage = () => {
   const { getNoteContent, status, noteNotFound, collections } = useNoteStore();
   const [content, setContent] = useState<string>("");
   const [note, setNote] = useState<INote | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null,
+  );
+  const [noteImages, setNoteImages] = useState<{ src: string; alt: string }[]>(
+    [],
+  );
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [toc, setToc] = useState<TocItem[]>([]);
@@ -209,14 +214,22 @@ const NotePage = () => {
       const images = [
         ...document.querySelectorAll<HTMLImageElement>(".tiptap img"),
       ];
-      images.forEach((img) => {
+      const imageSlides = images
+        .filter((img) => Boolean(img.src))
+        .map((img) => ({ src: img.src, alt: img.alt || "Note image" }));
+      setNoteImages(imageSlides);
+
+      const imageHandlers: Array<{ img: HTMLImageElement; handler: () => void }> = [];
+      images.forEach((img, index) => {
         img.style.cursor = "pointer";
-        img.addEventListener("click", () => setSelectedImage(img.src));
+        const handler = () => setSelectedImageIndex(index);
+        imageHandlers.push({ img, handler });
+        img.addEventListener("click", handler);
       });
 
       return () => {
-        images.forEach((img) => {
-          img.removeEventListener("click", () => setSelectedImage(img.src));
+        imageHandlers.forEach(({ img, handler }) => {
+          img.removeEventListener("click", handler);
         });
       };
     }
@@ -410,26 +423,13 @@ const NotePage = () => {
             </div>
           </div>
         </div>
-        <Dialog
-          open={!!selectedImage}
-          onOpenChange={(open) => !open && setSelectedImage(null)}
-        >
-          <DialogContent
-            closeButtonClassName="top-2 left-2 right-auto bg-black md:size-6 flex items-center justify-center bg-neutral-200 text-neutral-600"
-            className="p-0 border-none w-auto h-auto max-w-[100vw] max-h-screen overflow-hidden sm:rounded-lg"
-          >
-            <DialogTitle className="hidden">Image Dialog</DialogTitle>
-            <div className="flex items-center justify-center w-full h-full">
-              {selectedImage && (
-                <img
-                  src={selectedImage}
-                  alt="Preview"
-                  className="object-contain w-auto h-auto max-w-[100vw] max-h-screen"
-                />
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+        {selectedImageIndex !== null && noteImages.length > 0 && (
+          <ImageLightbox
+            slides={noteImages}
+            index={selectedImageIndex}
+            onClose={() => setSelectedImageIndex(null)}
+          />
+        )}
 
         <div
           className="tiptap"

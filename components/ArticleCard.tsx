@@ -200,7 +200,9 @@ CardHeaderContent.displayName = "CardHeaderContent";
 const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
   const [api, setApi] = useState<EmblaCarouselType>();
   const [current, setCurrent] = useState(0);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null,
+  );
   const [enableCarousel, setEnableCarousel] = useState(false);
 
   const handleSetApi = useCallback((emblaApi?: EmblaCarouselType) => {
@@ -255,7 +257,7 @@ const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
               <CarouselItem key={`${img.src}-${index}`}>
                 <div
                   className="aspect-video bg-muted rounded-lg overflow-hidden cursor-pointer"
-                  onClick={() => setSelectedImage(img.src)}
+                  onClick={() => setSelectedImageIndex(index)}
                 >
                   <img
                     src={img.src}
@@ -296,10 +298,11 @@ const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
         </Carousel>
       </div>
 
-      {selectedImage && (
+      {selectedImageIndex !== null && (
         <ImageLightbox
-          src={selectedImage}
-          onClose={() => setSelectedImage(null)}
+          slides={images}
+          index={selectedImageIndex}
+          onClose={() => setSelectedImageIndex(null)}
         />
       )}
     </>

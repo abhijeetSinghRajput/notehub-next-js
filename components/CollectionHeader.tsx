@@ -28,22 +28,28 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
 }) => {
   if (!user) return null;
   const { openDialog } = useCollaboratorManager();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null,
+  );
 
   const hasCollaborators = collection?.collaborators?.length > 0;
   const showCollaboratorSection = isOwner || hasCollaborators;
 
   return (
     <div className="flex w-full flex-col gap-6">
-      {selectedImage && (
-        <ImageLightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
+      {selectedImageIndex !== null && (
+        <ImageLightbox
+          slides={[{ src: user?.avatar || "/avatar.svg", alt: "Profile photo" }]}
+          index={selectedImageIndex ?? 0}
+          onClose={() => setSelectedImageIndex(null)}
+        />
       )}
       {/* User Profile Section */}
       <div className="flex items-center justify-between gap-4 w-full">
         <div className="flex items-center gap-4">
           <Avatar
             className="h-16 w-16 border-2 border-primary/20 cursor-pointer"
-            onClick={() => setSelectedImage(user?.avatar || "/avatar.svg")}
+            onClick={() => setSelectedImageIndex(0)}
             role="button"
             aria-label="Open profile photo"
           >

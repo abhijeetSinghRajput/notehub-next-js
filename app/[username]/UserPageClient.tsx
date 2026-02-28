@@ -142,7 +142,10 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   return (
     <div className="p-4">
       {selectedImage && (
-        <ImageLightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
+        <ImageLightbox
+          src={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
       )}
 
       {/* Profile Card */}

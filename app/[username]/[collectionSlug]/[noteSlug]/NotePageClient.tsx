@@ -76,7 +76,12 @@ const NotePageClient = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null,
+  );
+  const [noteImages, setNoteImages] = useState<{ src: string; alt: string }[]>(
+    [],
+  );
   const [note, setNote] = useState<INote | null>(null);
   const [author, setAuthor] = useState<IUser | null>(null);
   const { getImages } = useImageStore();
@@ -116,7 +121,7 @@ const NotePageClient = () => {
     }
   }, [note?._id, router]);
 
-  const handleCloseLightbox = useCallback(() => setSelectedImage(null), []);
+  const handleCloseLightbox = useCallback(() => setSelectedImageIndex(null), []);
 
   // ── Fetch ────────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -237,9 +242,21 @@ const NotePageClient = () => {
     document.addEventListener("click", handleCopyClick);
 
     // Image lightbox
-    document.querySelectorAll<HTMLImageElement>(".tiptap img").forEach((img) => {
+    const contentImages = Array.from(
+      document.querySelectorAll<HTMLImageElement>(".tiptap img"),
+    );
+    setNoteImages(
+      contentImages
+        .filter((img) => Boolean(img.getAttribute("src")))
+        .map((img) => ({
+          src: img.getAttribute("src") || "",
+          alt: img.getAttribute("alt") || "Note image",
+        })),
+    );
+
+    contentImages.forEach((img, index) => {
       img.style.cursor = "zoom-in";
-      const handler = () => setSelectedImage(img.getAttribute("src"));
+      const handler = () => setSelectedImageIndex(index);
       img.addEventListener("click", handler);
       imageClickHandlers.set(img, handler);
     });
@@ -336,8 +353,12 @@ const NotePageClient = () => {
   return (
     <>
       {/* Image lightbox — portal-style, outside layout flow */}
-      {selectedImage && (
-        <ImageLightbox src={selectedImage} onClose={handleCloseLightbox} />
+      {selectedImageIndex !== null && noteImages.length > 0 && (
+        <ImageLightbox
+          slides={noteImages}
+          index={selectedImageIndex}
+          onClose={handleCloseLightbox}
+        />
       )}
 
       <div className={cn("h-full flex flex-col justify-between")}>

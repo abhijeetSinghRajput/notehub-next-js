@@ -78,7 +78,10 @@ const Photos = () => {
   return (
     <Card>
       {selectedImage && (
-        <ImageLightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
+        <ImageLightbox
+          src={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
       )}
       <CardHeader>
         <CardTitle>Photos & Cover</CardTitle>

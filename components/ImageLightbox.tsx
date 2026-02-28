@@ -1,130 +1,80 @@
-import { RotateCcw, X, ZoomIn, ZoomOut } from 'lucide-react';
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { Button } from './ui/button';
+"use client";
 
-// ─── Image lightbox ────────────────────────────────────────────────────────────
-type ImageLightboxProps = {
+import dynamic from "next/dynamic";
+import React, { memo, useMemo } from "react";
+import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
+import Download from "yet-another-react-lightbox/plugins/download";
+import Slideshow from "yet-another-react-lightbox/plugins/slideshow";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+
+const Lightbox = dynamic(() => import("yet-another-react-lightbox"), {
+  ssr: false,
+});
+
+type ImageLightboxSlide = {
   src: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+};
+
+type ImageLightboxProps = {
+  src?: string;
+  slides?: ImageLightboxSlide[];
+  index?: number;
   onClose: () => void;
 };
 
-const ImageLightbox = memo(({ src, onClose }: ImageLightboxProps) => {
-  const [scale, setScale] = useState(1);
-  const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const dragStart = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
+const ImageLightbox = memo(
+  ({ src, slides, index = 0, onClose }: ImageLightboxProps) => {
+    const resolvedSlides = useMemo(() => {
+      if (slides && slides.length > 0) return slides;
+      if (src) return [{ src }];
+      return [] as ImageLightboxSlide[];
+    }, [slides, src]);
 
-  // Close on Escape
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "+" || e.key === "=") setScale((s) => Math.min(s + 0.25, 4));
-      if (e.key === "-") setScale((s) => Math.max(s - 0.25, 0.5));
-      if (e.key === "0") { setScale(1); setPosition({ x: 0, y: 0 }); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    if (resolvedSlides.length === 0) return null;
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (scale <= 1) return;
-    e.preventDefault();
-    setIsDragging(true);
-    dragStart.current = { x: e.clientX, y: e.clientY, px: position.x, py: position.y };
-  }, [scale, position]);
+    const safeIndex = Math.min(
+      Math.max(index, 0),
+      Math.max(resolvedSlides.length - 1, 0),
+    );
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging || !dragStart.current) return;
-    setPosition({
-      x: dragStart.current.px + (e.clientX - dragStart.current.x),
-      y: dragStart.current.py + (e.clientY - dragStart.current.y),
-    });
-  }, [isDragging]);
+    const hasMultipleSlides = resolvedSlides.length > 1;
 
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    dragStart.current = null;
-  }, []);
+    return (
+      <Lightbox
+        open
+        close={onClose}
+        slides={resolvedSlides}
+        index={safeIndex}
+        plugins={
+          hasMultipleSlides
+            ? [Fullscreen, Download, Slideshow, Zoom, Thumbnails]
+            : [Fullscreen, Download, Zoom]
+        }
+        zoom={{
+          maxZoomPixelRatio: 3,
+          scrollToZoom: true,
+        }}
+        thumbnails={
+          hasMultipleSlides
+            ? {
+                showToggle: false,
+                position: "bottom",
+              }
+            : undefined
+        }
+        controller={{ closeOnBackdropClick: true }}
+      />
+    );
+  },
+);
 
-  const reset = useCallback(() => { setScale(1); setPosition({ x: 0, y: 0 }); }, []);
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-    >
-      {/* Controls */}
-      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
-          onClick={() => setScale((s) => Math.max(s - 0.25, 0.5))}
-        >
-          <ZoomOut className="size-4" />
-        </Button>
-        <span className="text-white/70 text-sm font-mono min-w-10 text-center">
-          {Math.round(scale * 100)}%
-        </span>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
-          onClick={() => setScale((s) => Math.min(s + 0.25, 4))}
-        >
-          <ZoomIn className="size-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
-          onClick={reset}
-        >
-          <RotateCcw className="size-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
-          onClick={onClose}
-        >
-          <X className="size-4" />
-        </Button>
-      </div>
-
-      {/* Image */}
-      <div
-        className="relative flex items-center justify-center w-full h-full"
-        onMouseDown={handleMouseDown}
-        style={{ cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "default" }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt="Preview"
-          draggable={false}
-          className="select-none rounded-lg shadow-2xl"
-          style={{
-            maxWidth: "90vw",
-            maxHeight: "90vh",
-            objectFit: "contain",
-            transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
-            transition: isDragging ? "none" : "transform 0.15s ease",
-            willChange: "transform",
-          }}
-        />
-      </div>
-
-      {/* Hint */}
-      <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/40 text-xs">
-        Scroll to zoom · Drag to pan · Esc to close
-      </p>
-    </div>
-  );
-});
 ImageLightbox.displayName = "ImageLightbox";
 
-export default ImageLightbox
+export default ImageLightbox;
