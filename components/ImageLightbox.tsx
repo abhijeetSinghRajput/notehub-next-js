@@ -61,6 +61,7 @@ const ImageLightbox = memo(
           maxZoomPixelRatio: 3,
           scrollToZoom: true,
         }}
+        carousel={{ finite: !hasMultipleSlides }}
         thumbnails={
           hasMultipleSlides
             ? {
@@ -68,6 +69,14 @@ const ImageLightbox = memo(
                 position: "bottom",
               }
             : undefined
+        }
+        render={
+          hasMultipleSlides
+            ? undefined
+            : {
+                buttonPrev: () => null,
+                buttonNext: () => null,
+              }
         }
         controller={{ closeOnBackdropClick: true }}
       />
