@@ -66,6 +66,7 @@ const OAuthCallback = () => {
 
   return (
     <div className="h-screen flex items-center justify-center">
+      <h1 className="sr-only">Completing Sign In</h1>
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="animate-spin size-8" />
         <span className="text-muted-foreground">Completing sign in...</span>

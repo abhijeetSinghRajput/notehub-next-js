@@ -76,6 +76,8 @@ const Photos = () => {
   };
 
   return (
+    <>
+    <h1 className="sr-only">Photos & Cover Settings</h1>
     <Card>
       {selectedImage && (
         <ImageLightbox
@@ -264,6 +266,7 @@ const Photos = () => {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 };
 

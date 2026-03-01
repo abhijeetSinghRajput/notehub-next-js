@@ -59,6 +59,7 @@ const HomePage = () => {
 
   return (
     <div className="p-2">
+      <h1 className="sr-only">NoteHub — Explore Public Notes</h1>
       <div className="space-y-3 sm:space-y-4 max-w-5xl mx-auto">
         {/* Render transformed notes */}
         {articles.map((note, index) => (

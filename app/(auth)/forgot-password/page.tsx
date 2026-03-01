@@ -154,6 +154,7 @@ const ForgotPasswordPage = () => {
 
   return (
     <div className="flex p-4 pt-8 items-center justify-center bg-[#f5f5f5] dark:bg-background">
+      <h1 className="sr-only">Reset Your Password</h1>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Forgot Password</CardTitle>

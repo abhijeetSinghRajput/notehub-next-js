@@ -84,6 +84,8 @@ export default function UserManagementPage() {
   }, [fetchUsers, userQuery]);
 
   return (
+    <>
+    <h1 className="sr-only">User Management</h1>
     <Card>
       <CardHeader>
         <CardTitle>User Management</CardTitle>
@@ -222,5 +224,6 @@ export default function UserManagementPage() {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }

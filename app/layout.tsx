@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
   },
   title: {
-    default: "NoteHub",
+    default: "NoteHub | Smart Note-Taking for Developers & Students",
     template: "%s | NoteHub",
   },
   description:

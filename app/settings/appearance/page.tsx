@@ -6,6 +6,8 @@ import Radius from "@/components/Theme/Radius.client";
 
 const Appearance = () => {
   return (
+    <>
+    <h1 className="sr-only">Appearance Settings</h1>
     <Card>
       <CardHeader className="flex justify-between flex-row">
         <div className="space-y-1.5">
@@ -22,6 +24,7 @@ const Appearance = () => {
         <Radius />
       </CardContent>
     </Card>
+    </>
   );
 };
 

@@ -19,6 +19,8 @@ const Security = () => {
   const { updatePassword, isResettingPassword } = useAuthStore();
 
   return (
+      <>
+      <h1 className="sr-only">Security Settings</h1>
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Security Settings</CardTitle>
@@ -36,6 +38,7 @@ const Security = () => {
           />
         </CardContent>
       </Card>
+      </>
   );
 }
 

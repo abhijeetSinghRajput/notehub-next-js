@@ -545,6 +545,9 @@ const NotePageClient = () => {
             </div>
           </div>
 
+          {/* ── Note title ── */}
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight px-4 mb-6">{note?.name || "Untitled Note"}</h1>
+
           {/* ── Note content ── */}
           <div className="tiptap" style={{ fontSize: fontSize.size, fontFamily: editorFontFamily, lineHeight: "1.7" }}>
             {parse(note?.content || "")}

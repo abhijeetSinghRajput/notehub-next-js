@@ -120,6 +120,8 @@ const Tiptap = () => {
   if (!note) return null;
 
   return (
+    <>
+    <h1 className="sr-only">Edit Note</h1>
     <EditorProvider
       immediatelyRender={false}
       slotBefore={<MenuBar noteId={noteId || ""} />}
@@ -162,6 +164,7 @@ const Tiptap = () => {
       <EditorBubbleMenu />
       <TableHandles />
     </EditorProvider>
+    </>
   );
 };
 

@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 const Profile = () => {
   return (
     <div className="space-y-4">
+      <h1 className="sr-only">Profile Settings</h1>
       <Card>
         <CardHeader>
           <CardTitle>Profile Information</CardTitle>
