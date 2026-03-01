@@ -247,17 +247,16 @@ const NotePageClient = () => {
       header.className = "pre-header rounded-t-lg w-full flex items-center justify-between py-2 px-4";
 
       if (isMermaidLang(lang)) {
-        // ── Status pill + icon toggle matching editor theme ──
+        // ── Copy + icon toggle matching editor theme ──
         header.innerHTML = `
           <span class="text-xs font-medium text-[#b9b9b9]">${lang}</span>
           <div class="flex items-center gap-2">
-            <div class="mermaid-status-pill flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#2b2b2b] border border-[#3b3c3c] text-[#a1a1a1]">
-              <span class="mermaid-status-dot inline-block rounded-full shrink-0 bg-yellow-500" style="width:6px;height:6px"></span>
-              <span class="mermaid-status-label text-[10px] leading-none">Rendering…</span>
-            </div>
+            <button class="copy-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-current" aria-label="Copy code">
+              ${COPY_ICON}
+            </button>
             <div class="inline-flex items-center rounded-md border border-[#3b3c3c] overflow-hidden">
               <button
-                class="mermaid-view-toggle size-7 inline-flex items-center justify-center transition-colors bg-secondary text-foreground"
+                class="mermaid-view-toggle size-7 inline-flex items-center justify-center transition-colors bg-white/20 text-foreground"
                 data-mode="preview"
                 aria-pressed="true"
                 title="Preview"
@@ -314,17 +313,9 @@ const NotePageClient = () => {
         if (cancelled) return;
 
         const source = (codeEl.textContent || "").trim();
-        const statusDot = wrapper.querySelector<HTMLElement>(".mermaid-status-dot");
-        const statusLabel = wrapper.querySelector<HTMLElement>(".mermaid-status-label");
-
-        const setStatus = (color: string, label: string) => {
-          if (statusDot) statusDot.style.background = color;
-          if (statusLabel) statusLabel.textContent = label;
-        };
 
         if (!source) {
           previewEl.innerHTML = `<p class="text-sm text-muted-foreground py-4">No diagram content.</p>`;
-          setStatus("#6b7280", "—");
           continue;
         }
 
@@ -337,7 +328,6 @@ const NotePageClient = () => {
           if (cancelled) return;
 
           previewEl.innerHTML = `<div class="max-w-full">${sanitizeMermaidSvg(svg)}</div>`;
-          setStatus("#10b981", "Ready"); // green
         } catch (err) {
           if (cancelled) return;
           const message = err instanceof Error ? err.message : "Invalid Mermaid syntax";
@@ -346,7 +336,6 @@ const NotePageClient = () => {
               <p class="text-destructive text-xs font-semibold mb-2">⚠ Syntax Error</p>
               <pre class="text-destructive/80 text-xs whitespace-pre-wrap leading-relaxed font-mono">${message}</pre>
             </div>`;
-          setStatus("#ef4444", "Error"); // red
         }
       }
     };
@@ -373,10 +362,10 @@ const NotePageClient = () => {
           const active = btn.dataset.mode === mode;
           btn.setAttribute("aria-pressed", active ? "true" : "false");
           if (active) {
-            btn.classList.add("bg-white", "text-black");
+            btn.classList.add("bg-white/20", "text-black");
             btn.classList.remove("text-muted-foreground");
           } else {
-            btn.classList.remove("bg-white", "text-black");
+            btn.classList.remove("bg-white/20", "text-black");
             btn.classList.add("text-muted-foreground");
           }
         });
