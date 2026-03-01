@@ -29,7 +29,7 @@ const ListDropdown = ({ editor }: { editor: Editor }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="gap-1 px-2">
+        <Button variant="ghost" className="gap-1 px-2" tooltip="list">
           {getIcon()}
           <ChevronDown className="size-4" />
         </Button>

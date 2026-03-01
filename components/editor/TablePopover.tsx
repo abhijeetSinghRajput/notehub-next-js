@@ -20,6 +20,7 @@ interface TablePopoverProps {
   triggerTooltip?: string;
   triggerSize?: VariantProps<typeof buttonVariants>["size"];
   triggerVariant?: VariantProps<typeof buttonVariants>["variant"];
+  triggerDisabled?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -32,6 +33,7 @@ export const TablePopover = ({
   triggerTooltip,
   triggerSize = "icon",
   triggerVariant = "ghost",
+  triggerDisabled = false,
   open,
   onOpenChange,
 }: TablePopoverProps) => {
@@ -66,6 +68,7 @@ export const TablePopover = ({
           size={triggerSize}
           tooltip={triggerTooltip}
           className={triggerClassName}
+          disabled={triggerDisabled}
           // CRITICAL: prevent mousedown from stealing focus from the editor
           onMouseDown={(e) => e.preventDefault()}
         >

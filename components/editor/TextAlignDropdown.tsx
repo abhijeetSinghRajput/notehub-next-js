@@ -38,7 +38,7 @@ const TextAlignDropdown = ({ editor }: { editor: Editor }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="gap-1 px-2">
+        <Button variant="ghost" className="gap-1 px-2" tooltip="Text align">
           {getIcon()}
           <ChevronDown />
         </Button>

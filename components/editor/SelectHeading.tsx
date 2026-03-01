@@ -41,7 +41,7 @@ export const SelectHeading = ({ editor }: { editor: Editor }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="gap-1 px-2">
-        <Button variant="ghost">
+        <Button variant="ghost" tooltip="Heading" className="min-w-16">
           {getIcon()}
           <ChevronDown className="size-4" />
         </Button>

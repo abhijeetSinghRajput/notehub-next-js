@@ -12,7 +12,7 @@ import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import { useParams } from "next/navigation";
 import NoteSkeleton from "@/components/sekeletons/NoteSkeleton";
 import { MenuBar } from "@/components/editor/MenuBar";
-import EditorBubbleMenu from "@/components/editor/EditorBubbleMenu";
+import EditorBubbleMenu from "@/components/editor/bubble-menu/EditorBubbleMenu";
 import TableHandles from "@/components/editor/TableHandles";
 import { extensions } from "@/components/editor/config/extensions.config";
 import { Inbox } from "lucide-react";

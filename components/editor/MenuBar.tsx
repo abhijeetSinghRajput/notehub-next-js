@@ -282,6 +282,29 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             ),
           )}
 
+          <div className="border-x px-1 shrink-0">
+            <TablePopover
+              editor={editor}
+              triggerTooltip={"table option"}
+              controllers={TABLE_BUTTONS}
+              triggerIcon={<TableIcon />}
+            />
+            <TablePopover
+              editor={editor}
+              triggerTooltip={"column option"}
+              controllers={TABLE_COLUMN_CONTROLS}
+              triggerIcon={<TableColIcon />}
+              triggerDisabled={!editor.isActive("table")}
+            />
+            <TablePopover
+              editor={editor}
+              triggerTooltip={"row option"}
+              controllers={TABLE_ROW_CONTROLS}
+              triggerIcon={<TableRowIcon />}
+              triggerDisabled={!editor.isActive("table")}
+            />
+          </div>
+
           {CONTROL_BUTTONS.map(({ icon, command, tooltip }, index) => (
             <Button
               tooltip={tooltip}
@@ -295,27 +318,6 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
               {icon}
             </Button>
           ))}
-
-          <div className="border rounded-lg shrink-0">
-            <TablePopover
-              editor={editor}
-              triggerTooltip={"table option"}
-              controllers={TABLE_BUTTONS}
-              triggerIcon={<TableIcon />}
-            />
-            <TablePopover
-              editor={editor}
-              triggerTooltip={"column option"}
-              controllers={TABLE_COLUMN_CONTROLS}
-              triggerIcon={<TableColIcon />}
-            />
-            <TablePopover
-              editor={editor}
-              triggerTooltip={"row option"}
-              controllers={TABLE_ROW_CONTROLS}
-              triggerIcon={<TableRowIcon />}
-            />
-          </div>
 
           <Button
             tooltip={"Revert Back"}

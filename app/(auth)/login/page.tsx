@@ -81,7 +81,7 @@ const LogInPage = () => {
   return (
     <div className="flex p-4 pt-10 items-center justify-center bg-[#f5f5f5] dark:bg-background">
       <h1 className="sr-only">Log In to NoteHub</h1>
-      <div className={cn("flex flex-col gap-2 max-w-[440px] w-full m-auto")}>
+      <div className={cn("flex flex-col gap-2 max-w-110 w-full m-auto")}>
         {error && (
           <div className="bg-destructive/20 px-2 p-1.5 rounded-md border border-destructive/50 flex items-center justify-center gap-2 text-destructive">
             <AlertCircle size={18} />
