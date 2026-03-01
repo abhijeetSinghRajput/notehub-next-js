@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     template: "%s | NoteHub",
   },
   description:
-    "NoteHub — a sleek, collaborative platform for capturing, organizing, and sharing notes effortlessly. Designed for students and developers who value clarity and productivity.",
+    "NoteHub — a collaborative platform for capturing, organizing, and sharing notes effortlessly. Built for students and developers.",
   keywords: [
     "NoteHub",
     "Note App",

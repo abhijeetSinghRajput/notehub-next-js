@@ -8,7 +8,7 @@ export function getDefaultMetadata(options?: {
 }): Metadata {
   const title = options?.title || "NoteHub";
   const description = options?.description || 
-    "NoteHub — a sleek, collaborative platform for capturing, organizing, and sharing notes effortlessly.";
+    "NoteHub — a collaborative platform for capturing, organizing, and sharing notes effortlessly. Built for students and developers.";
 
   return {
     title,
