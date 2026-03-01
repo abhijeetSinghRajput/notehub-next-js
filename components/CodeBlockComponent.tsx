@@ -94,22 +94,22 @@ let renderId = 0;
 const MERMAID_LANGS = ["mermaid", "mmd", "mindmap"];
 const isMermaidLang = (lang: string) => MERMAID_LANGS.includes((lang ?? "").toLowerCase());
 
-// ─── Line height constant ─────────────────────────────────────────────────────
-//
-// Your global CSS sets `.tiptap pre code { leading-relaxed }` = 1.625.
-// The line numbers column MUST use the exact same value or they drift.
-// Also set on the <pre> inline to beat the global rule specificity.
-//
 const CODE_LINE_HEIGHT = 1.625;
 
-// ─── sanitizeMermaidSvg ───────────────────────────────────────────────────────
+// ─── prepareMermaidSvg ────────────────────────────────────────────────────────
 //
-// Strips Mermaid's injected <style> block. Wraps in .mermaid-diagram so
-// mermaid-theme.css (imported in your layout.tsx) applies.
+// Only removes the inline max-width style Mermaid stamps on the <svg> tag so
+// it respects the container width. All other Mermaid styles are kept as-is —
+// no custom theme, no CSS overrides.
 //
-function sanitizeMermaidSvg(svg: string): string {
-  const stripped = svg.replace(/<style>[\s\S]*?<\/style>/gi, "");
-  return `<div class="mermaid-diagram">${stripped}</div>`;
+function prepareMermaidSvg(svg: string): string {
+  return svg.replace(
+    /(<svg\b[^>]*?)\sstyle="([^"]*)"/i,
+    (_match, before, styleVal) => {
+      const remaining = styleVal.replace(/max-width:[^;]+;?\s*/gi, "").trim();
+      return remaining ? `${before} style="${remaining}"` : before;
+    }
+  );
 }
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────
@@ -158,7 +158,7 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
   // ── Sync language attr ─────────────────────────────────────────────────────
   useEffect(() => { setLanguage(defaultLanguage); }, [defaultLanguage]);
 
-  // ── Reset on switching away from mermaid entirely ─────────────────────────
+  // ── Reset on switching away from mermaid ──────────────────────────────────
   useEffect(() => {
     if (!isMermaid) {
       setViewMode("both");
@@ -168,13 +168,11 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
     }
   }, [isMermaid]);
 
-  // ── Cancel render + reset status when entering code-only mode ────────────
-  //    This is the main perf guard: any in-flight render is abandoned
-  //    immediately when the user switches to code-only view.
+  // ── Cancel render when entering code-only mode ────────────────────────────
   useEffect(() => {
     if (viewMode === "code") {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      activeRenderIdRef.current = ++renderId; // invalidates any running render
+      activeRenderIdRef.current = ++renderId;
       setMermaidStatus("idle");
     }
   }, [viewMode]);
@@ -209,7 +207,7 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
       const { svg } = await m.render(`mmd-${myId}`, trimmed);
       if (activeRenderIdRef.current !== myId) return;
 
-      setMermaidSvg(sanitizeMermaidSvg(svg));
+      setMermaidSvg(prepareMermaidSvg(svg));
       setMermaidError("");
       setMermaidStatus("success");
     } catch (e: unknown) {
@@ -221,9 +219,6 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
   }, []);
 
   // ── Debounced render ───────────────────────────────────────────────────────
-  //    viewMode === "code" guard means: while editing in code-only mode,
-  //    Tiptap re-renders this component on every keystroke (new codeText prop)
-  //    but we bail out immediately — zero mermaid work done.
   useEffect(() => {
     if (!isMermaid || !mermaidLoaded || viewMode === "code") return;
 
@@ -321,6 +316,7 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
         <div className="flex items-center gap-2" contentEditable={false}>
           {isMermaid ? (
             <>
+              {/* Status pill */}
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#2b2b2b] border border-[#3b3c3c] text-[#a1a1a1]">
                 <span
                   className={cn("inline-block rounded-full shrink-0", statusColor[mermaidStatus])}
@@ -329,6 +325,7 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
                 <span className="text-[10px] leading-none">{statusLabel[mermaidStatus]}</span>
               </div>
 
+              {/* View toggle */}
               <div className="flex items-center rounded-md border border-[#3b3c3c] overflow-hidden">
                 <Button
                   type="button"
@@ -376,20 +373,12 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
         </div>
       </header>
 
-      {/* ── Code pane ──
-          Always in the DOM so NodeViewContent stays mounted and
-          node.textContent stays current. Hidden via display:none in
-          preview-only mode — NOT unmounted.
-      ── */}
+      {/* ── Code pane ── always in DOM, hidden via display:none in preview mode ── */}
       <div
         className="relative flex bg-[#181818]"
         style={{ display: isMermaid && viewMode === "preview" ? "none" : "flex" }}
       >
-        {/* Line numbers
-            font-size: 0.875em  → matches `.tiptap pre code { font-size: 0.875em }`
-            lineHeight: 1.625   → matches `.tiptap pre code { leading-relaxed }`
-            These two must stay in sync with your global CSS or lines will drift.
-        */}
+        {/* Line numbers */}
         <div
           aria-hidden
           className="select-none shrink-0 border-r border-white/5 text-right pt-4 pb-4"
@@ -410,10 +399,7 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
           ))}
         </div>
 
-        {/* Code content
-            lineHeight is set inline to beat the global .tiptap pre code rule
-            and keep it in sync with the line numbers above.
-        */}
+        {/* Code */}
         <pre
           ref={codeRef}
           className="flex-1 p-4 overflow-x-auto m-0 bg-transparent"
@@ -431,21 +417,21 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
 
       {/* ── Mermaid preview pane ── */}
       {isMermaid && (viewMode === "preview" || viewMode === "both") && (
-        <div className="mermaid-preview flex justify-center items-start overflow-x-auto min-h-32 border-t border-[#3b3c3c]">
+        <div className="mermaid-preview flex justify-center items-start overflow-x-auto min-h-32 border-t border-[#3b3c3c] bg-white">
           {!mermaidLoaded || mermaidStatus === "rendering" ? (
             <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground text-sm">
               <Spinner />
               <span>{!mermaidLoaded ? "Loading Mermaid…" : "Rendering…"}</span>
             </div>
           ) : mermaidError ? (
-            <div className="w-full">
+            <div className="w-full p-4 bg-destructive/10">
               <pre className="text-destructive/80 text-xs whitespace-pre-wrap leading-relaxed font-mono">
                 {mermaidError}
               </pre>
             </div>
           ) : mermaidSvg ? (
             <div
-              className="p-4 max-w-full w-full"
+              className="p-4 w-full"
               dangerouslySetInnerHTML={{ __html: mermaidSvg }}
             />
           ) : (

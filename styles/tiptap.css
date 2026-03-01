@@ -239,7 +239,7 @@ div:has(> .tiptap.ProseMirror) {
   @apply font-semibold m-0;
 }
 
-.tiptap p {
+.tiptap p:not(.mermaid-preview-pane p) {
   margin-bottom: 0.5rem;
   line-height: 1.75;
 }
@@ -692,7 +692,7 @@ button:disabled {
   .tiptap :is(h1, h2, h3, h4, h5, h6, p) code {
     background-color: color-mix(in oklch, var(--accent) 40%, transparent);
   }
-  .tiptap p {
+  .tiptap p:not(.mermaid-preview-pane p) {
     color: color-mix(in oklch, var(--primary) 80%, transparent);
   }
   .tiptap a {

@@ -104,12 +104,15 @@ const MERMAID_LANGS = new Set(["mermaid", "mmd", "mindmap"]);
 const isMermaidLang = (lang: string) => MERMAID_LANGS.has(lang.toLowerCase());
 
 // Strip mermaid injected styles + wrap in .mermaid-diagram for mermaid-theme.css
-function sanitizeMermaidSvg(svg: string): string {
-  const stripped = svg.replace(/<style>[\s\S]*?<\/style>/gi, "");
-  return `<div class="mermaid-diagram">${stripped}</div>`;
-}
-
-// ─── Main component ────────────────────────────────────────────────────────────
+function prepareMermaidSvg(svg: string): string {
+  return svg.replace(
+    /(<svg\b[^>]*?)\sstyle="([^"]*)"/i,
+    (_match, before, styleVal) => {
+      const remaining = styleVal.replace(/max-width:[^;]+;?\s*/gi, "").trim();
+      return remaining ? `${before} style="${remaining}"` : before;
+    }
+  );
+}// ─── Main component ────────────────────────────────────────────────────────────
 const NotePageClient = () => {
   const { username, collectionSlug, noteSlug } = useParams<{
     username: string;
@@ -280,7 +283,7 @@ const NotePageClient = () => {
         let previewEl = wrapper.querySelector<HTMLDivElement>(":scope > .mermaid-preview-pane");
         if (!previewEl) {
           previewEl = document.createElement("div");
-          previewEl.className = "mermaid-preview-pane flex justify-center items-center overflow-x-auto min-h-32 bg-muted/20 border-t border-[#3b3c3c] p-4";
+          previewEl.className = "mermaid-preview-pane flex justify-center items-center overflow-x-auto min-h-32 bg-white border-t border-[#3b3c3c] p-4";
           // Spinner skeleton while rendering
           previewEl.innerHTML = `
             <div class="flex flex-col items-center gap-3 py-8 text-muted-foreground text-sm">
@@ -327,7 +330,7 @@ const NotePageClient = () => {
           const { svg } = await mermaid.render(id, source);
           if (cancelled) return;
 
-          previewEl.innerHTML = `${sanitizeMermaidSvg(svg)}`;
+          previewEl.innerHTML = prepareMermaidSvg(svg);
         } catch (err) {
           if (cancelled) return;
           const message = err instanceof Error ? err.message : "Invalid Mermaid syntax";
@@ -362,10 +365,10 @@ const NotePageClient = () => {
           const active = btn.dataset.mode === mode;
           btn.setAttribute("aria-pressed", active ? "true" : "false");
           if (active) {
-            btn.classList.add("bg-white/20", "text-black");
+            btn.classList.add("bg-white/20", "text-foreground");
             btn.classList.remove("text-muted-foreground");
           } else {
-            btn.classList.remove("bg-white/20", "text-black");
+            btn.classList.remove("bg-white/20", "text-foreground");
             btn.classList.add("text-muted-foreground");
           }
         });
