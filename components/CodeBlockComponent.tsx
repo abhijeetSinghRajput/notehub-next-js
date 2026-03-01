@@ -445,7 +445,7 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
             </div>
           ) : mermaidSvg ? (
             <div
-              className="p-4 max-w-full"
+              className="p-4 max-w-full w-full"
               dangerouslySetInnerHTML={{ __html: mermaidSvg }}
             />
           ) : (

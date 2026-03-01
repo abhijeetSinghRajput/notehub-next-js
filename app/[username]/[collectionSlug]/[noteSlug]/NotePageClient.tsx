@@ -327,7 +327,7 @@ const NotePageClient = () => {
           const { svg } = await mermaid.render(id, source);
           if (cancelled) return;
 
-          previewEl.innerHTML = `<div class="max-w-full">${sanitizeMermaidSvg(svg)}</div>`;
+          previewEl.innerHTML = `${sanitizeMermaidSvg(svg)}`;
         } catch (err) {
           if (cancelled) return;
           const message = err instanceof Error ? err.message : "Invalid Mermaid syntax";
