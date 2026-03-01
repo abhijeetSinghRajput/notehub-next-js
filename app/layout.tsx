@@ -9,6 +9,8 @@ import "@/styles/katex-overrides.css";
 import "@/styles/theme.css";
 import "@/styles/tiptap.css";
 import "@/styles/hljs.css";
+import "@/styles/mermaid-theme.css";
+
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeShortcut } from "@/components/theme-shortcut";

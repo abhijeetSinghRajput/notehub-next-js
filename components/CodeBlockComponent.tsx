@@ -1,5 +1,21 @@
-import React, { useRef, useState } from "react";
-import { Check, ChevronsUpDown, Copy, CopyCheck } from "lucide-react";
+"use client";
+
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
+import {
+  Check,
+  ChevronsUpDown,
+  Code2,
+  Columns2,
+  Eye,
+  Copy,
+  CopyCheck,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,26 +33,254 @@ import {
 } from "@/components/ui/popover";
 import { NodeViewContent, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 
-const CodeBlockComponent: React.FC<NodeViewProps> = ({
-  node: { attrs: { language: defaultLanguage } },
-  updateAttributes,
-  extension,
-}) => {
-  const languages: string[] = extension.options.lowlight.listLanguages();
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState<string>(defaultLanguage);
-  const [copied, setCopied] = useState(false);
-  const codeRef = useRef<HTMLPreElement>(null);
+// ─── Types ────────────────────────────────────────────────────────────────────
 
+type MermaidStatus = "idle" | "rendering" | "success" | "error";
+type ViewMode = "code" | "preview" | "both";
+
+type MermaidAPI = {
+  initialize: (config: {
+    startOnLoad: boolean;
+    theme: string;
+    securityLevel: "loose";
+  }) => void;
+  parse: (source: string) => Promise<unknown>;
+  render: (id: string, source: string) => Promise<{ svg: string }>;
+};
+
+declare global {
+  interface Window {
+    mermaid: MermaidAPI;
+    _mermaid: MermaidAPI;
+  }
+}
+
+// ─── Mermaid singleton loader ─────────────────────────────────────────────────
+
+let mermaidReady = false;
+let mermaidLoadPromise: Promise<MermaidAPI> | null = null;
+
+function loadMermaid(): Promise<MermaidAPI> {
+  if (mermaidReady) return Promise.resolve(window._mermaid);
+  if (mermaidLoadPromise) return mermaidLoadPromise;
+
+  mermaidLoadPromise = new Promise<MermaidAPI>((resolve, reject) => {
+    if (typeof window !== "undefined" && window.mermaid) {
+      window.mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
+      window._mermaid = window.mermaid;
+      mermaidReady = true;
+      resolve(window.mermaid);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js";
+    script.onload = () => {
+      window.mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
+      window._mermaid = window.mermaid;
+      mermaidReady = true;
+      resolve(window.mermaid);
+    };
+    script.onerror = () => reject(new Error("Failed to load Mermaid"));
+    document.head.appendChild(script);
+  });
+
+  return mermaidLoadPromise;
+}
+
+let renderId = 0;
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const MERMAID_LANGS = ["mermaid", "mmd", "mindmap"];
+const isMermaidLang = (lang: string) => MERMAID_LANGS.includes((lang ?? "").toLowerCase());
+
+// ─── Line height constant ─────────────────────────────────────────────────────
+//
+// Your global CSS sets `.tiptap pre code { leading-relaxed }` = 1.625.
+// The line numbers column MUST use the exact same value or they drift.
+// Also set on the <pre> inline to beat the global rule specificity.
+//
+const CODE_LINE_HEIGHT = 1.625;
+
+// ─── sanitizeMermaidSvg ───────────────────────────────────────────────────────
+//
+// Strips Mermaid's injected <style> block. Wraps in .mermaid-diagram so
+// mermaid-theme.css (imported in your layout.tsx) applies.
+//
+function sanitizeMermaidSvg(svg: string): string {
+  const stripped = svg.replace(/<style>[\s\S]*?<\/style>/gi, "");
+  return `<div class="mermaid-diagram">${stripped}</div>`;
+}
+
+// ─── Spinner ──────────────────────────────────────────────────────────────────
+
+if (typeof document !== "undefined" && !document.getElementById("mmd-spin-style")) {
+  const s = document.createElement("style");
+  s.id = "mmd-spin-style";
+  s.textContent = "@keyframes mmd-spin { to { transform: rotate(360deg); } }";
+  document.head.appendChild(s);
+}
+
+const Spinner = () => (
+  <span
+    className="inline-block rounded-full border-2 border-muted border-t-primary"
+    style={{ width: 18, height: 18, animation: "mmd-spin 0.7s linear infinite" }}
+  />
+);
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, extension }) => {
+  const defaultLanguage: string = node?.attrs?.language ?? "";
+  const codeText: string = node?.textContent ?? "";
+
+  const languages = useMemo<string[]>(() => {
+    const ll: string[] = extension.options.lowlight.listLanguages();
+    return Array.from(new Set([...ll, ...MERMAID_LANGS])).sort();
+  }, [extension.options.lowlight]);
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  const [open, setOpen] = useState(false);
+  const [language, setLanguage] = useState<string>(defaultLanguage);
+  const [copied, setCopied] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("both");
+  const [mermaidSvg, setMermaidSvg] = useState("");
+  const [mermaidError, setMermaidError] = useState("");
+  const [mermaidStatus, setMermaidStatus] = useState<MermaidStatus>("idle");
+  const [mermaidLoaded, setMermaidLoaded] = useState(false);
+
+  const codeRef = useRef<HTMLPreElement | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeRenderIdRef = useRef(0);
+
+  const isMermaid = isMermaidLang(language);
+
+  // ── Sync language attr ─────────────────────────────────────────────────────
+  useEffect(() => { setLanguage(defaultLanguage); }, [defaultLanguage]);
+
+  // ── Reset on switching away from mermaid entirely ─────────────────────────
+  useEffect(() => {
+    if (!isMermaid) {
+      setViewMode("both");
+      setMermaidSvg("");
+      setMermaidError("");
+      setMermaidStatus("idle");
+    }
+  }, [isMermaid]);
+
+  // ── Cancel render + reset status when entering code-only mode ────────────
+  //    This is the main perf guard: any in-flight render is abandoned
+  //    immediately when the user switches to code-only view.
+  useEffect(() => {
+    if (viewMode === "code") {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      activeRenderIdRef.current = ++renderId; // invalidates any running render
+      setMermaidStatus("idle");
+    }
+  }, [viewMode]);
+
+  // ── Lazy-load mermaid.js ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isMermaid || mermaidLoaded) return;
+    loadMermaid()
+      .then(() => setMermaidLoaded(true))
+      .catch(() => { setMermaidError("Failed to load Mermaid."); setMermaidStatus("error"); });
+  }, [isMermaid, mermaidLoaded]);
+
+  // ── Render function ────────────────────────────────────────────────────────
+  const renderMermaid = useCallback(async (source: string) => {
+    if (!mermaidReady) return;
+
+    const trimmed = source.trim();
+    if (!trimmed) {
+      setMermaidSvg(""); setMermaidError(""); setMermaidStatus("idle");
+      return;
+    }
+
+    const myId = ++renderId;
+    activeRenderIdRef.current = myId;
+    setMermaidStatus("rendering");
+
+    try {
+      const m = window._mermaid;
+      await m.parse(trimmed);
+      if (activeRenderIdRef.current !== myId) return;
+
+      const { svg } = await m.render(`mmd-${myId}`, trimmed);
+      if (activeRenderIdRef.current !== myId) return;
+
+      setMermaidSvg(sanitizeMermaidSvg(svg));
+      setMermaidError("");
+      setMermaidStatus("success");
+    } catch (e: unknown) {
+      if (activeRenderIdRef.current !== myId) return;
+      setMermaidSvg("");
+      setMermaidError(e instanceof Error ? e.message : "Invalid Mermaid diagram syntax.");
+      setMermaidStatus("error");
+    }
+  }, []);
+
+  // ── Debounced render ───────────────────────────────────────────────────────
+  //    viewMode === "code" guard means: while editing in code-only mode,
+  //    Tiptap re-renders this component on every keystroke (new codeText prop)
+  //    but we bail out immediately — zero mermaid work done.
+  useEffect(() => {
+    if (!isMermaid || !mermaidLoaded || viewMode === "code") return;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (!codeText.trim()) {
+      setMermaidSvg(""); setMermaidError(""); setMermaidStatus("idle");
+      return;
+    }
+
+    setMermaidStatus("rendering");
+    debounceRef.current = setTimeout(() => renderMermaid(codeText), 400);
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [isMermaid, mermaidLoaded, viewMode, codeText, renderMermaid]);
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleCopy = async () => {
-    const codeContent = codeRef.current?.textContent ?? "";
-    await navigator.clipboard.writeText(codeContent);
+    const text = codeRef.current?.textContent ?? "";
+    await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   };
 
+  const handleLanguageSelect = (lang: string) => {
+    const next = lang === language ? "" : lang;
+    setLanguage(next);
+    updateAttributes({ language: next });
+    setOpen(false);
+  };
+
+  // ── Derived ────────────────────────────────────────────────────────────────
+  const lineCount = codeText.split("\n").length;
+
+  const statusColor: Record<MermaidStatus, string> = {
+    idle: "bg-muted-foreground",
+    rendering: "bg-yellow-500",
+    success: "bg-green-500",
+    error: "bg-destructive",
+  };
+  const statusLabel: Record<MermaidStatus, string> = {
+    idle: "—",
+    rendering: "Rendering…",
+    success: "Ready",
+    error: "Error",
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <NodeViewWrapper className="code-block relative rounded-2xl overflow-hidden">
+    <NodeViewWrapper
+      className={cn(
+        "code-block relative rounded-2xl overflow-hidden",
+        isMermaid && "is-mermaid",
+        isMermaid && `mermaid-view-${viewMode}`,
+      )}
+    >
+      {/* ── Header ── */}
       <header className="rounded-t-lg w-full flex items-center justify-between py-2 px-4">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
@@ -47,34 +291,25 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({
               className="min-w-32 justify-between h-7"
               contentEditable={false}
             >
-              {value || "Select Language..."}
+              {language || "Select language…"}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-50 bg-neutral-800 border-neutral-800 p-0" align="start">
             <Command className="bg-transparent text-neutral-50 border-neutral-800">
-              <CommandInput placeholder="Search language..." className="h-9 placeholder:text-neutral-400" />
+              <CommandInput placeholder="Search language…" className="h-9 placeholder:text-neutral-400" />
               <CommandList>
                 <CommandEmpty>No language found.</CommandEmpty>
                 <CommandGroup>
-                  {languages.map((lang: string, index: number) => (
+                  {languages.map((lang) => (
                     <CommandItem
-                      key={index}
+                      key={lang}
                       value={lang}
-                      onSelect={(currentValue: string) => {
-                        setValue(currentValue === value ? "" : currentValue);
-                        updateAttributes({ language: currentValue });
-                        setOpen(false);
-                      }}
+                      onSelect={handleLanguageSelect}
                       style={{ color: "white" }}
                     >
                       {lang}
-                      <Check
-                        className={cn(
-                          "ml-auto h-4 w-4",
-                          value === lang ? "opacity-100" : "opacity-0"
-                        )}
-                      />
+                      <Check className={cn("ml-auto h-3 w-3", language === lang ? "opacity-100" : "opacity-0")} />
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -83,26 +318,143 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleCopy}
-          disabled={copied}
-          className="gap-2 size-7"
-          aria-label={copied ? "Code copied" : "Copy code to clipboard"}
-        >
-          {copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-        </Button>
+        <div className="flex items-center gap-2" contentEditable={false}>
+          {isMermaid ? (
+            <>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#2b2b2b] border border-[#3b3c3c] text-[#a1a1a1]">
+                <span
+                  className={cn("inline-block rounded-full shrink-0", statusColor[mermaidStatus])}
+                  style={{ width: 6, height: 6 }}
+                />
+                <span className="text-[10px] leading-none">{statusLabel[mermaidStatus]}</span>
+              </div>
+
+              <div className="flex items-center rounded-md border border-[#3b3c3c] overflow-hidden">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={cn("size-7 rounded-none", viewMode === "code" && "bg-white/20")}
+                  onClick={() => setViewMode("code")}
+                  title="Code only"
+                >
+                  <Code2 className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={cn("size-7 rounded-none border-x border-[#3b3c3c]", viewMode === "both" && "bg-white/20")}
+                  onClick={() => setViewMode("both")}
+                  title="Code and preview"
+                >
+                  <Columns2 className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={cn("size-7 rounded-none", viewMode === "preview" && "bg-white/20")}
+                  onClick={() => setViewMode("preview")}
+                  title="Preview only"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCopy}
+              className="size-7"
+              title={copied ? "Copied!" : "Copy code"}
+            >
+              {copied ? <CopyCheck className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+            </Button>
+          )}
+        </div>
       </header>
 
-      <pre
-        ref={codeRef}
-        className="p-4 overflow-x-auto bg-[#09090b]"
-        style={{ tabSize: 4, whiteSpace: "pre", fontFamily: "monospace" }}
+      {/* ── Code pane ──
+          Always in the DOM so NodeViewContent stays mounted and
+          node.textContent stays current. Hidden via display:none in
+          preview-only mode — NOT unmounted.
+      ── */}
+      <div
+        className="relative flex bg-[#181818]"
+        style={{ display: isMermaid && viewMode === "preview" ? "none" : "flex" }}
       >
-        {/* @ts-ignore */}
-        <NodeViewContent as="code" className={`language-${value}`} />
-      </pre>
+        {/* Line numbers
+            font-size: 0.875em  → matches `.tiptap pre code { font-size: 0.875em }`
+            lineHeight: 1.625   → matches `.tiptap pre code { leading-relaxed }`
+            These two must stay in sync with your global CSS or lines will drift.
+        */}
+        <div
+          aria-hidden
+          className="select-none shrink-0 border-r border-white/5 text-right pt-4 pb-4"
+          style={{ minWidth: 44 }}
+        >
+          {Array.from({ length: lineCount }, (_, i) => (
+            <div
+              key={i}
+              className="text-[#a1a1a1] pr-3 pl-2"
+              style={{
+                fontFamily: "monospace",
+                fontSize: "0.875rem",
+                lineHeight: CODE_LINE_HEIGHT,
+              }}
+            >
+              {i + 1}
+            </div>
+          ))}
+        </div>
+
+        {/* Code content
+            lineHeight is set inline to beat the global .tiptap pre code rule
+            and keep it in sync with the line numbers above.
+        */}
+        <pre
+          ref={codeRef}
+          className="flex-1 p-4 overflow-x-auto m-0 bg-transparent"
+          style={{
+            tabSize: 4,
+            whiteSpace: "pre",
+            fontFamily: "monospace",
+            lineHeight: CODE_LINE_HEIGHT,
+          }}
+        >
+          {/* @ts-ignore */}
+          <NodeViewContent as="code" className={`language-${language}`} />
+        </pre>
+      </div>
+
+      {/* ── Mermaid preview pane ── */}
+      {isMermaid && (viewMode === "preview" || viewMode === "both") && (
+        <div className="mermaid-preview flex justify-center items-start overflow-x-auto min-h-32 border-t border-[#3b3c3c]">
+          {!mermaidLoaded || mermaidStatus === "rendering" ? (
+            <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground text-sm">
+              <Spinner />
+              <span>{!mermaidLoaded ? "Loading Mermaid…" : "Rendering…"}</span>
+            </div>
+          ) : mermaidError ? (
+            <div className="w-full">
+              <pre className="text-destructive/80 text-xs whitespace-pre-wrap leading-relaxed font-mono">
+                {mermaidError}
+              </pre>
+            </div>
+          ) : mermaidSvg ? (
+            <div
+              className="p-4 max-w-full"
+              dangerouslySetInnerHTML={{ __html: mermaidSvg }}
+            />
+          ) : (
+            <p className="py-8 text-sm text-muted-foreground">
+              Start typing to see your diagram…
+            </p>
+          )}
+        </div>
+      )}
     </NodeViewWrapper>
   );
 };
