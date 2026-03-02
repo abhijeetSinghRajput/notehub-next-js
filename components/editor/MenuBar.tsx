@@ -249,7 +249,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
           <ListDropdown editor={editor} />
           <TextAlignDropdown editor={editor} />
 
-          <div className="hidden md:flex gap-0.5 border-x px-1">
+          <div className="hidden md:flex gap-0.5 border-l pl-1">
             {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
               <Button
                 tooltip={tooltip}
@@ -270,14 +270,16 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             <Suspense fallback={null}>
               <MathDialog editor={editor} />
             </Suspense>
-
+          </div>
+          
             <TablePopover
               editor={editor}
               triggerTooltip={"table option"}
               controllers={TABLE_BUTTONS}
               triggerIcon={<TableIcon />}
             />
-          </div>
+          
+          <span className="h-10 bg-border w-px"/>
 
           {CONTROL_BUTTONS.map(({ icon, command, tooltip }, index) => (
             <Button
