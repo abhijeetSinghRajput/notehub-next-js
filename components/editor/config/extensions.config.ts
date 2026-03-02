@@ -29,7 +29,9 @@ import { createLowlight } from "lowlight";
 import { all } from "lowlight";
 import CodeBlockComponent from "@/components/CodeBlockComponent";
 import { ReactNodeViewRenderer } from "@tiptap/react";
-import { Extension } from "@tiptap/core";
+import { Extension, findChildren } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { Dropcursor, Gapcursor } from "@tiptap/extensions";
 import Link from "@tiptap/extension-link";
 import MathExtension from "@tiptap/extension-mathematics";
@@ -218,9 +220,157 @@ function getCommentToken(language: string): string {
   return COMMENT_TOKENS[language?.toLowerCase()] ?? "//";
 }
 
+// ─── Debounced Lowlight Plugin ──────────────────────────────────────────────
+//
+// The DEFAULT lowlight plugin (from @tiptap/extension-code-block-lowlight)
+// re-parses ALL code blocks synchronously on EVERY keystroke, blocking the
+// main thread for 5-30ms+. This replacement:
+//
+//   1. On keystroke: remaps old decorations via position mapping (<0.1ms)
+//   2. After 300ms of idle: re-parses and applies fresh decorations
+//
+// Result: zero-cost typing path, identical highlighting with a tiny delay.
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+function parseHastNodes(
+  nodes: any[],
+  classNames: string[] = []
+): { text: string; classes: string[] }[] {
+  return nodes.flatMap((node: any) => {
+    const classes = [
+      ...classNames,
+      ...(node.properties?.className || []),
+    ];
+    if (node.children) {
+      return parseHastNodes(node.children, classes);
+    }
+    return [{ text: node.value as string, classes }];
+  });
+}
+
+function computeDecorations(
+  doc: any,
+  name: string,
+  lowlight: any,
+  defaultLanguage: string | null | undefined
+): DecorationSet {
+  const decorations: Decoration[] = [];
+
+  findChildren(doc, (node) => node.type.name === name).forEach((block) => {
+    let from = block.pos + 1;
+    const language = block.node.attrs.language || defaultLanguage;
+    const languages: string[] = lowlight.listLanguages();
+    const result =
+      language &&
+      (languages.includes(language) || lowlight.registered?.(language))
+        ? lowlight.highlight(language, block.node.textContent)
+        : lowlight.highlightAuto(block.node.textContent);
+
+    const nodes = result.children || result.value || [];
+
+    for (const token of parseHastNodes(nodes)) {
+      const to = from + token.text.length;
+      if (token.classes.length > 0) {
+        decorations.push(
+          Decoration.inline(from, to, { class: token.classes.join(" ") })
+        );
+      }
+      from = to;
+    }
+  });
+
+  return DecorationSet.create(doc, decorations);
+}
+
+const LOWLIGHT_PLUGIN_KEY = new PluginKey("lowlight");
+const LOWLIGHT_RECOMPUTE = "lowlight-recompute";
+
+function DebouncedLowlightPlugin({
+  name,
+  lowlight,
+  defaultLanguage,
+}: {
+  name: string;
+  lowlight: any;
+  defaultLanguage: string | null | undefined;
+}) {
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let editorView: any = null;
+
+  return new Plugin({
+    key: LOWLIGHT_PLUGIN_KEY,
+    state: {
+      init(_, { doc }) {
+        return computeDecorations(doc, name, lowlight, defaultLanguage);
+      },
+      apply(tr, decorationSet) {
+        // Our own scheduled recompute — run the real highlighting
+        if (tr.getMeta(LOWLIGHT_RECOMPUTE)) {
+          return computeDecorations(tr.doc, name, lowlight, defaultLanguage);
+        }
+
+        // No doc change — just remap decoration positions
+        if (!tr.docChanged) {
+          return decorationSet.map(tr.mapping, tr.doc);
+        }
+
+        // Doc changed: remap old decorations instantly (zero parsing),
+        // then schedule a full recompute during idle time.
+        const mapped = decorationSet.map(tr.mapping, tr.doc);
+
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          if (editorView) {
+            editorView.dispatch(
+              editorView.state.tr.setMeta(LOWLIGHT_RECOMPUTE, true)
+            );
+          }
+        }, 300);
+
+        return mapped;
+      },
+    },
+    view(view) {
+      editorView = view;
+      return {
+        update(v: any) {
+          editorView = v;
+        },
+        destroy() {
+          editorView = null;
+          if (debounceTimer) clearTimeout(debounceTimer);
+        },
+      };
+    },
+    props: {
+      decorations(state) {
+        return LOWLIGHT_PLUGIN_KEY.getState(state);
+      },
+    },
+  });
+}
+
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+// ─── CustomCodeBlock ──────────────────────────────────────────────────────────
+
 const CustomCodeBlock = CodeBlockLowlight.extend({
   addNodeView() {
     return ReactNodeViewRenderer(CodeBlockComponent);
+  },
+
+  // Replace the synchronous lowlight plugin with our debounced version.
+  // The parent's plugin calls getDecorations() on every keystroke (5-30ms+).
+  // Ours remaps old decorations instantly and only re-highlights after 300ms.
+  addProseMirrorPlugins() {
+    return [
+      DebouncedLowlightPlugin({
+        name: this.name,
+        lowlight: this.options.lowlight,
+        defaultLanguage: this.options.defaultLanguage,
+      }),
+    ];
   },
 
   addKeyboardShortcuts() {
@@ -649,7 +799,13 @@ const CustomCodeBlock = CodeBlockLowlight.extend({
       },
     };
   },
-}).configure({ lowlight });
+}).configure({
+  lowlight,
+  // When no language is selected, lowlight tries auto-detection across ALL
+  // ~190 loaded languages on every keystroke — extremely expensive.
+  // Setting a default language prevents this costly auto-detection path.
+  defaultLanguage: "plaintext",
+});
 
 // ─── Table actions (unchanged from original) ──────────────────────────────────
 

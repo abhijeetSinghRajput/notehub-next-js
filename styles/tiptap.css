@@ -307,7 +307,7 @@ div:has(> .tiptap.ProseMirror) {
 .tiptap pre code {
   @apply whitespace-pre p-0 m-0 leading-relaxed;
   white-space: pre !important;
-  font-size: 0.875em;
+  font-size: 0.875rem;
   display: block;
 }
 

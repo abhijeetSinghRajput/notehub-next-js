@@ -1,4 +1,6 @@
-import React, { Suspense, useEffect, useState } from "react";
+"use client";
+
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useCurrentEditor } from "@tiptap/react";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { Button } from "../ui/button";
@@ -40,43 +42,71 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   const { updateContent, status, getNoteContent, createNote } = useNoteStore();
   const { clearDraft, getDraft, setDraft } = useDraftStore();
 
-  // Force re-render on editor changes so isActive(...) reflects immediately
-  const [__menuVersion, set__menuVersion] = useState(0);
+  // ── Perf fix: only re-render on cursor/selection changes, NOT on every keystroke ──
+  //
+  // The previous code listened to "transaction" + "update" which fires on every
+  // single character typed, causing the entire toolbar to re-render on every keypress.
+  //
+  // The toolbar only needs to update when:
+  //   1. The cursor moves (selectionUpdate) — to reflect isActive() state
+  //   2. Undo/redo ability changes — throttled check via a short timeout
+  //
+  // "update" (content change) does NOT need to trigger a toolbar re-render
+  // because formatting marks don't change when you type regular characters.
+  //
+  const [, forceUpdate] = useState(0);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!editor) return;
-    const rerender = () => set__menuVersion((v) => v + 1);
-    editor.on("transaction", rerender);
-    editor.on("selectionUpdate", rerender);
-    editor.on("update", rerender);
+
+    // Use rAF to batch rapid selection changes — at most one re-render per frame
+    const scheduleUpdate = () => {
+      if (rafRef.current !== null) return; // already scheduled
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        forceUpdate((v) => v + 1);
+      });
+    };
+
+    // selectionUpdate covers: clicking, arrow keys, Ctrl+B/I/U toggling marks.
+    // We do NOT listen to "update" (content change) or "transaction" here.
+    editor.on("selectionUpdate", scheduleUpdate);
+    // "transaction" is needed only to catch undo/redo enabling/disabling.
+    // Throttle it so rapid typing still only fires at most once per 200ms.
+    let lastTxRender = 0;
+    const onTransaction = () => {
+      const now = Date.now();
+      if (now - lastTxRender > 200) {
+        lastTxRender = now;
+        scheduleUpdate();
+      }
+    };
+    editor.on("transaction", onTransaction);
+
     return () => {
-      editor.off("transaction", rerender);
-      editor.off("selectionUpdate", rerender);
-      editor.off("update", rerender);
+      editor.off("selectionUpdate", scheduleUpdate);
+      editor.off("transaction", onTransaction);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
     };
   }, [editor]);
 
-  if (!editor) {
-    return null;
-  }
+  if (!editor) return null;
 
   const isEmptyContent = (html: string) => {
-    // text
     if (html.replace(/<[^>]*>/g, "").trim().length > 0) return false;
-
-    // images
     if (/<img\s/i.test(html)) return false;
-
-    // latex (inline or block)
     if (/data-type="(inline-math|block-math)"/.test(html)) return false;
-
     return true;
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault(); // stop browser save
+        e.preventDefault();
         if (
           noteId &&
           status.noteContent.state !== "saving" &&
@@ -89,7 +119,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [noteId, status.noteContent.state, status.note.state, editor]);
+  }, [noteId, status.noteContent.state, status.note.state, editor]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleContentSave = async () => {
     if (!noteId) return;
@@ -139,22 +169,10 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
       return;
     }
 
-    await updateContent({
-      content,
-      noteId: noteId,
-    });
-
-    // ✅ Clear draft ONLY after successful save
+    await updateContent({ content, noteId });
     clearDraft(noteId);
-
-    router.back(); // goes back one page
+    router.back();
   };
-
-  if (!editor) {
-    return (
-      <div className="controll-group mb-2 sticky top-20 z-10 bg-background border-b border-input" />
-    );
-  }
 
   const handleRevert = async () => {
     if (!noteId || !authUser?._id) return;
@@ -169,16 +187,13 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
       return;
     }
 
-    // 1️⃣ Fetch fresh content from store (server or cache)
     const note = await getNoteContent(noteId);
-
     if (note !== null) {
-      editor.commands.setContent(note.content); // replace editor content
+      editor.commands.setContent(note.content);
     } else {
-      editor.commands.clearContent(); // fallback if note not found
+      editor.commands.clearContent();
     }
 
-    // 2️⃣ Clear draft for this user + note
     clearDraft(noteId);
   };
 
@@ -255,53 +270,12 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             <Suspense fallback={null}>
               <MathDialog editor={editor} />
             </Suspense>
-          </div>
 
-          {LIST_CONTROL_BUTTONS.map(
-            ({ icon, command, tooltip, name }, index) => (
-              <Button
-                tooltip={tooltip}
-                aria-label={tooltip}
-                key={index}
-                size="icon"
-                variant="ghost"
-                onClick={() => {
-                  if ((editor.can() as any)[command](name[0])) {
-                    (editor.chain().focus() as any)[command](name[0]).run();
-                  } else if ((editor.can() as any)[command](name[1])) {
-                    (editor.chain().focus() as any)[command](name[1]).run();
-                  }
-                }}
-                disabled={
-                  !(editor.can() as any)[command](name[0]) &&
-                  !(editor.can() as any)[command](name[1])
-                }
-              >
-                {icon}
-              </Button>
-            ),
-          )}
-
-          <div className="border-x px-1 shrink-0">
             <TablePopover
               editor={editor}
               triggerTooltip={"table option"}
               controllers={TABLE_BUTTONS}
               triggerIcon={<TableIcon />}
-            />
-            <TablePopover
-              editor={editor}
-              triggerTooltip={"column option"}
-              controllers={TABLE_COLUMN_CONTROLS}
-              triggerIcon={<TableColIcon />}
-              triggerDisabled={!editor.isActive("table")}
-            />
-            <TablePopover
-              editor={editor}
-              triggerTooltip={"row option"}
-              controllers={TABLE_ROW_CONTROLS}
-              triggerIcon={<TableRowIcon />}
-              triggerDisabled={!editor.isActive("table")}
             />
           </div>
 

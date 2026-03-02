@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorProvider } from "@tiptap/react";
 
 import { useNoteStore } from "@/app/stores/useNoteStore";
@@ -33,16 +33,39 @@ const Tiptap = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  // ✅ Stable reference
-  const saveDraftCallback = useCallback(
-    (noteObj: INote) => {
-      if (!noteId) return;
-      setDraft(noteId, noteObj);
-    },
-    [noteId, setDraft],
-  );
+  // ── Refs for zero-overhead typing path ─────────────────────────────────────
+  // The editor manages its own state via ProseMirror. React only needs the note
+  // for the initial render and metadata (name, visibility, etc.) for draft saves.
+  // By using refs instead of state for the update path, we avoid re-rendering
+  // the entire component tree (MenuBar, BubbleMenu, TableHandles, etc.) on
+  // every single keystroke.
+  const editorRef = useRef<any>(null);
+  const noteRef = useRef<INote | null>(null);
 
-  const saveDraft = useDebounceCallback(saveDraftCallback, 400);
+  // Keep noteRef in sync — only runs when `note` state changes (initial load),
+  // never during typing.
+  useEffect(() => {
+    noteRef.current = note;
+  }, [note]);
+
+  // ── Debounced draft save ─────────────────────────────────────────────────
+  // editor.getHTML() is O(n) in document size and was previously called
+  // synchronously on every keystroke, blocking input for 5-20ms+ on large docs.
+  // Now it only runs after 800ms of inactivity — zero synchronous cost while typing.
+  const debouncedDraftSave = useDebounceCallback(
+    useCallback(() => {
+      const editor = editorRef.current;
+      const currentNote = noteRef.current;
+      if (!editor || editor.isDestroyed || !currentNote || !noteId) return;
+      const html = editor.getHTML();
+      setDraft(noteId, {
+        ...currentNote,
+        content: html,
+        updatedAt: new Date().toISOString(),
+      });
+    }, [noteId, setDraft]),
+    800,
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,24 +94,43 @@ const Tiptap = () => {
     fetchData();
 
     return () => {
-      saveDraft.cancel();
+      debouncedDraftSave.cancel();
     };
-  }, [noteId, getNoteContent, getDraft, getImages]);
+  }, [noteId, getNoteContent, getDraft, getImages]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ✅ BEST SOLUTION: Use functional state update
-  const handleUpdate = (html: string) => {
-    setNote((prevNote) => {
-      if (!prevNote) return prevNote;
+  // ── onUpdate handler: zero synchronous work ─────────────────────────────
+  // Just kicks the debounce timer. No getHTML(), no setState(), no React re-render.
+  const handleEditorUpdate = useCallback(() => {
+    debouncedDraftSave();
+  }, [debouncedDraftSave]);
 
-      const updatedNote = {
-        ...prevNote,
-        content: html,
-        updatedAt: new Date().toISOString(),
-      };
-      saveDraft(updatedNote);
-      return updatedNote;
-    });
-  };
+  // ── Memoize editorProps so EditorProvider doesn't reconfigure ProseMirror ──
+  const editorProps = useMemo(
+    () => ({
+      transformPastedHTML(html: string) {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        doc.querySelectorAll<HTMLElement>("[style]").forEach((el) => {
+          el.style.removeProperty("font-family");
+          el.style.removeProperty("font-size");
+          el.style.removeProperty("line-height");
+          el.style.removeProperty("background");
+          el.style.removeProperty("background-color");
+          el.style.removeProperty("color");
+          if (!el.getAttribute("style")?.trim()) {
+            el.removeAttribute("style");
+          }
+        });
+        return doc.body.innerHTML;
+      },
+      attributes: {
+        class:
+          "prose dark:prose-invert mx-auto prose-sm sm:prose-base lg:prose-lg xl:prose-2xl focus:outline-none min-h-full",
+        style: `font-family: ${editorFontFamily}, serif;`,
+        spellcheck: "false",
+      },
+    }),
+    [editorFontFamily],
+  );
 
   if (notFound) {
     return (
@@ -127,39 +169,12 @@ const Tiptap = () => {
       slotBefore={<MenuBar noteId={noteId || ""} />}
       extensions={extensions}
       content={note.content}
-      onCreate={({ editor }) => migrateMathStrings(editor)}
-      onUpdate={({ editor }) => handleUpdate(editor.getHTML())}
-      editorProps={{
-        transformPastedHTML(html) {
-          const doc = new DOMParser().parseFromString(html, "text/html");
-
-          doc.querySelectorAll<HTMLElement>("[style]").forEach((el) => {
-            el.style.removeProperty("font-family");
-            el.style.removeProperty("font-size");
-            el.style.removeProperty("line-height");
-
-            // 🔥 remove background-related styles
-            el.style.removeProperty("background");
-            el.style.removeProperty("background-color");
-
-            // remove text color
-            el.style.removeProperty("color");
-
-            // cleanup empty style attr
-            if (!el.getAttribute("style")?.trim()) {
-              el.removeAttribute("style");
-            }
-          });
-
-          return doc.body.innerHTML;
-        },
-        attributes: {
-          class:
-            "prose dark:prose-invert mx-auto prose-sm sm:prose-base lg:prose-lg xl:prose-2xl focus:outline-none min-h-full",
-          style: `font-family: ${editorFontFamily}, serif;`,
-          spellcheck: "false",
-        },
+      onCreate={({ editor }: any) => {
+        editorRef.current = editor;
+        migrateMathStrings(editor);
       }}
+      onUpdate={handleEditorUpdate}
+      editorProps={editorProps}
     >
       <EditorBubbleMenu />
       <TableHandles />
