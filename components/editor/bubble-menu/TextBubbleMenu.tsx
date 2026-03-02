@@ -106,6 +106,10 @@ export default function TextBubbleMenu() {
 
         return true;
       }}
+      options={{
+        placement: "bottom",
+        // offset: 10,
+      }}
     >
       <div className="bubble-menu bg-neutral-900 p-1 flex items-center border border-neutral-800 rounded-xl">
         {inlineActions.map((item, index) => (
@@ -121,7 +125,7 @@ export default function TextBubbleMenu() {
           </Button>
         ))}
 
-        <span className="bg-border h-8 w-px mx-2" />
+        <span className="bg-neutral-800 h-8 w-px mx-2" />
 
         <Button
           variant="ghost"

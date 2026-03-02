@@ -292,7 +292,7 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
           </PopoverTrigger>
           <PopoverContent className="w-50 bg-neutral-800 border-neutral-800 p-0" align="start">
             <Command className="bg-transparent text-neutral-50 border-neutral-800">
-              <CommandInput placeholder="Search language…" className="h-9 placeholder:text-neutral-400" />
+              <CommandInput placeholder="Search language…" className="h-9 placeholder:text-neutral-400" wrapperClassName="border-[#595959]" />
               <CommandList>
                 <CommandEmpty>No language found.</CommandEmpty>
                 <CommandGroup>
@@ -302,6 +302,7 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({ node, updateAttributes, e
                       value={lang}
                       onSelect={handleLanguageSelect}
                       style={{ color: "white" }}
+                      className="data-[selected=true]:bg-neutral-700 data-[selected=true]:text-white"
                     >
                       {lang}
                       <Check className={cn("ml-auto h-3 w-3", language === lang ? "opacity-100" : "opacity-0")} />

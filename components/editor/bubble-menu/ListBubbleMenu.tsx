@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 const BASE_CLASS =
   "hover:bg-neutral-800 active:bg-transparent dark:hover:bg-neutral-800 dark:active:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed";
 
-
 export default function ListBubbleMenu() {
   const { editor } = useCurrentEditor();
 
@@ -81,6 +80,10 @@ export default function ListBubbleMenu() {
     <BubbleMenu
       editor={editor}
       pluginKey="list-bubble-menu"
+      options={{
+        placement: "bottom",
+        // offset: 10,
+      }}
       shouldShow={({ state, editor }) => {
         const { selection } = state;
 
@@ -120,7 +123,7 @@ export default function ListBubbleMenu() {
           </Button>
         ))}
 
-        <span className="bg-border h-8 w-px mx-2" />
+        <span className="bg-neutral-800 h-8 w-px mx-2" />
 
         {indentActions.map((item, index) => (
           <Button
