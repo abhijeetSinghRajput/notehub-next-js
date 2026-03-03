@@ -5,15 +5,9 @@ import hljs from "highlight.js";
 import katex from "katex";
 import { toast } from "sonner";
 import type { TocItem } from "@/lib/note/types";
-import {
-  COPY_ICON,
-  CHECK_ICON,
-  EYE_ICON,
-  CODE_ICON,
-  isMermaidLang,
-  getMermaidRuntime,
-  prepareMermaidSvg,
-} from "@/lib/note/mermaid";
+
+const COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
+const CHECK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
 
 /**
  * Processes rendered note HTML content:
@@ -21,8 +15,7 @@ import {
  * - Applies syntax highlighting (hljs)
  * - Renders KaTeX math expressions
  * - Builds code block headers with copy buttons
- * - Renders mermaid diagrams with preview/code toggle
- * - Sets up event delegation for copy + mermaid toggle
+ * - Sets up event delegation for copy buttons
  * - Binds image lightbox click handlers
  */
 export function useNoteContentProcessing(
@@ -33,7 +26,6 @@ export function useNoteContentProcessing(
 ) {
   useEffect(() => {
     if (!content) return;
-    let cancelled = false;
     const imageClickHandlers = new Map<HTMLImageElement, () => void>();
 
     // ── TOC ────────────────────────────────────────────────────────────────
@@ -47,13 +39,8 @@ export function useNoteContentProcessing(
       }),
     );
 
-    // ── Syntax highlighting (skip mermaid — handled separately) ────────────
+    // ── Syntax highlighting ────────────────────────────────────────────────────────
     document.querySelectorAll<HTMLElement>("pre code:not([data-highlighted])").forEach((block) => {
-      const lang =
-        Array.from(block.classList)
-          .find((c) => c.startsWith("language-"))
-          ?.replace("language-", "") ?? "";
-      if (isMermaidLang(lang)) return;
       hljs.highlightElement(block);
       block.setAttribute("data-highlighted", "true");
     });
@@ -75,14 +62,7 @@ export function useNoteContentProcessing(
         }
       });
 
-    // ── Build headers + mermaid preview/code toggle ────────────────────────
-    const mermaidTargets: Array<{
-      wrapper: HTMLDivElement;
-      preEl: HTMLElement;
-      codeEl: HTMLElement;
-      previewEl: HTMLDivElement;
-    }> = [];
-
+    // ── Build code block headers with copy buttons ────────────────────────
     document.querySelectorAll<HTMLDivElement>(".pre-wrapper").forEach((wrapper) => {
       // Avoid double-injecting headers on HMR / re-runs
       wrapper.querySelector(":scope > .pre-header")?.remove();
@@ -100,130 +80,16 @@ export function useNoteContentProcessing(
       header.className =
         "pre-header rounded-t-lg w-full flex items-center justify-between py-2 px-4";
 
-      if (isMermaidLang(lang)) {
-        header.innerHTML = `
-          <span class="text-xs font-medium text-[#b9b9b9]">${lang}</span>
-          <div class="flex items-center gap-2">
-            <button class="copy-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-current" aria-label="Copy code">
-              ${COPY_ICON}
-            </button>
-            <div class="inline-flex items-center rounded-md border border-[#3b3c3c] overflow-hidden">
-              <button
-                class="mermaid-view-toggle size-7 inline-flex items-center justify-center transition-colors bg-white/20 text-foreground"
-                data-mode="preview"
-                aria-pressed="true"
-                title="Preview"
-              >${EYE_ICON}</button>
-              <button
-                class="mermaid-view-toggle size-7 inline-flex items-center justify-center transition-colors text-muted-foreground border-l border-[#3b3c3c]"
-                data-mode="code"
-                aria-pressed="false"
-                title="Code"
-              >${CODE_ICON}</button>
-            </div>
-          </div>`;
-
-        wrapper.insertBefore(header, wrapper.firstChild);
-
-        // Hide <pre> immediately — before async render completes
-        preEl.style.display = "none";
-
-        // Insert skeleton preview pane right away so layout is stable
-        let previewEl = wrapper.querySelector<HTMLDivElement>(":scope > .mermaid-preview-pane");
-        if (!previewEl) {
-          previewEl = document.createElement("div");
-          previewEl.className =
-            "mermaid-preview-pane flex justify-center items-center overflow-x-auto min-h-32 bg-white border-t border-[#3b3c3c] p-4";
-          previewEl.innerHTML = `
-            <div class="flex flex-col items-center gap-3 py-8 text-muted-foreground text-sm">
-              <span class="inline-block rounded-full border-2 border-muted border-t-primary" style="width:18px;height:18px;animation:mmd-spin 0.7s linear infinite"></span>
-              <span>Rendering…</span>
-            </div>`;
-          wrapper.appendChild(previewEl);
-        }
-        previewEl.style.display = "flex";
-
-        mermaidTargets.push({ wrapper, preEl, codeEl, previewEl });
-      } else {
-        header.innerHTML = `
-          <span class="text-xs font-medium text-[#b9b9b9]">${lang}</span>
-          <button class="copy-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-current" aria-label="Copy code">
-            ${COPY_ICON}
-          </button>`;
-        wrapper.insertBefore(header, wrapper.firstChild);
-      }
+      header.innerHTML = `
+        <span class="text-xs font-medium text-[#b9b9b9]">${lang}</span>
+        <button class="copy-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-current" aria-label="Copy code">
+          ${COPY_ICON}
+        </button>`;
+      wrapper.insertBefore(header, wrapper.firstChild);
     });
 
-    // ── Render mermaid SVGs async ────────────────────────────────────────────
-    const renderMermaidPreviews = async () => {
-      if (mermaidTargets.length === 0) return;
-      const mermaid = await getMermaidRuntime();
-      if (cancelled) return;
-
-      for (const { previewEl, codeEl } of mermaidTargets) {
-        if (cancelled) return;
-
-        const source = (codeEl.textContent || "").trim();
-
-        if (!source) {
-          previewEl.innerHTML = `<p class="text-sm text-muted-foreground py-4">No diagram content.</p>`;
-          continue;
-        }
-
-        try {
-          await mermaid.parse(source);
-          if (cancelled) return;
-
-          const id = `note-mmd-${Math.random().toString(36).slice(2, 10)}`;
-          const { svg } = await mermaid.render(id, source);
-          if (cancelled) return;
-
-          previewEl.innerHTML = prepareMermaidSvg(svg);
-        } catch (err) {
-          if (cancelled) return;
-          const message = err instanceof Error ? err.message : "Invalid Mermaid syntax";
-          previewEl.innerHTML = `
-            <div class="w-full rounded-lg bg-destructive/10 p-4">
-              <p class="text-destructive text-xs font-semibold mb-2">⚠ Syntax Error</p>
-              <pre class="text-destructive/80 text-xs whitespace-pre-wrap leading-relaxed font-mono">${message}</pre>
-            </div>`;
-        }
-      }
-    };
-
-    void renderMermaidPreviews();
-
-    // ── Event delegation for copy + mermaid toggle ───────────────────────────
+    // ── Event delegation for copy buttons ─────────────────────────────────
     const handleClick = async (e: MouseEvent) => {
-      // Mermaid view toggle
-      const toggleBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(
-        ".mermaid-view-toggle",
-      );
-      if (toggleBtn) {
-        const wrapper = toggleBtn.closest<HTMLDivElement>(".pre-wrapper");
-        if (!wrapper) return;
-
-        const mode = toggleBtn.dataset.mode as "preview" | "code";
-        const preEl = wrapper.querySelector<HTMLElement>("pre");
-        const previewEl = wrapper.querySelector<HTMLElement>(".mermaid-preview-pane");
-
-        if (preEl) preEl.style.display = mode === "code" ? "block" : "none";
-        if (previewEl) previewEl.style.display = mode === "preview" ? "flex" : "none";
-
-        wrapper.querySelectorAll<HTMLButtonElement>(".mermaid-view-toggle").forEach((btn) => {
-          const active = btn.dataset.mode === mode;
-          btn.setAttribute("aria-pressed", active ? "true" : "false");
-          if (active) {
-            btn.classList.add("bg-white/20", "text-foreground");
-            btn.classList.remove("text-muted-foreground");
-          } else {
-            btn.classList.remove("bg-white/20", "text-foreground");
-            btn.classList.add("text-muted-foreground");
-          }
-        });
-        return;
-      }
-
       // Copy button
       const copyBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(".copy-code-button");
       if (!copyBtn) return;
@@ -261,7 +127,6 @@ export function useNoteContentProcessing(
     });
 
     return () => {
-      cancelled = true;
       document.removeEventListener("click", handleClick);
       imageClickHandlers.forEach((h, img) => img.removeEventListener("click", h));
     };

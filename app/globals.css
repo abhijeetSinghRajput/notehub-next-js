@@ -262,10 +262,6 @@
   will-change: transform;
 }
 
-.code-block.is-mermaid pre .mermaid-container.ProseMirror-widget,
-.code-block.is-mermaid pre .ProseMirror-separator {
-  display: none !important;
-}
 .tth-add { z-index: 52; }
 
 
