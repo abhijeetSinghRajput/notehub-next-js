@@ -3,7 +3,7 @@
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { SearchButton } from "@/components/SearchButton";
@@ -62,6 +62,17 @@ const DashboardHeader = () => {
           {!authUser ? (
             <div className="flex gap-2">
               <ModeToggleMini className={"size-9"} />
+              <TooltipWrapper message="Settings">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="p-2"
+                  onClick={() => router.push("/settings/appearance")}
+                  aria-label="Settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </TooltipWrapper>
               <Button onClick={() => router.push("/login")}>Login</Button>
             </div>
           ) : (

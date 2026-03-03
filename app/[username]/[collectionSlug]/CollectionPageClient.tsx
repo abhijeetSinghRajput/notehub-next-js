@@ -12,6 +12,9 @@ import { CollectionHeader } from "@/components/CollectionHeader";
 import { ICollection, IUser } from "@/types/model";
 import NoteCard from "@/components/NoteCard";
 import SortSelector from "@/components/SortSelector";
+import AddNoteDialog from "@/components/AddNoteDialog";
+import { Button } from "@/components/ui/button";
+import { FileText, Plus } from "lucide-react";
 
 interface CollectionPageClientProps {
   initialData?: {
@@ -164,12 +167,22 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
         </div>
 
         {notes.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              {isOwner 
-                ? "You haven't created any notes in this collection yet." 
-                : "No notes in this collection yet."}
-            </p>
+          <div className="flex flex-col items-center justify-center py-10 gap-5">
+            <div className="rounded-full bg-muted p-5">
+              <FileText className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <div className="text-center space-y-1.5">
+              <h3 className="text-lg font-semibold">
+                {isOwner
+                  ? "Start writing your first note"
+                  : "No notes yet"}
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                {isOwner
+                  ? "This collection is empty. Create a note to start building your knowledge base."
+                  : "This collection doesn't have any notes yet. Check back later!"}
+              </p>
+            </div>
           </div>
         )}
       </div>

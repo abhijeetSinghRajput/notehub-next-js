@@ -15,12 +15,17 @@ import { ICollection } from "@/types/model";
 
 type AddNoteDialogProps = {
   trigger: ReactNode;
+  defaultCollection?: ICollection | null;
 };
 
-const AddNoteDialog = ({ trigger }: AddNoteDialogProps) => {
+const AddNoteDialog = ({ trigger, defaultCollection }: AddNoteDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState<ICollection | null>(null);
-  const [activeTab, setActiveTab] = useState("choose-collection");
+  const [selectedCollection, setSelectedCollection] = useState<ICollection | null>(
+    defaultCollection ?? null
+  );
+  const [activeTab, setActiveTab] = useState(
+    defaultCollection ? "add-note" : "choose-collection"
+  );
 
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
@@ -32,8 +37,8 @@ const AddNoteDialog = ({ trigger }: AddNoteDialogProps) => {
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
         if (!nextOpen) {
-          setActiveTab("choose-collection");
-          setSelectedCollection(null);
+          setActiveTab(defaultCollection ? "add-note" : "choose-collection");
+          setSelectedCollection(defaultCollection ?? null);
         }
       }}
     >

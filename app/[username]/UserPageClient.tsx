@@ -2,7 +2,13 @@
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Pencil, ShieldCheck, ArrowRight } from "lucide-react";
+import {
+  Pencil,
+  ShieldCheck,
+  ArrowRight,
+  FolderPlus,
+  Library,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useNoteStore } from "@/app/stores/useNoteStore";
@@ -19,6 +25,8 @@ import TooltipWrapper from "@/components/TooltipWrapper";
 import SortSelector from "@/components/SortSelector";
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import { ICollection, IUser } from "@/types/model";
+import WritingTipsCard from "@/components/WritingTipsCard";
+import AddNoteDialog from "@/components/AddNoteDialog";
 import SharePopoverWrapper from "@/components/ShareNotePopover.client";
 import ImageLightbox from "@/components/ImageLightbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -81,7 +89,8 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const profilePath = typeof username === "string" ? username : user?.userName;
+    const profilePath =
+      typeof username === "string" ? username : user?.userName;
     if (!profilePath) return;
 
     setProfileShareLink(`${window.location.origin}/${profilePath}`);
@@ -275,9 +284,38 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
         {status.collection.state === "loading" ? (
           <CollectionSkeleton />
         ) : collections.length === 0 ? (
-          <Card className="py-12 text-center">
-            <p className="text-muted-foreground">No collections found</p>
-          </Card>
+          <div className="flex flex-col items-center gap-6">
+            <Card className="py-16 w-full">
+              <CardContent className="flex flex-col items-center text-center gap-4 p-6">
+                <div className="rounded-full bg-muted p-4">
+                  <Library className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold">
+                    {isOwner
+                      ? "Create your first collection"
+                      : "No collections yet"}
+                  </h3>
+                  <p className="text-sm text-muted-foreground max-w-sm">
+                    {isOwner
+                      ? "Collections help you organize your notes by topic. Start by creating one!"
+                      : "This user hasn't created any collections yet. Check back later!"}
+                  </p>
+                </div>
+                {isOwner && (
+                  <AddNoteDialog
+                    trigger={
+                      <Button className="mt-2 gap-2">
+                        <FolderPlus className="h-4 w-4" />
+                        New Collection
+                      </Button>
+                    }
+                  />
+                )}
+              </CardContent>
+            </Card>
+            {isOwner && <WritingTipsCard defaultOpen={true} />}
+          </div>
         ) : (
           <>
             <div className="flex justify-between items-center mb-6">
@@ -295,7 +333,7 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
                 toggleSortDirection={toggleSortDirection}
               />
             </div>
-            <div className="space-y-0">
+            <div className="space-y-0 divide-y divide-border">
               {sortedCollections.map((collection) => (
                 <CollectionCard
                   key={collection._id}

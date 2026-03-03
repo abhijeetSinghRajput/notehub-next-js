@@ -71,7 +71,7 @@ function CollectionCard({ collection, isOwner, pinnedCollections }: CollectionCa
     <Card
       key={collection._id}
       className={cn(
-        "group rounded-none bg-transparent border-0 border-b hover:shadow-md hover:bg-muted/30 transition-all",
+        "group rounded-none bg-transparent border-0 hover:shadow-md hover:bg-muted/30 transition-all",
       )}
     >
       <div className="flex items-center gap-2 justify-between p-4">

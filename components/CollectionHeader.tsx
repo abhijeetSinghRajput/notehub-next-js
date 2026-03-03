@@ -12,6 +12,7 @@ import { ICollection, IUser } from "@/types/model";
 import { Pencil, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import AddNoteDialog from "./AddNoteDialog";
 
 interface CollectionHeaderProps {
   user: IUser;
@@ -128,8 +129,8 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
           )}
 
           {/* Collection Title Section */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col items-start gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                 {collection?.name}
               </h1>
@@ -141,6 +142,18 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
                 {collection?.notes?.length === 1 ? "Note" : "Notes"}
               </Badge>
             </div>
+
+            {isOwner && (
+              <AddNoteDialog
+                defaultCollection={collection as ICollection}
+                trigger={
+                  <Button className="gap-2 mt-1">
+                    <Plus className="h-4 w-4" />
+                    Add Note
+                  </Button>
+                }
+              />
+            )}
           </div>
         </div>
       )}

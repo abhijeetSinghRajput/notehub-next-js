@@ -1,29 +1,31 @@
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ModeToggle } from "@/components/mode-toggle";
-import Colors from "@/components/Theme/Colors.client";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Radius from "@/components/Theme/Radius.client";
+import ThemeSelector from "@/components/Theme/SchemaSelector.client";
 
 const Appearance = () => {
   return (
     <>
-    <h1 className="sr-only">Appearance Settings</h1>
-    <Card>
-      <CardHeader className="flex justify-between flex-row">
-        <div className="space-y-1.5">
-          <CardTitle>Cutomize Theme</CardTitle>
+      <h1 className="sr-only">Appearance Settings</h1>
+      <Card>
+        <CardHeader>
+          <CardTitle>Customize Theme</CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
             Pick a style and color for your components.
           </CardDescription>
-        </div>
-        <ModeToggle />
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent className="space-y-8">
-        <Colors />
-        <Radius />
-      </CardContent>
-    </Card>
+        <CardContent className="space-y-8">
+          <ThemeSelector />
+          <Radius />
+        </CardContent>
+      </Card>
     </>
   );
 };
