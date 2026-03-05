@@ -68,6 +68,8 @@ export function ThemeProvider({
   };
 
   const toggleTheme = () => {
+    // Toggle between dark and the user's chosen light theme (warm or neutral)
+    // The data-theme attribute is preserved, so warm ↔ dark and light ↔ dark
     setThemeSafe(resolvedTheme === "dark" ? "light" : "dark");
   };
 

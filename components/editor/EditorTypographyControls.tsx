@@ -9,6 +9,7 @@ import {
   useEditorStore,
 } from "@/app/stores/useEditorStore";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import ThemeSelector from "@/components/Theme/SchemaSelector.client";
 
 const EditorTypographyControls = () => {
   const { editorFontFamily, editorFontSizeIndex, setFontSize, setFontFamily } =
@@ -27,7 +28,14 @@ const EditorTypographyControls = () => {
           <Type />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="rounded-2xl p-4 select-none" align="end">
+      <PopoverContent className="rounded-2xl p-4 select-none">
+        <div className="space-y-2">
+          <Label className="text-muted-foreground">Theme</Label>
+          <ThemeSelector className="gap-2 sm:gap-2" />
+        </div>
+
+        <Separator className="bg-primary/10 my-5" />
+
         <div className="space-y-2">
           <Label className="text-muted-foreground">Font Style</Label>
           <div className="grid grid-cols-3 gap-2">
@@ -97,6 +105,7 @@ const EditorTypographyControls = () => {
             </Button>
           </div>
         </div>
+
       </PopoverContent>
     </Popover>
   );
