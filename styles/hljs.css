@@ -14,6 +14,12 @@ pre[class*="language-"] {
   word-spacing: normal;
 }
 
+/* Prism token overrides */
+.token.selector,
+.token.string {
+  color: #abe338;
+}
+
 [dir="ltr"] code.hljs,
 [dir="ltr"] code[class*="language-"],
 [dir="ltr"] pre[class*="language-"] {

@@ -9,22 +9,6 @@ const themeOptions = [
     name: "neutral",
     previewColors: ["#0a0a0a", "#171717", "#3c3c3c", "#404040"],
   },
-  {
-    name: "zinc",
-    previewColors: ["#09090b", "#18181b", "#3c3c3f", "#3f3f46"],
-  },
-  {
-    name: "slate",
-    previewColors: ["#020618", "#0f172b", "#353b4c", "#314158"],
-  },
-  {
-    name: "stone",
-    previewColors: ["#0c0a09", "#1c1917", "#3e3c3c", "#44403b"],
-  },
-  {
-    name: "gray",
-    previewColors: ["#030712", "#101828", "#373c47", "#364153"],
-  },
 ];
 
 interface ColorsProps {

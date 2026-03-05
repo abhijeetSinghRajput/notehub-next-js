@@ -74,13 +74,26 @@ export default function ThemeSelector() {
   }, [dataTheme, resolvedTheme, updateVariable]);
 
   const handleSelect = (theme: (typeof themes)[number]) => {
-    setDataTheme(theme.dataTheme);
-    setMode(theme.mode);
+    if (theme.id === "dark") {
+      // Just toggle to dark mode, preserve current data-theme
+      setMode("dark");
+    } else {
+      // Switch to the selected data-theme and its mode
+      setDataTheme(theme.dataTheme);
+      setMode(theme.mode);
+    }
   };
 
+  // Toggle logic: if warm, show dark|warm; if light, show dark|light
+  let toggleThemes: typeof themes = [];
+  if (active === "warm") {
+    toggleThemes = themes.filter(t => t.id === "dark" || t.id === "warm");
+  } else {
+    toggleThemes = themes.filter(t => t.id === "dark" || t.id === "light");
+  }
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-      {themes.map((theme) => {
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4">
+      {toggleThemes.map((theme) => {
         const isSelected = active === theme.id;
         return (
           <div key={theme.id} className="flex flex-col items-center gap-2">
