@@ -745,18 +745,14 @@ button:disabled {
   @apply bg-neutral-800;
 }
 
-@media (prefers-color-scheme: dark) {
-  .tiptap :is(h1, h2, h3, h4, h5, h6, p) code {
-    background-color: color-mix(in oklch, var(--accent) 40%, transparent);
-  }
-  .tiptap p {
-    color: color-mix(in oklch, var(--primary) 80%, transparent);
-  }
-  .tiptap a {
-    color: #7ab7ff;
-  }
+.dark .tiptap :is(h1, h2, h3, h4, h5, h6, p) code {
+  background-color: color-mix(in oklch, var(--accent) 40%, transparent);
+}
 
-  .tiptap a:hover {
-    color: #5e83b3;
-  }
+.dark .tiptap a {
+  color: #7ab7ff;
+}
+
+.dark .tiptap a:hover {
+  color: #5e83b3;
 }
