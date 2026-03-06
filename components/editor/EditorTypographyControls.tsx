@@ -28,40 +28,7 @@ const EditorTypographyControls = () => {
           <Type />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="rounded-2xl p-4 select-none">
-        <div className="space-y-2">
-          <Label className="text-muted-foreground">Theme</Label>
-          <ThemeSelector className="gap-2 sm:gap-2" />
-        </div>
-
-        <Separator className="bg-primary/10 my-5" />
-
-        <div className="space-y-2">
-          <Label className="text-muted-foreground">Font Style</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {Object.entries(FONT_PRESETS).map(([key, font]) => (
-              <Button
-                key={key}
-                onClick={() => setFontFamily(font)}
-                className={`h-full rounded-xl flex flex-col items-center justify-center gap-0 bg-primary/5 hover:bg-primary/10 text-primary aspect-square p-0
-                            ${
-                              editorFontFamily === font &&
-                              "bg-primary/20 ring-2 ring-ring"
-                            }
-                          `}
-                style={{
-                  fontFamily: font,
-                }}
-              >
-                <div className="text-4xl leading-none">Aa</div>
-                <p className="text-xs font-normal">{key}</p>
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <Separator className="bg-primary/10 my-5" />
-
+      <PopoverContent className="rounded-2xl p-4 select-none w-86" >
         <div className="space-y-2">
           <Label className="text-muted-foreground">Font Size</Label>
           <div className="space-y-1">
@@ -106,6 +73,38 @@ const EditorTypographyControls = () => {
           </div>
         </div>
 
+        <Separator className="bg-primary/10 my-5" />
+
+        <div className="space-y-2">
+          <Label className="text-muted-foreground">Font Style</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {Object.entries(FONT_PRESETS).map(([key, font]) => (
+              <Button
+                key={key}
+                onClick={() => setFontFamily(font)}
+                className={`h-full rounded-xl flex flex-col items-center justify-center gap-0 bg-primary/5 hover:bg-primary/10 text-foreground aspect-square p-0
+                            ${
+                              editorFontFamily === font &&
+                              "bg-primary/20 ring-2 ring-ring"
+                            }
+                          `}
+                style={{
+                  fontFamily: font,
+                }}
+              >
+                <div className="text-4xl leading-none">Aa</div>
+                <p className="text-xs font-normal">{key}</p>
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <Separator className="bg-primary/10 my-5" />
+
+        <div className="space-y-2">
+          <Label className="text-muted-foreground">Theme</Label>
+          <ThemeSelector className="gap-2 sm:gap-2" />
+        </div>
       </PopoverContent>
     </Popover>
   );
