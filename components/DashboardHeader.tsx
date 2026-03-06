@@ -51,7 +51,7 @@ const DashboardHeader = () => {
           {!isMobile && (
             <TooltipWrapper message="Source Code">
               <a href="https://github.com/abhijeetSinghRajput/notehub">
-                <Button size="sm" className="p-2" variant="secondary">
+                <Button size="sm" className="p-2" variant="ghost">
                   <GithubIcon />
                   {githubStarCount || ""}
                 </Button>

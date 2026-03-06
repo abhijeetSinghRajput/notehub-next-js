@@ -52,7 +52,7 @@ export default function NoteHeader({
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <div className="font-semibold flex gap-4 text-primary! items-center text-sm">
+            <div className="font-semibold flex gap-4  items-center text-sm">
               <div className="flex gap-2 items-center">
                 <span>{author?.fullName}</span>
                 {author?.role === "admin" && (

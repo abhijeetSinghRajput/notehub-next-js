@@ -333,14 +333,32 @@ div:has(> .tiptap.ProseMirror) {
   border-collapse: collapse;
   border-spacing: 0;
   table-layout: auto;
-  width: max-content;   /* shrink-wrap; remove if you want full-width */
-  max-width: 100%;
+  width: max-content;
+  min-width: 100%;
   margin: 0 0 1.5rem 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  display: block;       /* enables horizontal scroll on overflow */
+  display: table;
   font-size: 14px;
   line-height: 20px;
+}
+
+/* ── Scrollable table wrapper ── */
+.tiptap .tableWrapper,
+.tiptap [data-node-view-content] > div:has(> table) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 0 1.5rem 0;
+}
+
+.tiptap .tableWrapper table {
+  margin: 0;
+}
+
+/* Desktop: fixed layout for tables that fit */
+@media (min-width: 769px) {
+  .tiptap table {
+    table-layout: fixed;
+    width: 100%;
+  }
 }
 
 /* ── Rows ── */
@@ -356,14 +374,17 @@ div:has(> .tiptap.ProseMirror) {
   border: 1px solid var(--border);
   vertical-align: top;
   text-align: start;
-  min-width: 160px;
+  min-width: 0;
   min-height: 32px;
-  padding: 7px 9px;
+  padding: 8px 12px;
   position: relative;
   white-space: break-spaces;
   word-break: break-word;
+  overflow-wrap: break-word;
   background-color: var(--background, #fff);
 }
+
+
 
 /* remove any default bottom-margin on direct children */
 .tiptap td > *,
@@ -384,6 +405,38 @@ div:has(> .tiptap.ProseMirror) {
   font-weight: 600;
   text-align: left;
   background-color: color-mix(in oklch, var(--accent) 70%, transparent);
+}
+
+/* ── Note page: bottom-border-only style ── */
+.tiptap:not(.ProseMirror) td,
+.tiptap:not(.ProseMirror) th {
+  border: none;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Table copy button (note page only) ── */
+.table-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 0.375rem;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.table-copy-btn:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.table-copy-btn:disabled {
+  pointer-events: none;
+  color: var(--accent-foreground);
 }
 
 /* ── Empty-cell placeholder colour ── */
