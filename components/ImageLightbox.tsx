@@ -7,9 +7,11 @@ import Download from "yet-another-react-lightbox/plugins/download";
 import Slideshow from "yet-another-react-lightbox/plugins/slideshow";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import Counter from "yet-another-react-lightbox/plugins/counter";
 
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
+import "yet-another-react-lightbox/plugins/counter.css";
 
 const Lightbox = dynamic(() => import("yet-another-react-lightbox"), {
   ssr: false,
@@ -54,7 +56,7 @@ const ImageLightbox = memo(
         index={safeIndex}
         plugins={
           hasMultipleSlides
-            ? [Fullscreen, Download, Slideshow, Zoom, Thumbnails]
+            ? [Fullscreen, Download, Slideshow, Zoom, Thumbnails, Counter]
             : [Fullscreen, Download, Zoom]
         }
         zoom={{
