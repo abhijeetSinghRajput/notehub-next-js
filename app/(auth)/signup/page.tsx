@@ -249,7 +249,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="flex p-4 pt-8 items-center justify-center bg-[#f5f5f5] dark:bg-background">
+    <div className="flex p-4 pt-8 items-center justify-center min-h-[calc(100svh-64px)] bg-muted dark:bg-background">
       <h1 className="sr-only">Create a NoteHub Account</h1>
       <div className={cn("flex flex-col gap-2 max-w-110 w-full m-auto")}>
         <Card>

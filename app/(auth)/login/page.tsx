@@ -79,7 +79,7 @@ const LogInPage = () => {
   };
 
   return (
-    <div className="flex p-4 pt-10 items-center justify-center bg-[#f5f5f5] dark:bg-background">
+    <div className="flex p-4 pt-10 items-center justify-center min-h-[calc(100svh-64px)] bg-muted dark:bg-background">
       <h1 className="sr-only">Log In to NoteHub</h1>
       <div className={cn("flex flex-col gap-2 max-w-110 w-full m-auto")}>
         {error && (

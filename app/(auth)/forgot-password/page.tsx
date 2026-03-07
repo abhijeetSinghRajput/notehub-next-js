@@ -153,7 +153,7 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div className="flex p-4 pt-8 items-center justify-center bg-[#f5f5f5] dark:bg-background">
+    <div className="flex p-4 pt-8 items-center justify-center min-h-[calc(100svh-64px)] bg-muted dark:bg-background">
       <h1 className="sr-only">Reset Your Password</h1>
       <Card className="w-full max-w-md">
         <CardHeader>

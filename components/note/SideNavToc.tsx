@@ -1,6 +1,7 @@
 "use client";
 
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { computeTocIndentLevels } from "@/utils/tocIndent";
 import { cn } from "@/lib/utils";
 import type { TocItem } from "@/lib/note/types";
 
@@ -10,17 +11,14 @@ export type SideNavTocProps = {
   onItemClick: (id: string) => void;
 };
 
-const TICK_WIDTH: Record<number, { base: string; hover: string }> = {
-  1: { base: "w-5", hover: "group-hover/nav:w-[26px]" },
-  2: { base: "w-3.5", hover: "group-hover/nav:w-[18px]" },
-  3: { base: "w-2", hover: "group-hover/nav:w-3" },
+const TICK_WIDTH: Record<number, string> = {
+  1: "w-5",
+  2: "w-3.5",
+  3: "w-2",
 };
 
-const POPOVER_INDENT: Record<number, string> = {
-  1: "pl-3.5",
-  2: "pl-6",
-  3: "pl-9",
-};
+// Indentation step in px, matching table-of-content
+const INDENT_STEP = 20;
 
 /**
  * Notion-inspired side-rail TOC: thin tick marks on the right edge that expand
@@ -32,6 +30,8 @@ const SideNavToc = memo<SideNavTocProps>(
   ({ toc, activeId, onItemClick }) => {
     const [isHovering, setIsHovering] = useState(false);
     const hideTimer = useRef<ReturnType<typeof setTimeout>>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const activeItemRef = useRef<HTMLButtonElement>(null);
 
     const showPopover = useCallback(() => {
       if (hideTimer.current) clearTimeout(hideTimer.current);
@@ -41,6 +41,17 @@ const SideNavToc = memo<SideNavTocProps>(
     const startHide = useCallback(() => {
       hideTimer.current = setTimeout(() => setIsHovering(false), 120);
     }, []);
+
+    // Scroll the active item into view whenever the popover opens
+    useEffect(() => {
+      if (!isHovering) return;
+      if (!activeItemRef.current || !scrollContainerRef.current) return;
+
+      activeItemRef.current.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    }, [isHovering]);
 
     if (toc.length < 2) return null;
 
@@ -52,7 +63,8 @@ const SideNavToc = memo<SideNavTocProps>(
         aria-label="Table of contents"
       >
         {/* ── Tick marks: vertically centered, 12px gap ── */}
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 flex flex-col items-start pl-2"
+        <div
+          className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col items-start pl-2 max-h-[60vh] overflow-hidden"
           style={{ gap: `${TICK_GAP}px` }}
         >
           {toc.map((item) => {
@@ -62,11 +74,10 @@ const SideNavToc = memo<SideNavTocProps>(
                 key={item.id}
                 onClick={() => onItemClick(item.id)}
                 className={cn(
-                  "h-0.5 rounded-full transition-all duration-150",
-                  "bg-muted-foreground/25 hover:bg-muted-foreground/50 hover:h-[3px]",
-                  activeId === item.id && "!bg-primary hover:!bg-primary",
-                  TICK_WIDTH[level].base,
-                  TICK_WIDTH[level].hover,
+                  "h-0.5 min-h-0.5 rounded-full transition-all duration-150 cursor-pointer",
+                  "bg-muted-foreground/50",
+                  activeId === item.id && "!bg-primary shadow-[0_0_6px_1.5px_theme(colors.primary.DEFAULT)] shadow-primary/30",
+                  TICK_WIDTH[level],
                 )}
                 aria-label={item.text}
               />
@@ -80,7 +91,7 @@ const SideNavToc = memo<SideNavTocProps>(
             "fixed right-2 top-1/2 -translate-y-1/2 w-[232px]",
             "bg-popover border border-border rounded-xl shadow-lg",
             "transition-all duration-150 ease-out",
-            isHovering
+            isHovering 
               ? "opacity-100 translate-x-0 pointer-events-auto"
               : "opacity-0 translate-x-1.5 pointer-events-none",
           )}
@@ -88,21 +99,24 @@ const SideNavToc = memo<SideNavTocProps>(
           onMouseLeave={startHide}
         >
           <div className="py-2.5">
-            <div className="max-h-[60vh] overflow-y-auto pr-1">
-                {toc.map((item) => {
+            <div ref={scrollContainerRef} className="max-h-[60vh] overflow-y-auto pr-1">
+              {(() => {
+                const indentLevels = computeTocIndentLevels(toc);
+                return toc.map((item, idx) => {
                   const level = Math.min(Math.max(item.level, 1), 3) as 1 | 2 | 3;
                   const isActive = activeId === item.id;
-
+                  const indent = indentLevels[idx] * INDENT_STEP + 8;
                   return (
                     <button
                       key={item.id}
+                      ref={isActive ? activeItemRef : null}
                       onClick={() => onItemClick(item.id)}
                       className={cn(
                         "flex items-center w-full py-[5px] pr-3 text-left",
                         "transition-colors duration-100 hover:bg-muted/60",
                         isActive && "bg-muted/80",
-                        POPOVER_INDENT[level],
                       )}
+                      style={{ paddingLeft: `${indent}px` }}
                     >
                       <span
                         className={cn(
@@ -117,8 +131,9 @@ const SideNavToc = memo<SideNavTocProps>(
                       </span>
                     </button>
                   );
-                })}
-              </div>
+                });
+              })()}
+            </div>
           </div>
         </div>
       </nav>
