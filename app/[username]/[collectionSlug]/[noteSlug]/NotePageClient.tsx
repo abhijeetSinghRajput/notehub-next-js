@@ -58,7 +58,11 @@ const NotePageClient = () => {
 
   // ── Callbacks ────────────────────────────────────────────────────────────────
   const handleTocItemClick = useCallback((itemId: string) => {
-    document.getElementById(itemId)?.scrollIntoView({ behavior: "smooth" });
+    const el = document.getElementById(itemId);
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
     setTocOpen(false);
   }, []);
 
