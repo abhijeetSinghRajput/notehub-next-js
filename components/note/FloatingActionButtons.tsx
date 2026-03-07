@@ -42,6 +42,7 @@ const FloatingActionButtons = memo<FloatingActionButtonsProps>(
   }) => (
     <div className="flex gap-2 items-center fixed bottom-4 right-4">
       {toc.length > 1 && (
+        <div className="lg:hidden">
         <Popover open={tocOpen} onOpenChange={setTocOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -84,6 +85,7 @@ const FloatingActionButtons = memo<FloatingActionButtonsProps>(
             </ScrollArea>
           </PopoverContent>
         </Popover>
+        </div>
       )}
 
       <MemoEditorTypographyControls />

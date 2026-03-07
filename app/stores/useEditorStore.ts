@@ -4,7 +4,7 @@ import type { ReactNode, RefObject } from "react";
 export const FONT_PRESETS = {
   original: "Roboto, sans-serif",
   classic: '"Merriweather", serif',
-  bookish: '"Source Serif 4", serif',
+  bookish: '"Lora", serif',
 } as const;
 
 export const FONT_SIZE = [

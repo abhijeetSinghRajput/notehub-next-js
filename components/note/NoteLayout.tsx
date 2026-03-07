@@ -10,6 +10,7 @@ import NoteHeader, { type NoteHeaderProps } from "./NoteHeader";
 import FloatingActionButtons, {
   type FloatingActionButtonsProps,
 } from "./FloatingActionButtons";
+import SideNavToc from "./SideNavToc";
 import type { INote } from "@/types/model";
 
 const MemoScrollTopButton = memo(ScrollTopButton);
@@ -54,6 +55,13 @@ export default function NoteLayout({
           onClose={onCloseLightbox}
         />
       )}
+
+      {/* ── Side-rail TOC (lg+ screens) ── */}
+      <SideNavToc
+        toc={fabProps.toc}
+        activeId={fabProps.activeId}
+        onItemClick={fabProps.handleTocItemClick}
+      />
 
       <div className={cn("h-full flex flex-col justify-between")}>
         <div className="max-w-3xl w-full mx-auto relative">

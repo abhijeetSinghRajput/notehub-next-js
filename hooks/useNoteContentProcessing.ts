@@ -8,6 +8,7 @@ import type { TocItem } from "@/lib/note/types";
 
 const COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
 const CHECK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+const WRAP_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><path d="M3 12h15a3 3 0 1 1 0 6h-4"/><polyline points="16 16 14 18 16 20"/><line x1="3" y1="18" x2="10" y2="18"/></svg>`;
 
 /** Convert an HTML <table> element to a GitHub-flavoured markdown table. */
 function htmlTableToMarkdown(table: HTMLTableElement): string {
@@ -123,9 +124,14 @@ export function useNoteContentProcessing(
 
       header.innerHTML = `
         <span class="text-xs font-medium text-[#b9b9b9]">${lang}</span>
-        <button class="copy-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-current" aria-label="Copy code">
-          ${COPY_ICON}
-        </button>`;
+        <div class="flex items-center gap-1">
+          <button class="wrap-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-current" aria-label="Toggle line wrap">
+            ${WRAP_ICON}
+          </button>
+          <button class="copy-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-current" aria-label="Copy code">
+            ${COPY_ICON}
+          </button>
+        </div>`;
       wrapper.insertBefore(header, wrapper.firstChild);
     });
 
@@ -144,6 +150,17 @@ export function useNoteContentProcessing(
 
     // ── Event delegation for copy buttons ─────────────────────────────────
     const handleClick = async (e: MouseEvent) => {
+      // Wrap toggle button
+      const wrapBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(".wrap-code-button");
+      if (wrapBtn) {
+        const wrapper = wrapBtn.closest(".pre-wrapper");
+        const preEl = wrapper?.querySelector<HTMLElement>("pre");
+        if (!preEl) return;
+        const isWrapped = preEl.classList.toggle("wrap-enabled");
+        wrapBtn.style.opacity = isWrapped ? "0.5" : "1";
+        return;
+      }
+
       // Code copy button
       const copyBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(".copy-code-button");
       if (copyBtn) {

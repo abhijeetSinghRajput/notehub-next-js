@@ -305,10 +305,20 @@ div:has(> .tiptap.ProseMirror) {
 }
 
 .tiptap pre code {
-  @apply whitespace-pre p-0 m-0 leading-relaxed;
-  white-space: pre !important;
+  @apply p-0 m-0 leading-relaxed;
+  white-space: pre;
   font-size: 0.875rem;
   display: block;
+}
+
+.tiptap pre.wrap-enabled {
+  white-space: pre-wrap !important;
+  overflow-x: hidden;
+}
+
+.tiptap pre.wrap-enabled code {
+  white-space: pre-wrap !important;
+  word-break: break-all;
 }
 
 .tiptap blockquote {
@@ -333,8 +343,7 @@ div:has(> .tiptap.ProseMirror) {
   border-collapse: collapse;
   border-spacing: 0;
   table-layout: auto;
-  width: max-content;
-  min-width: 100%;
+  width: 100%;
   margin: 0 0 1.5rem 0;
   display: table;
   font-size: 14px;
@@ -357,7 +366,6 @@ div:has(> .tiptap.ProseMirror) {
 @media (min-width: 769px) {
   .tiptap table {
     table-layout: fixed;
-    width: 100%;
   }
 }
 

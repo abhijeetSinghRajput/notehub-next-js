@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Merriweather, Roboto, Source_Serif_4 } from "next/font/google";
+import { Merriweather, Roboto, Lora } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
@@ -35,10 +35,10 @@ const roboto = Roboto({
   weight: ["100", "400", "700"],
   variable: "--font-roboto",
 });
-const sourceSerif4 = Source_Serif_4({
+const lora = Lora({
   subsets: ["latin"],
-  weight: ["200", "400", "700"],
-  variable: "--font-source-serif-4",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-lora",
 });
 
 export const metadata: Metadata = {
@@ -118,7 +118,7 @@ export default function RootLayout({
         className={`
           ${merriweather.variable} 
           ${roboto.variable} 
-          ${sourceSerif4.variable} 
+          ${lora.variable} 
           antialiased
         `}
       >
