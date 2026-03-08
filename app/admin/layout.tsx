@@ -4,8 +4,13 @@ import type { ReactNode } from "react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 
 import { AdminSidebar } from "@/components/AdminSidebar";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { ShieldX, Loader2 } from "lucide-react";
+import { ModeToggleMini } from "@/components/mode-toggle";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { authUser, isCheckingAuth } = useAuthStore();
@@ -26,7 +31,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <ShieldX className="h-16 w-16 text-destructive" />
         <div className="text-center">
           <h1 className="text-4xl font-bold text-destructive">401</h1>
-          <p className="mt-2 text-lg text-muted-foreground">Authentication required</p>
+          <p className="mt-2 text-lg text-muted-foreground">
+            Authentication required
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
             You must be an administrator to access this page.
           </p>
@@ -39,8 +46,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <AdminSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-14 items-center border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/75">
-          <SidebarTrigger className="-ml-1" />
+        <header className="sticky justify-between top-0 z-30 flex h-14 items-center border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/75">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-1" />
+          </div>
+          <div className="flex items-center gap-2">
+            <ModeToggleMini />
+          </div>
         </header>
         <main className="p-6">{children}</main>
       </SidebarInset>

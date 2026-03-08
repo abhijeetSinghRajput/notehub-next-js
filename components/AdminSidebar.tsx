@@ -44,12 +44,12 @@ export function AdminSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/admin" onClick={handleMenuClick}>
+              <Link href="/admin" onClick={handleMenuClick} className="gap-3">
                 <div className="bg-white flex aspect-square size-8 items-center justify-center rounded-lg">
                   <LogoIcon size={20} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <Logo className="truncate text-sm" />
+                  <Logo className="truncate text-sm w-18" />
                   <span className="truncate text-xs text-muted-foreground">Admin Panel</span>
                 </div>
               </Link>
