@@ -368,7 +368,7 @@ export default function NotificationPage() {
               <div className="flex items-center gap-2">
                 <span>
                   {(pagination.currentPage - 1) * pagination.itemsPerPage + (users.length ? 1 : 0)}–
-                  {(pagination.currentPage - 1) * pagination.itemsPerPage + users.length} of{" "}
+                  {(pagination.currentPage - 1) * pagination.itemsPerPage + users.length} / {" "}
                   {pagination.totalItems}
                 </span>
                 <Select

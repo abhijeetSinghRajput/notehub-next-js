@@ -45,24 +45,29 @@ export default function UserManagementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const { fetchUsers, getCachedUsers, isLoadingUsers, usersError } = useAdminStore();
+  const { fetchUsers, getCachedUsers, isLoadingUsers, usersError } =
+    useAdminStore();
 
   const userQuery = useMemo(
-    () => ({ page: currentPage, limit: itemsPerPage, search, filter: "all" as const }),
+    () => ({
+      page: currentPage,
+      limit: itemsPerPage,
+      search,
+      filter: "all" as const,
+    }),
     [currentPage, search, itemsPerPage],
   );
 
   const usersResponse = getCachedUsers(userQuery);
   const users = usersResponse?.users ?? [];
-  const pagination =
-    usersResponse?.pagination ?? {
-      currentPage,
-      totalPages: 1,
-      totalItems: 0,
-      itemsPerPage: PAGE_SIZE,
-      hasNextPage: false,
-      hasPreviousPage: false,
-    };
+  const pagination = usersResponse?.pagination ?? {
+    currentPage,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: PAGE_SIZE,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  };
 
   const paginationPages = useMemo(() => {
     const totalPages = pagination.totalPages;
@@ -87,10 +92,12 @@ export default function UserManagementPage() {
   return (
     <>
       <h1 className="sr-only">User Management</h1>
-      <Card className="border-none bg-background sm:bg-card sm:border">
-        <CardHeader className="p-0 pb-6 sm:p-6">
+      <Card className="border-none shadow-none bg-background sm:bg-card sm:border sm:shadow-md">
+        <CardHeader className="p-0  pb-6 sm:p-6 ">
           <CardTitle>User Management</CardTitle>
-          <CardDescription>Paginated users from admin endpoint.</CardDescription>
+          <CardDescription>
+            Paginated users from admin endpoint.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 p-0 sm:p-6 sm:pt-0">
           <Input
@@ -117,22 +124,33 @@ export default function UserManagementPage() {
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8">
                           <AvatarImage src={user.avatar} alt={user.fullName} />
-                          <AvatarFallback>{user.fullName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          <AvatarFallback>
+                            {user.fullName.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
-                        <p className="max-w-44 truncate font-medium">{user.userName}</p>
+                        <p className="max-w-44 truncate font-medium">
+                          {user.userName}
+                        </p>
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-56 truncate">{user.fullName}</TableCell>
+                    <TableCell className="max-w-56 truncate">
+                      {user.fullName}
+                    </TableCell>
                     <TableCell className="max-w-60 truncate text-muted-foreground">
                       {user.email}
                     </TableCell>
-                    <TableCell className="capitalize text-muted-foreground">{user.role}</TableCell>
+                    <TableCell className="capitalize text-muted-foreground">
+                      {user.role}
+                    </TableCell>
                   </TableRow>
                 ))}
 
                 {!isLoadingUsers && users.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-20 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={4}
+                      className="h-20 text-center text-muted-foreground"
+                    >
                       No users found.
                     </TableCell>
                   </TableRow>
@@ -140,7 +158,10 @@ export default function UserManagementPage() {
 
                 {isLoadingUsers && (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-20 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={4}
+                      className="h-20 text-center text-muted-foreground"
+                    >
                       Loading users...
                     </TableCell>
                   </TableRow>
@@ -175,8 +196,12 @@ export default function UserManagementPage() {
 
                 {/* Name + email */}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium leading-tight">{user.fullName}</p>
-                  <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                  <p className="truncate text-sm font-medium leading-tight">
+                    {user.fullName}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {user.email}
+                  </p>
                 </div>
               </div>
             ))}
@@ -194,15 +219,19 @@ export default function UserManagementPage() {
             )}
           </div>
 
-          {usersError && <p className="text-xs text-destructive">{usersError}</p>}
+          {usersError && (
+            <p className="text-xs text-destructive">{usersError}</p>
+          )}
 
           <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <p>
-                Showing{" "}
-                {(pagination.currentPage - 1) * pagination.itemsPerPage + (users.length ? 1 : 0)}–
-                {(pagination.currentPage - 1) * pagination.itemsPerPage + users.length} of{" "}
-                {pagination.totalItems}
+                {(pagination.currentPage - 1) * pagination.itemsPerPage +
+                  (users.length ? 1 : 0)}
+                –
+                {(pagination.currentPage - 1) * pagination.itemsPerPage +
+                  users.length}{" "}
+                / {pagination.totalItems}
               </p>
               <Select
                 value={itemsPerPage.toString()}
@@ -235,7 +264,9 @@ export default function UserManagementPage() {
                         setCurrentPage((previous) => Math.max(previous - 1, 1));
                       }
                     }}
-                    aria-disabled={!pagination.hasPreviousPage || isLoadingUsers}
+                    aria-disabled={
+                      !pagination.hasPreviousPage || isLoadingUsers
+                    }
                     className={
                       !pagination.hasPreviousPage || isLoadingUsers
                         ? "pointer-events-none opacity-50"
