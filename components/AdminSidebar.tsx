@@ -15,6 +15,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import NavUser from "./dashboard/NavUser";
 import LogoIcon from "./icons/LogoIcon";
@@ -30,6 +31,12 @@ export function AdminSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  // Handler to close sidebar on mobile
+  const handleMenuClick = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -37,7 +44,7 @@ export function AdminSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/admin">
+              <Link href="/admin" onClick={handleMenuClick}>
                 <div className="bg-white flex aspect-square size-8 items-center justify-center rounded-lg">
                   <LogoIcon size={20} />
                 </div>
@@ -66,8 +73,9 @@ export function AdminSidebar({
                     asChild
                     isActive={isActive}
                     tooltip={item.title}
+                    className="h-10 px-4 rounded-lg"
                   >
-                    <Link href={item.href}>
+                    <Link href={item.href} onClick={handleMenuClick}>
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>
