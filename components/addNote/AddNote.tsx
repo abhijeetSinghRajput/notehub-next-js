@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "../ui/button";
 import { ChevronLeft, Lock } from "lucide-react";
 import { LabeledInput } from "@/components/labeled-input";

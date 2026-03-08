@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Loader2, Search, X } from "lucide-react";
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { IUser } from "@/types/model";
 
 // Debounce hook

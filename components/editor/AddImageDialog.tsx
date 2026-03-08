@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { Editor } from "@tiptap/react";
 import {
   Dialog,

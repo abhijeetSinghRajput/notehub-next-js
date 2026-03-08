@@ -14,12 +14,9 @@ import { SelectHeading } from "./SelectHeading";
 import { TablePopover } from "./TablePopover";
 import {
   FORMATTING_BUTTONS,
-  LIST_CONTROL_BUTTONS,
   BLOCK_BUTTONS,
   CONTROL_BUTTONS,
   TABLE_BUTTONS,
-  TABLE_ROW_CONTROLS,
-  TABLE_COLUMN_CONTROLS,
 } from "./config/menu.config";
 import { LinkDialog } from "./LinkDialog";
 const MathDialog = React.lazy(() => import("./MathDialog"));
@@ -29,8 +26,6 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import TextColorDropdown from "./TextColorDropdown";
-import TableRowIcon from "../icons/TableRowIcon";
-import TableColIcon from "../icons/TableColIcon";
 import ListDropdown from "./ListDropdown";
 import TextAlignDropdown from "./TextAlignDropdown";
 import AddNodeDropdown from "./AddNodeDropdown";

@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { Avatar } from "@/components/ui/avatar";
 import { Loader2, Trash2 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import ImageLightbox from "@/components/ImageLightbox";

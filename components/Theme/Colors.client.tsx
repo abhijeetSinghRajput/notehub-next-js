@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import Colors from "./Colors";
 import { useLocalStorage } from "@/app/stores/useLocalStorage";
 import { useThemeStore } from "@/app/stores/useThemeStore";

@@ -36,10 +36,54 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PrivacyPolicyLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return children;
+export default function PrivacyPolicyLayout({ children }: { children: ReactNode }) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "Privacy Policy — NoteHub",
+    description:
+      "Read NoteHub's Privacy Policy to understand how we collect, use, and protect your personal information and notes.",
+    url: `${baseUrl}/privacy-policy`,
+    isPartOf: {
+      "@type": "WebSite",
+      name: "NoteHub",
+      url: baseUrl,
+    },
+    about: {
+      "@type": "Organization",
+      name: "NoteHub",
+      url: baseUrl,
+    },
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: baseUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Privacy Policy",
+          item: `${baseUrl}/privacy-policy`,
+        },
+      ],
+    },
+    inLanguage: "en",
+    dateModified: "2025-07-20",
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }}
+      />
+      {children}
+    </>
+  );
 }

@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Radius from "@/components/Theme/Radius.client";
-import ThemeSelector from "@/components/Theme/SchemaSelector.client";
+import ThemeSelector from "@/components/Theme/ThemeSelector.client";
 
 const Appearance = () => {
   return (

@@ -128,28 +128,107 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// app/[username]/[collectionSlug]/page.tsx
+
 export default async function CollectionPage({ params }: Props) {
   const { username, collectionSlug } = await params;
 
   try {
-    // SINGLE API CALL - Fetch collection data on server
     const collectionApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/collection/${username}/${collectionSlug}`;
     const response = await fetch(collectionApiUrl, {
-      next: { revalidate: 60 }, // Revalidate every minute
+      next: { revalidate: 60 },
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        notFound();
-      }
-      // Pass error status to client component
+      if (response.status === 404) notFound();
       return <CollectionPageClient />;
     }
 
     const data = await response.json();
+    const { collection, author } = data;
 
-    // Pass all data to client component
-    return <CollectionPageClient initialData={data} />;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const profileUrl = `${baseUrl}/${username}`;
+    const collectionUrl = `${baseUrl}/${username}/${collectionSlug}`;
+
+    const collectionPageSchema = {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: collection.name,
+      description: `A collection of ${collection.noteCount ?? 0} notes by ${author.fullName} on NoteHub.`,
+      url: collectionUrl,
+      dateCreated: new Date(collection.createdAt).toISOString(),
+      dateModified: new Date(collection.updatedAt).toISOString(),
+      author: {
+        "@type": "Person",
+        name: author.fullName,
+        url: profileUrl,
+        image: author.avatar,
+        identifier: author.userName,
+      },
+      isPartOf: {
+        "@type": "WebSite",
+        name: "NoteHub",
+        url: baseUrl,
+      },
+    };
+
+    // Build ItemList from notes in the collection
+    const itemListSchema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Notes in ${collection.name}`,
+      numberOfItems: collection.notes?.length ?? 0,
+      itemListElement: (collection.notes ?? []).map(
+        (note: any, index: number) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: note.name,
+          url: `${collectionUrl}/${note.slug}`,
+        })
+      ),
+    };
+
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: baseUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: author.fullName,
+          item: profileUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: collection.name,
+          item: collectionUrl,
+        },
+      ],
+    };
+
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              collectionPageSchema,
+              itemListSchema,
+              breadcrumbSchema,
+            ]),
+          }}
+        />
+        <CollectionPageClient initialData={data} />
+      </>
+    );
   } catch (error) {
     console.error("Error loading collection page:", error);
     return <CollectionPageClient />;

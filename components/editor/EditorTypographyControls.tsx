@@ -9,7 +9,7 @@ import {
   useEditorStore,
 } from "@/app/stores/useEditorStore";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import ThemeSelector from "@/components/Theme/SchemaSelector.client";
+import ThemeSelector from "@/components/Theme/ThemeSelector.client";
 
 const EditorTypographyControls = () => {
   const { editorFontFamily, editorFontSizeIndex, setFontSize, setFontFamily } =

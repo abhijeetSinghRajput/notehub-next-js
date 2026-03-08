@@ -33,7 +33,8 @@ export interface NoteStore {
   notes: INote[];
 
   pagination: PaginationState;
-
+  setNotes: (notes: INote[]) => void;
+  setPagination: (pagination: PaginationState) => void;
   getPublicNotes: (params: {
     page: number;
     limit: number;
@@ -58,10 +59,7 @@ export interface NoteStore {
     userId: string;
     guest?: boolean;
   }) => Promise<ICollection[] | null>;
-  renameCollection: (data: {
-    _id: string;
-    newName: string;
-  }) => Promise<void>;
+  renameCollection: (data: { _id: string; newName: string }) => Promise<void>;
   updateCollectionVisibility: (data: {
     collectionId: string;
     visibility: "public" | "private";
@@ -71,7 +69,9 @@ export interface NoteStore {
     collaborators: IUser[];
   }) => Promise<void>;
 
-  createNote: (data: Partial<INote> & { collectionId: string }) => Promise<string | null>;
+  createNote: (
+    data: Partial<INote> & { collectionId: string },
+  ) => Promise<string | null>;
   deleteNote: (noteId: string) => Promise<void>;
   renameNote: (data: { noteId: string; newName: string }) => Promise<void>;
   moveTo: (data: { noteId: string; collectionId: string }) => Promise<void>;
@@ -119,7 +119,9 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
 
   const updateNoteInNotesArray = (noteId: string, updates: Partial<INote>) => {
     set((state: NoteStore) => {
-      const index = state.notes.findIndex((note) => String(note._id) === noteId);
+      const index = state.notes.findIndex(
+        (note) => String(note._id) === noteId,
+      );
       if (index === -1) return state;
 
       const newNotes = [...state.notes];
@@ -155,6 +157,9 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
       notesPerPage: 10,
       hasMore: false,
     },
+
+    setNotes: (notes: INote[]) => set({ notes }),
+    setPagination: (pagination: PaginationState) => set({ pagination }),
 
     getPublicNotes: async ({
       page,
@@ -293,7 +298,9 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
       set((state: NoteStore) => ({
         collections: state.collections.map((collection) => ({
           ...collection,
-          notes: collection.notes?.filter((note) => String(note._id) !== noteId),
+          notes: collection.notes?.filter(
+            (note) => String(note._id) !== noteId,
+          ),
         })),
       }));
     },
@@ -375,9 +382,7 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
         return collections;
       } catch (error) {
         console.error(error);
-        toast.error(
-          getApiErrorMessage(error, "Failed to load collections"),
-        );
+        toast.error(getApiErrorMessage(error, "Failed to load collections"));
         return null;
       } finally {
         setStatus("collection", { state: "idle", error: null });
@@ -523,9 +528,7 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
         toast.success(message || "Visibility updated");
       } catch (error) {
         console.error(error);
-        toast.error(
-          getApiErrorMessage(error, "Failed to update visibility"),
-        );
+        toast.error(getApiErrorMessage(error, "Failed to update visibility"));
       }
     },
 

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { Calendar, EllipsisVertical, File, Lock } from "lucide-react";
 import Link from "next/link";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "@/lib/utils";
 import { INote, IUser } from "@/types/model";
 

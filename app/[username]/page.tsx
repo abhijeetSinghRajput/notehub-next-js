@@ -80,22 +80,78 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// app/[username]/page.tsx
+
 export default async function UserPage({ params }: Props) {
   const { username } = await params;
 
   try {
-    // Fetch user data on the server for initial validation
     const userApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`;
     const response = await fetch(userApiUrl);
 
-    if (!response.ok) {
-      notFound();
-    }
+    if (!response.ok) notFound();
 
     const user: IUser = await response.json();
 
-    // Pass initial data to client component
-    return <UserPageClient initialUser={user} />;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const profileUrl = `${baseUrl}/${username}`;
+
+    const personSchema = {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: user.fullName,
+      url: profileUrl,
+      image: {
+        "@type": "ImageObject",
+        url: user.avatar,
+        width: 400,
+        height: 400,
+      },
+      identifier: user.userName,
+    };
+
+    const profilePageSchema = {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      name: `${user.fullName} (@${user.userName}) — NoteHub Profile`,
+      url: profileUrl,
+      description: `View ${user.fullName}'s collections and notes on NoteHub.`,
+      mainEntity: personSchema,
+      isPartOf: {
+        "@type": "WebSite",
+        name: "NoteHub",
+        url: baseUrl,
+      },
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: baseUrl,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: user.fullName,
+            item: profileUrl,
+          },
+        ],
+      },
+    };
+
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([personSchema, profilePageSchema]),
+          }}
+        />
+        <UserPageClient initialUser={user} />
+      </>
+    );
   } catch (error) {
     console.error("Error loading user page:", error);
     notFound();

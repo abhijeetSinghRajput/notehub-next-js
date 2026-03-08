@@ -95,8 +95,133 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // ✅ Also await params in the page component
 export default async function NotePage({ params }: Props) {
-  // If you need to pass params to client component:
-  const resolvedParams = await params;
+  const { username, collectionSlug, noteSlug } = await params;
 
-  return <NotePageClient />;
+  try {
+    const noteApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/note/${username}/${collectionSlug}/${noteSlug}`;
+    const response = await fetch(noteApiUrl, {
+      next: { revalidate: 3600 },
+    });
+
+    if (!response.ok) {
+      return <NotePageClient />;
+    }
+
+    const { note, author } = await response.json();
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const profileUrl = `${baseUrl}/${username}`;
+    const collectionUrl = `${baseUrl}/${username}/${collectionSlug}`;
+    const noteUrl = `${baseUrl}/${username}/${collectionSlug}/${noteSlug}`;
+
+    // Strip HTML for description
+    const plainText = note.content
+      .replace(/<[^>]*>/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 200);
+
+    // OG image reused as the schema image
+    const ogImageParams = new URLSearchParams({
+      title: note.name || "Untitled Note",
+      collection: note.collectionId?.name || collectionSlug,
+      authorName: author.fullName || "Anonymous",
+      authorUsername: `@${author.userName || "anonymous"}`,
+      authorAvatar: author.avatar || "",
+    });
+    const ogImageUrl = `${baseUrl}/api/og-note?${ogImageParams.toString()}`;
+
+    const techArticleSchema = {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      headline: note.name,
+      description: plainText,
+      url: noteUrl,
+      datePublished: new Date(note.createdAt).toISOString(),
+      dateModified: new Date(note.contentUpdatedAt || note.updatedAt).toISOString(),
+      image: {
+        "@type": "ImageObject",
+        url: ogImageUrl,
+        width: 1200,
+        height: 630,
+      },
+      author: {
+        "@type": "Person",
+        name: author.fullName,
+        url: profileUrl,
+        image: author.avatar,
+        identifier: author.userName,
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "NoteHub",
+        url: baseUrl,
+        logo: {
+          "@type": "ImageObject",
+          url: `${baseUrl}/icon.png`,
+          width: 512,
+          height: 512,
+        },
+      },
+      isPartOf: {
+        "@type": "CollectionPage",
+        name: note.collectionId?.name || collectionSlug,
+        url: collectionUrl,
+      },
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": noteUrl,
+      },
+      // Signals this is educational/instructional content
+      learningResourceType: "Note",
+      educationalUse: "Self Study",
+      inLanguage: "en",
+    };
+
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: baseUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: author.fullName,
+          item: profileUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: note.collectionId?.name || collectionSlug,
+          item: collectionUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
+          name: note.name,
+          item: noteUrl,
+        },
+      ],
+    };
+
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([techArticleSchema, breadcrumbSchema]),
+          }}
+        />
+        <NotePageClient />
+      </>
+    );
+  } catch (error) {
+    console.error("Error loading note page:", error);
+    return <NotePageClient />;
+  }
 }

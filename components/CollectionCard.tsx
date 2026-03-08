@@ -1,5 +1,5 @@
 import { Bookmark, Lock, MoreVertical, Pin } from "lucide-react";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Input } from "./ui/input";
 import Link from "next/link";
 import { Badge } from "./ui/badge";

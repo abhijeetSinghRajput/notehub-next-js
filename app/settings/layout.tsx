@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Palette, UserRound, Image, Lock } from "lucide-react";
 import { ExpandedTabs } from "@/components/ui/expanded-tabs";

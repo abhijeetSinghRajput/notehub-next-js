@@ -22,7 +22,6 @@ import { SidebarSearch } from "./SidebarSearch";
 import { useLocalStorage } from "@/app/stores/useLocalStorage";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { ModeToggleMini } from "@/components/mode-toggle";
-import LogoIcon from "../icons/LogoIcon";
 import Logo from "../Logo";
 
 const AppSidebar = (props: React.ComponentProps<typeof Sidebar>) => {

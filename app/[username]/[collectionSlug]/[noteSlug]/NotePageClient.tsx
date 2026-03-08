@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useCallback, useState } from "react";
+import Head from "next/head";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { axiosInstance } from "@/lib/axios";
@@ -105,37 +106,88 @@ const NotePageClient = () => {
   if (isPrivate) return <PrivateNote />;
   if (!note?.content?.trim()) return <EmptyNoteContent onEdit={isOwner ? handleNavigateToEditor : undefined} />;
 
+  // Structured data for Article
+  const articleJsonLd = note && author ? {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": note.name,
+    "image": noteImages.map(img => img.src),
+    "datePublished": note.createdAt,
+    "dateModified": note.updatedAt,
+    "author": [{
+      "@type": "Person",
+      "name": author.fullName || author.userName,
+      "url": `${process.env.NEXT_PUBLIC_BASE_URL}/${author.userName}`
+    }]
+  } : null;
+
+  // Structured data for Breadcrumb
+  const breadcrumbJsonLd = note && author ? {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": author.userName,
+        "item": `${process.env.NEXT_PUBLIC_BASE_URL}/${author.userName}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": collectionSlug,
+        "item": `${process.env.NEXT_PUBLIC_BASE_URL}/${author.userName}/${collectionSlug}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": note.name,
+        "item": `${process.env.NEXT_PUBLIC_BASE_URL}/${author.userName}/${collectionSlug}/${note.slug}`
+      }
+    ]
+  } : null;
+
   return (
-    <NoteLayout
-      note={note}
-      headerProps={{
-        note,
-        author: {
-          userName: author?.userName,
-          fullName: author?.fullName,
-          avatar: author?.avatar,
-          role: author?.role,
-        },
-        showVisibility: isOwner,
-        showEdit: isOwner,
-        onEdit: handleNavigateToEditor,
-      }}
-      fabProps={{
-        toc,
-        tocOpen,
-        setTocOpen,
-        progress,
-        activeId,
-        handleTocItemClick,
-        shareLink,
-        onEdit: isOwner ? handleNavigateToEditor : undefined,
-      }}
-      fontSize={fontSize}
-      fontFamily={editorFontFamily}
-      selectedImageIndex={selectedImageIndex}
-      noteImages={noteImages}
-      onCloseLightbox={handleCloseLightbox}
-    />
+    <>
+      <Head>
+        {articleJsonLd && (
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+        )}
+        {breadcrumbJsonLd && (
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+        )}
+      </Head>
+      <NoteLayout
+        note={note}
+        headerProps={{
+          note,
+          author: {
+            userName: author?.userName,
+            fullName: author?.fullName,
+            avatar: author?.avatar,
+            role: author?.role,
+          },
+          showVisibility: isOwner,
+          showEdit: isOwner,
+          onEdit: handleNavigateToEditor,
+        }}
+        fabProps={{
+          toc,
+          tocOpen,
+          setTocOpen,
+          progress,
+          activeId,
+          handleTocItemClick,
+          shareLink,
+          onEdit: isOwner ? handleNavigateToEditor : undefined,
+        }}
+        fontSize={fontSize}
+        fontFamily={editorFontFamily}
+        selectedImageIndex={selectedImageIndex}
+        noteImages={noteImages}
+        onCloseLightbox={handleCloseLightbox}
+      />
+    </>
   );
 };
 

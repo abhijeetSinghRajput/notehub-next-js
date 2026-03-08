@@ -21,9 +21,9 @@ import AppShell from "@/components/providers/AppShell";
 
 import { Toaster } from "sonner";
 import { NavigationLoader } from "@/components/NavigationLoader";
+import React from "react";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL?.trim() || "http://localhost:3000";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.trim() || "http://localhost:3000";
 
 const merriweather = Merriweather({
   subsets: ["latin"],
@@ -40,6 +40,29 @@ const lora = Lora({
   weight: ["400", "500", "600", "700"],
   variable: "--font-lora",
 });
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "NoteHub",
+  url: baseUrl,
+  logo: {
+    "@type": "ImageObject",
+    url: `${baseUrl}/icon.png`,
+    width: 512,
+    height: 512,
+  },
+  sameAs: [],  // Add your Twitter/GitHub/LinkedIn URLs here
+  description:
+    "NoteHub — a collaborative platform for capturing, organizing, and sharing notes. Built for students and developers.",
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "NoteHub",
+  url: baseUrl,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -107,11 +130,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link
-          rel="preconnect"
-          href="https://notehub-38kp.onrender.com"
-          crossOrigin=""
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([organizationSchema, websiteSchema]),
+          }}
         />
+        <link rel="preconnect" href="https://notehub-38kp.onrender.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://notehub-38kp.onrender.com" />
       </head>
       <body

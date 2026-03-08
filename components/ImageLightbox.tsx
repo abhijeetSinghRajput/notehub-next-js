@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import React, { memo, useMemo } from "react";
+import { memo, useMemo } from "react";
 import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
 import Download from "yet-another-react-lightbox/plugins/download";
 import Slideshow from "yet-another-react-lightbox/plugins/slideshow";

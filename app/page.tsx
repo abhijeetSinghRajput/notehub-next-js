@@ -1,170 +1,149 @@
-"use client";
-import React, { useEffect, useCallback, useMemo, useRef } from "react";
-import { useNoteStore } from "@/app/stores/useNoteStore";
-import { useAuthStore } from "@/app/stores/useAuthStore";
-import { ArticleCard } from "@/components/ArticleCard";
-import { getCanonicalUrl, noteToArticle } from "@/lib/utils";
-import { ArticleCardSkeleton } from "@/components/ArticleCardSkeleton";
-import { CheckCircle2 } from "lucide-react";
-import { PopulatedNote } from "@/types/model";
-import OnboardingCard from "@/components/OnboardingCard";
-import WritingTipsCard from "@/components/WritingTipsCard";
+import HomePageClient from "./HomePageClient";
+import { Metadata } from "next";
 
-const HomePage = () => {
-  const loaderRef = useRef(null);
-  const { notes, pagination, getPublicNotes, status } = useNoteStore();
-  const { authUser } = useAuthStore();
-  const isGuest = !authUser;
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "");
 
-  // Transform notes with proper fallbacks
-  const articles = useMemo(
-    () => notes.map((note) => noteToArticle(note as PopulatedNote)),
-    [notes],
-  );
-
-  // Infinite scroll handler
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [entry] = entries;
-      if (
-        entry.isIntersecting &&
-        status.note.state !== "loading" &&
-        pagination.hasMore
-      ) {
-        getPublicNotes({
-          page: pagination.currentPage + 1,
-          limit: 10,
-        });
-      }
-    },
-    [pagination, getPublicNotes],
-  );
-
-  // Set up intersection observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(handleObserver, {
-      root: null,
-      rootMargin: "20px",
-      threshold: 0.1,
+async function getInitialNotes() {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+  try {
+    const res = await fetch(`${apiBaseUrl}/note?server=true&page=1&limit=10`, {
+      cache: "no-store", // or revalidate
     });
+    const json = await res.json();
+    return json?.data ?? null;
+  } catch (e) {
+    console.error("Failed to fetch notes", e);
+    return null;
+  }
+}
 
-    if (loaderRef.current) observer.observe(loaderRef.current);
+// Generate dynamic metadata
+export async function generateMetadata(): Promise<Metadata> {
+  const data = await getInitialNotes();
+  const notes = data?.notes ?? [];
+  
+  // Get unique topics/categories from notes
+  const topics = [...new Set(notes.map((note: any) => note.collectionId?.name).filter((t: any): t is string => typeof t === 'string'))];
+  const authors = [...new Set(notes.map((note: any) => note.userId?.fullName).filter((a: any): a is string => typeof a === 'string'))];
+  
+  // Create a dynamic description based on the notes
+  const topNotes = notes.slice(0, 3).map((note: any) => note.name).join(', ');
+  const description = `Discover ${data?.pagination?.totalNotes || 'hundreds of'} public notes on ${topics.slice(0, 3).join(', ')}${topics.length > 3 ? ' and more' : ''}. Featured notes: ${topNotes}${notes.length > 3 ? '...' : ''}`;
 
-    return () => {
-      if (loaderRef.current) observer.unobserve(loaderRef.current);
-    };
-  }, [handleObserver]);
+  return {
+    title: {
+      absolute: "NoteHub — Explore Public Notes & Knowledge Sharing",
+      template: "%s | NoteHub"
+    },
+    description: description,
+    keywords: [
+      'public notes',
+      'knowledge sharing',
+      'study notes',
+      'developer notes',
+      'student notes',
+      'collaborative learning',
+      ...topics,
+      ...authors
+    ] as string[],
+    authors: authors.filter((name): name is string => typeof name === 'string').map((name) => ({ name })),
+    openGraph: {
+      title: 'NoteHub — Explore Public Notes',
+      description: description,
+      url: baseUrl || "http://localhost:3000",
+      siteName: 'NoteHub',
+      images: [
+        {
+          url: `${baseUrl || "http://localhost:3000"}/og-image.png`, // Make sure you have this image
+          width: 1200,
+          height: 630,
+          alt: 'NoteHub - Public Notes Platform',
+        },
+      ],
+      locale: 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'NoteHub — Explore Public Notes',
+      description: description,
+      images: [`${baseUrl}/og-image.png`],
+      creator: '@notehub', // Update with your Twitter handle
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    alternates: {
+      canonical: baseUrl,
+    },
+    category: 'education',
+  };
+}
 
-  // Initial load
-  useEffect(() => {
-    if (notes.length === 0) {
-      getPublicNotes({ page: 1, limit: 10 });
-    }
-  }, []);
+export default async function HomePage() {
+  const data = await getInitialNotes();
+  console.log("server fetched public notes: ", data);
+  const notes = data?.notes ?? [];
+
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "NoteHub — Explore Public Notes",
+    description: data?.notes ? 
+      `Discover ${data.pagination.totalNotes} public notes shared by ${data.notes.length} authors` : 
+      "Discover and explore public notes shared by developers and students on NoteHub.",
+    url: baseUrl,
+    isPartOf: {
+      "@type": "WebSite",
+      name: "NoteHub",
+      url: baseUrl,
+    },
+  };
+
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Public Notes Feed",
+    description: "Latest public notes from the NoteHub community",
+    numberOfItems: notes.length,
+    itemListElement: notes.map((note: any, index: number) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${baseUrl}/${note.userId.userName}/${note.collectionId.slug}/${note.slug}`,
+      name: note.name,
+      author: {
+        "@type": "Person",
+        name: note.userId.fullName
+      },
+      datePublished: note.createdAt,
+      dateModified: note.contentUpdatedAt,
+    })),
+  };
+
+  
 
   return (
-    <div className="p-2">
-      <h1 className="sr-only">NoteHub — Explore Public Notes</h1>
-
-      {isGuest ? (
-        <>
-          {/* Mobile: onboarding card on top */}
-          <div className="flex flex-col gap-4 mb-6 w-full lg:hidden">
-            <OnboardingCard  />
-          </div>
-
-          {/* Desktop: feed left + onboarding card pinned right */}
-          <div className="flex gap-6 max-w-6xl mx-auto">
-            <div className="flex-1 space-y-3 sm:space-y-4 max-w-5xl">
-              {articles.map((note, index) => (
-                <ArticleCard
-                  key={note._id || index}
-                  note={note}
-                  description={note.article.description}
-                  images={note.article.images}
-                  author={note.userId}
-                  collection={note.collectionId}
-                  headings={note.article.headings}
-                />
-              ))}
-
-              {status.note.state === "loading" &&
-                [...Array(5)].map((_, i) => <ArticleCardSkeleton key={i} />)}
-
-              <div ref={loaderRef} className="h-1" />
-
-              {!pagination.hasMore && notes.length > 0 && (
-                <div className="flex flex-col items-center justify-center py-16 px-4">
-                  <div className="relative bg-muted rounded-full p-4 shadow-lg">
-                    <CheckCircle2 className="h-12 w-12 text-green-500" />
-                  </div>
-                  <h3 className="mt-6 text-xl font-semibold">
-                    You've reached the end
-                  </h3>
-                  <p className="mt-2 text-center text-muted-foreground max-w-md">
-                    That's all for now. Check back later for more content.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Right sidebar — hidden on small screens */}
-            <aside className="hidden lg:flex flex-col gap-4 w-full max-w-sm shrink-0 sticky top-18 self-start">
-              <OnboardingCard />
-            </aside>
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Mobile: writing tips on top */}
-          <div className="flex flex-col gap-4 mb-6 w-full lg:hidden">
-            <WritingTipsCard defaultOpen={false} />
-          </div>
-
-          {/* Desktop: feed left + writing tips pinned right */}
-          <div className="flex gap-6 max-w-6xl mx-auto">
-            <div className="flex-1 space-y-3 sm:space-y-4 max-w-5xl">
-          {articles.map((note, index) => (
-            <ArticleCard
-              key={note._id || index}
-              note={note}
-              description={note.article.description}
-              images={note.article.images}
-              author={note.userId}
-              collection={note.collectionId}
-              headings={note.article.headings}
-            />
-          ))}
-
-          {status.note.state === "loading" &&
-            [...Array(5)].map((_, i) => <ArticleCardSkeleton key={i} />)}
-
-          <div ref={loaderRef} className="h-1" />
-
-          {!pagination.hasMore && notes.length > 0 && (
-            <div className="flex flex-col items-center justify-center py-16 px-4">
-              <div className="relative bg-muted rounded-full p-4 shadow-lg">
-                <CheckCircle2 className="h-12 w-12 text-green-500" />
-              </div>
-              <h3 className="mt-6 text-xl font-semibold">
-                You've reached the end
-              </h3>
-              <p className="mt-2 text-center text-muted-foreground max-w-md">
-                That's all for now. Check back later for more content.
-              </p>
-            </div>
-          )}
-            </div>
-
-            {/* Right sidebar — hidden on small screens */}
-            <aside className="hidden lg:flex flex-col gap-4 w-full max-w-sm shrink-0 sticky top-18 self-start">
-              <WritingTipsCard />
-            </aside>
-          </div>
-        </>
-      )}
-    </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([webPageSchema, itemListSchema]),
+        }}
+      />
+      
+      {/* Add meta tags for crawlers */}
+      <meta name="total-notes" content={data?.pagination?.totalNotes?.toString()} />
+      <meta name="authors-count" content={[...new Set(notes.map((n: any) => n.userId.userName))].length.toString()} />
+      
+      <HomePageClient initialData={data} />
+    </>
   );
-};
-
-export default HomePage;
+}
