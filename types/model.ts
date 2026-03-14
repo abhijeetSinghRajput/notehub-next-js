@@ -1,4 +1,5 @@
 // Create one shared base:
+import { TocItem } from "@/lib/note/types";
 import { Types } from "mongoose";
 
 export interface IBase {
@@ -40,7 +41,7 @@ export interface INote extends IBase {
   content: string;
 
   // id can be populated to full object.
-  collectionId: string | ICollection; 
+  collectionId: string | ICollection;
   userId: string | IUser;
 
   visibility: "public" | "private";
@@ -48,6 +49,7 @@ export interface INote extends IBase {
 
   slug: string;
   contentUpdatedAt: string;
+  tableOfContent: TocItem[];
 }
 
 export type PopulatedNote = Omit<INote, "userId" | "collectionId"> & {
@@ -94,7 +96,6 @@ export type PublicNote = Pick<
   INote,
   "name" | "slug" | "content" | "contentUpdatedAt"
 >;
-
 
 export interface IPagination {
   currentPage: number;

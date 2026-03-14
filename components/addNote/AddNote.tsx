@@ -45,6 +45,7 @@ const AddNote: React.FC<AddNoteProps> = ({
       contentUpdatedAt: now,
       createdAt: now,
       updatedAt: now,
+      tableOfContent: [],
     };
 
     setDraft(draftId, draft);

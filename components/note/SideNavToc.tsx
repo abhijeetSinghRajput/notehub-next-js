@@ -76,7 +76,7 @@ const SideNavToc = memo<SideNavTocProps>(
                 className={cn(
                   "h-0.5 min-h-0.5 rounded-full transition-all duration-150 cursor-pointer",
                   "bg-muted-foreground/50",
-                  activeId === item.id && "!bg-primary shadow-[0_0_6px_1.5px_theme(colors.primary.DEFAULT)] shadow-primary/30",
+                  activeId === item.id && "bg-primary! shadow-[0_0_6px_1.5px_var(--color-primary)] shadow-primary/30",
                   TICK_WIDTH[level],
                 )}
                 aria-label={item.text}
@@ -88,7 +88,7 @@ const SideNavToc = memo<SideNavTocProps>(
         {/* ── Popover ── */}
         <div
           className={cn(
-            "fixed right-2 top-1/2 -translate-y-1/2 w-[232px]",
+            "fixed right-2 top-1/2 -translate-y-1/2 w-58",
             "bg-popover border border-border rounded-xl shadow-lg",
             "transition-all duration-150 ease-out",
             isHovering 
@@ -112,7 +112,7 @@ const SideNavToc = memo<SideNavTocProps>(
                       ref={isActive ? activeItemRef : null}
                       onClick={() => onItemClick(item.id)}
                       className={cn(
-                        "flex items-center w-full py-[5px] pr-3 text-left",
+                        "flex items-center w-full py-1.25 pr-3 text-left",
                         "transition-colors duration-100 hover:bg-muted/60",
                         isActive && "bg-muted/80",
                       )}

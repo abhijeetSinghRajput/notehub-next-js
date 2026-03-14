@@ -16,8 +16,6 @@ import { useNoteContentProcessing } from "@/hooks/useNoteContentProcessing";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { useTocTracking } from "@/hooks/useTocTracking";
 
-import type { TocItem } from "@/lib/note/types";
-
 // ─── Main component ────────────────────────────────────────────────────────────
 const NotePage = () => {
   const params = useParams();
@@ -27,26 +25,34 @@ const NotePage = () => {
   const { authUser } = useAuthStore();
   const { getNoteContent, status, noteNotFound, collections } = useNoteStore();
   const [note, setNote] = useState<INote | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-  const [noteImages, setNoteImages] = useState<{ src: string; alt: string }[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null,
+  );
+  const [noteImages, setNoteImages] = useState<{ src: string; alt: string }[]>(
+    [],
+  );
 
-  const [toc, setToc] = useState<TocItem[]>([]);
   const [tocOpen, setTocOpen] = useState(false);
   const { editorFontFamily, editorFontSizeIndex } = useEditorStore();
   const fontSize = FONT_SIZE[editorFontSizeIndex] ?? FONT_SIZE[1];
 
   // ── Shared hooks ─────────────────────────────────────────────────────────────
+  const toc = note?.tableOfContent ?? [];
   const progress = useScrollProgress();
   const activeId = useTocTracking(toc);
-  useNoteContentProcessing(note?.content, setToc, setNoteImages, setSelectedImageIndex);
+
+  useNoteContentProcessing(note?.content, setNoteImages, setSelectedImageIndex);
 
   // ── Callbacks ────────────────────────────────────────────────────────────────
   const handleTocItemClick = useCallback((itemId: string) => {
     const el = document.getElementById(itemId);
     if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top: y, behavior: "smooth" });
+      const y = el.getBoundingClientRect().top + window.scrollY - 88;
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
+      document.documentElement.style.scrollBehavior = "";
     }
+    history.replaceState(null, "", `#${itemId}`);
     setTocOpen(false);
   }, []);
 
@@ -54,7 +60,10 @@ const NotePage = () => {
     if (noteId) router.push(`/note/${noteId}/editor`);
   }, [noteId, router]);
 
-  const handleCloseLightbox = useCallback(() => setSelectedImageIndex(null), []);
+  const handleCloseLightbox = useCallback(
+    () => setSelectedImageIndex(null),
+    [],
+  );
 
   const shareLink = useMemo(() => {
     if (!note) return "";
@@ -73,11 +82,31 @@ const NotePage = () => {
     fetchData();
   }, [noteId, getNoteContent]);
 
+  // ADD after the fetch useEffect:
+  useEffect(() => {
+    if (!note) return;
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+
+    const id = requestAnimationFrame(() => {
+      const el = document.getElementById(hash);
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY - 88;
+        document.documentElement.style.scrollBehavior = "auto";
+        window.scrollTo({ top: y });
+        document.documentElement.style.scrollBehavior = "";
+      }
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, [note]);
+
   // ── Render guards ────────────────────────────────────────────────────────────
   if (status.noteContent.state === "loading") return <NoteSkeleton />;
   if (noteNotFound) return <NoteNotFound />;
   if (!note) return null;
-  if (!note.content?.trim()) return <EmptyNoteContent onEdit={handleNavigateToEditor} />;
+  if (!note.content?.trim())
+    return <EmptyNoteContent onEdit={handleNavigateToEditor} />;
 
   return (
     <NoteLayout

@@ -202,3 +202,40 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   border-radius: 4px;
   transform: scale(1.1);
 }
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3,
+.tiptap h4,
+.tiptap h5,
+.tiptap h6 {
+  position: relative;
+}
+
+.heading-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  padding: 4px;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  color: var(--muted-foreground);
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.heading-copy-btn:hover {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+.tiptap h1:hover .heading-copy-btn,
+.tiptap h2:hover .heading-copy-btn,
+.tiptap h3:hover .heading-copy-btn,
+.tiptap h4:hover .heading-copy-btn,
+.tiptap h5:hover .heading-copy-btn,
+.tiptap h6:hover .heading-copy-btn {
+  opacity: 1;
+}

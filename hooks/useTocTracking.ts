@@ -3,9 +3,6 @@
 import { useEffect, useState } from "react";
 import type { TocItem } from "@/lib/note/types";
 
-/**
- * Tracks which TOC heading is currently in view based on scroll position.
- */
 export function useTocTracking(toc: TocItem[]) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -18,7 +15,8 @@ export function useTocTracking(toc: TocItem[]) {
       requestAnimationFrame(() => {
         let current: string | null = null;
         for (const item of toc) {
-          if (item.element.getBoundingClientRect().top <= 120) current = item.id;
+          const el = document.getElementById(item.id);
+          if (el && el.getBoundingClientRect().top <= 120) current = item.id;
           else break;
         }
         setActiveId(current);

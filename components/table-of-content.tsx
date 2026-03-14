@@ -7,10 +7,11 @@ type TocItem = {
 };
 
 type TableOfContentProps = {
+  noteLink: string;
   data?: TocItem[];
 };
 
-const TableOfContent = ({ data = [] }: TableOfContentProps) => {
+const TableOfContent = ({ noteLink, data = [] }: TableOfContentProps) => {
   if (!data.length) return null;
 
   const STEP = 20;
@@ -49,15 +50,16 @@ const TableOfContent = ({ data = [] }: TableOfContentProps) => {
 
             {/* Content */}
             <div className="relative z-10">
-              <div
-                className={`transition-colors ${
+              <a
+                href={`${noteLink}#${item.id}`}
+                className={`block transition-colors hover:text-primary hover:underline ${
                   indentLevel === 0
                     ? "text-base font-semibold"
                     : "text-sm font-medium text-primary/70"
                 }`}
               >
                 {item.text}
-              </div>
+              </a>
             </div>
           </div>
         );

@@ -35,9 +35,7 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { Dropcursor, Gapcursor } from "@tiptap/extensions";
 import Link from "@tiptap/extension-link";
 import MathExtension from "@tiptap/extension-mathematics";
-import TableOfContents, {
-  getHierarchicalIndexes,
-} from "@tiptap/extension-table-of-contents";
+
 import { ResizableImageExtension } from "../ResizableImageExtension";
 
 
@@ -934,13 +932,6 @@ export const extensions = [
     bulletList: { keepMarks: true, keepAttributes: false },
     orderedList: { keepMarks: true, keepAttributes: false },
     codeBlock: false,
-  }),
-  TableOfContents.configure({
-    anchorTypes: ["heading"],
-    getIndex: getHierarchicalIndexes,
-    onUpdate: (anchors) => {
-      window.dispatchEvent(new CustomEvent("toc-update", { detail: anchors }));
-    },
   }),
   CustomCodeBlock,
   Highlight.configure({ multicolor: true }),

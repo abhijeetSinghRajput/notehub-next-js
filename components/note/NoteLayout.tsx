@@ -58,7 +58,7 @@ export default function NoteLayout({
 
       {/* ── Side-rail TOC (lg+ screens) ── */}
       <SideNavToc
-        toc={fabProps.toc}
+        toc={note?.tableOfContent ?? []}
         activeId={fabProps.activeId}
         onItemClick={fabProps.handleTocItemClick}
       />

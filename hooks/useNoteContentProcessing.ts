@@ -4,11 +4,11 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import hljs from "highlight.js";
 import katex from "katex";
 import { toast } from "sonner";
-import type { TocItem } from "@/lib/note/types";
 
 const COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
 const CHECK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
 const WRAP_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><path d="M3 12h15a3 3 0 1 1 0 6h-4"/><polyline points="16 16 14 18 16 20"/><line x1="3" y1="18" x2="10" y2="18"/></svg>`;
+const LINK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
 
 /** Convert an HTML <table> element to a GitHub-flavoured markdown table. */
 function htmlTableToMarkdown(table: HTMLTableElement): string {
@@ -25,7 +25,10 @@ function htmlTableToMarkdown(table: HTMLTableElement): string {
       clone.querySelectorAll("em, i").forEach((el) => {
         el.replaceWith(`*${el.textContent}*`);
       });
-      return (clone.textContent || "").replace(/\|/g, "\\|").replace(/\n/g, " ").trim();
+      return (clone.textContent || "")
+        .replace(/\|/g, "\\|")
+        .replace(/\n/g, " ")
+        .trim();
     }),
   );
 
@@ -35,11 +38,14 @@ function htmlTableToMarkdown(table: HTMLTableElement): string {
     Math.max(...matrix.map((r) => (r[col] || "").length), 3),
   );
 
-  const pad = (s: string, w: number) => s + " ".repeat(Math.max(0, w - s.length));
+  const pad = (s: string, w: number) =>
+    s + " ".repeat(Math.max(0, w - s.length));
 
   const lines: string[] = [];
   matrix.forEach((row, i) => {
-    const cells = Array.from({ length: colCount }, (_, c) => pad(row[c] || "", colWidths[c]));
+    const cells = Array.from({ length: colCount }, (_, c) =>
+      pad(row[c] || "", colWidths[c]),
+    );
     lines.push(`| ${cells.join(" | ")} |`);
     // Insert separator after the first row (header)
     if (i === 0) {
@@ -62,7 +68,6 @@ function htmlTableToMarkdown(table: HTMLTableElement): string {
  */
 export function useNoteContentProcessing(
   content: string | undefined,
-  setToc: Dispatch<SetStateAction<TocItem[]>>,
   setNoteImages: Dispatch<SetStateAction<{ src: string; alt: string }[]>>,
   setSelectedImageIndex: Dispatch<SetStateAction<number | null>>,
 ) {
@@ -70,22 +75,13 @@ export function useNoteContentProcessing(
     if (!content) return;
     const imageClickHandlers = new Map<HTMLImageElement, () => void>();
 
-    // ── TOC ────────────────────────────────────────────────────────────────
-    const headings = Array.from(
-      document.querySelectorAll<HTMLElement>(".tiptap h1, .tiptap h2, .tiptap h3"),
-    );
-    setToc(
-      headings.map((h, i) => {
-        if (!h.id) h.id = `heading-${i}`;
-        return { id: h.id, text: h.innerText, level: Number(h.tagName[1]), element: h };
-      }),
-    );
-
     // ── Syntax highlighting ────────────────────────────────────────────────────────
-    document.querySelectorAll<HTMLElement>("pre code:not([data-highlighted])").forEach((block) => {
-      hljs.highlightElement(block);
-      block.setAttribute("data-highlighted", "true");
-    });
+    document
+      .querySelectorAll<HTMLElement>("pre code:not([data-highlighted])")
+      .forEach((block) => {
+        hljs.highlightElement(block);
+        block.setAttribute("data-highlighted", "true");
+      });
 
     // ── KaTeX ──────────────────────────────────────────────────────────────
     document
@@ -104,25 +100,41 @@ export function useNoteContentProcessing(
         }
       });
 
+    // ── Heading copy buttons ───────────────────────────────────────────────
+    document
+      .querySelectorAll<HTMLElement>(
+        ".tiptap h1, .tiptap h2, .tiptap h3, .tiptap h4, .tiptap h5, .tiptap h6",
+      )
+      .forEach((heading) => {
+        if (heading.querySelector(".heading-copy-btn")) return;
+        const btn = document.createElement("button");
+        btn.className = "heading-copy-btn";
+        btn.setAttribute("aria-label", "Copy link to heading");
+        btn.innerHTML = LINK_ICON;
+        heading.appendChild(btn);
+      });
+
     // ── Build code block headers with copy buttons ────────────────────────
-    document.querySelectorAll<HTMLDivElement>(".pre-wrapper").forEach((wrapper) => {
-      // Avoid double-injecting headers on HMR / re-runs
-      wrapper.querySelector(":scope > .pre-header")?.remove();
+    document
+      .querySelectorAll<HTMLDivElement>(".pre-wrapper")
+      .forEach((wrapper) => {
+        // Avoid double-injecting headers on HMR / re-runs
+        wrapper.querySelector(":scope > .pre-header")?.remove();
 
-      const codeEl = wrapper.querySelector<HTMLElement>("code");
-      const preEl = wrapper.querySelector<HTMLElement>("pre");
-      if (!codeEl || !preEl) return;
+        const codeEl = wrapper.querySelector<HTMLElement>("code");
+        const preEl = wrapper.querySelector<HTMLElement>("pre");
+        if (!codeEl || !preEl) return;
 
-      const lang =
-        Array.from(codeEl.classList)
-          .find((c) => c.startsWith("language-"))
-          ?.replace("language-", "") ?? "text";
+        const lang =
+          Array.from(codeEl.classList)
+            .find((c) => c.startsWith("language-"))
+            ?.replace("language-", "") ?? "text";
 
-      const header = document.createElement("header");
-      header.className =
-        "pre-header rounded-t-lg w-full flex items-center justify-between py-2 px-4";
+        const header = document.createElement("header");
+        header.className =
+          "pre-header rounded-t-lg w-full flex items-center justify-between py-2 px-4";
 
-      header.innerHTML = `
+        header.innerHTML = `
         <span class="text-xs font-medium text-[#b9b9b9]">${lang}</span>
         <div class="flex items-center gap-1">
           <button class="wrap-code-button gap-2 size-7 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-background/50 hover:text-current" aria-label="Toggle line wrap">
@@ -132,26 +144,33 @@ export function useNoteContentProcessing(
             ${COPY_ICON}
           </button>
         </div>`;
-      wrapper.insertBefore(header, wrapper.firstChild);
-    });
+        wrapper.insertBefore(header, wrapper.firstChild);
+      });
 
     // ── Build table copy buttons ──────────────────────────────────────────
-    document.querySelectorAll<HTMLElement>(".tiptap:not(.ProseMirror) table").forEach((table) => {
-      const wrapper = table.closest(".tableWrapper") || table.parentElement;
-      if (!wrapper) return;
-      if (wrapper.previousElementSibling?.classList.contains("table-copy-btn")) return;
+    document
+      .querySelectorAll<HTMLElement>(".tiptap:not(.ProseMirror) table")
+      .forEach((table) => {
+        const wrapper = table.closest(".tableWrapper") || table.parentElement;
+        if (!wrapper) return;
+        if (
+          wrapper.previousElementSibling?.classList.contains("table-copy-btn")
+        )
+          return;
 
-      const btn = document.createElement("button");
-      btn.className = "table-copy-btn";
-      btn.setAttribute("aria-label", "Copy table as markdown");
-      btn.innerHTML = COPY_ICON;
-      wrapper.parentElement?.insertBefore(btn, wrapper);
-    });
+        const btn = document.createElement("button");
+        btn.className = "table-copy-btn";
+        btn.setAttribute("aria-label", "Copy table as markdown");
+        btn.innerHTML = COPY_ICON;
+        wrapper.parentElement?.insertBefore(btn, wrapper);
+      });
 
     // ── Event delegation for copy buttons ─────────────────────────────────
     const handleClick = async (e: MouseEvent) => {
       // Wrap toggle button
-      const wrapBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(".wrap-code-button");
+      const wrapBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+        ".wrap-code-button",
+      );
       if (wrapBtn) {
         const wrapper = wrapBtn.closest(".pre-wrapper");
         const preEl = wrapper?.querySelector<HTMLElement>("pre");
@@ -162,7 +181,9 @@ export function useNoteContentProcessing(
       }
 
       // Code copy button
-      const copyBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(".copy-code-button");
+      const copyBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+        ".copy-code-button",
+      );
       if (copyBtn) {
         copyBtn.disabled = true;
         const codeEl = copyBtn.closest(".pre-wrapper")?.querySelector("code");
@@ -178,11 +199,16 @@ export function useNoteContentProcessing(
       }
 
       // Table copy button
-      const tableCopyBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(".table-copy-btn");
+      const tableCopyBtn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+        ".table-copy-btn",
+      );
       if (tableCopyBtn) {
         tableCopyBtn.disabled = true;
         const nextEl = tableCopyBtn.nextElementSibling;
-        const table = nextEl?.tagName === "TABLE" ? nextEl as HTMLTableElement : nextEl?.querySelector("table");
+        const table =
+          nextEl?.tagName === "TABLE"
+            ? (nextEl as HTMLTableElement)
+            : nextEl?.querySelector("table");
         if (!table) return;
         const md = htmlTableToMarkdown(table);
         await navigator.clipboard.writeText(md);
@@ -192,6 +218,21 @@ export function useNoteContentProcessing(
           tableCopyBtn.innerHTML = COPY_ICON;
           tableCopyBtn.disabled = false;
         }, 3000);
+      }
+
+      // Heading copy button
+      const headingCopyBtn = (
+        e.target as HTMLElement
+      ).closest<HTMLButtonElement>(".heading-copy-btn");
+      if (headingCopyBtn) {
+        const heading = headingCopyBtn.closest<HTMLElement>(
+          "h1, h2, h3, h4, h5, h6",
+        );
+        if (!heading?.id) return;
+        const url = `${window.location.origin}${window.location.pathname}#${heading.id}`;
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied!");
+        return;
       }
     };
 
@@ -218,7 +259,9 @@ export function useNoteContentProcessing(
 
     return () => {
       document.removeEventListener("click", handleClick);
-      imageClickHandlers.forEach((h, img) => img.removeEventListener("click", h));
+      imageClickHandlers.forEach((h, img) =>
+        img.removeEventListener("click", h),
+      );
     };
-  }, [content, setToc, setNoteImages, setSelectedImageIndex]);
+  }, [content, setNoteImages, setSelectedImageIndex]);
 }
