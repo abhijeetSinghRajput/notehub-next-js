@@ -3,9 +3,6 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { Loader } from "lucide-react";
-import { ThemeProvider } from "../theme-provider";
-import Logo from "../Logo";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { checkAuth, isCheckingAuth } = useAuthStore();

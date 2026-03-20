@@ -1,78 +1,20 @@
-"use client";
-import { useEffect } from "react";
-import { useAuthStore } from "@/app/stores/useAuthStore";
+import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import OAuthCallback from "./OAuthCallback";
 
-const OAuthCallback = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { googleLogin } = useAuthStore();
-  const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!;
-
-  useEffect(() => {
-    const handleAuth = async () => {
-      const code = searchParams.get("code");
-      const error = searchParams.get("error");
-
-      // Handle OAuth errors
-      if (error) {
-        console.error("OAuth error:", error);
-        router.push(`/login?error=${encodeURIComponent(error)}`);
-        return;
-      }
-
-      // Validate authorization code exists
-      if (!code) {
-        console.error("Authorization code missing");
-        router.push("/login?error=Authorization code missing");
-        return;
-      }
-
-      // Get and validate code verifier
-      const codeVerifier = sessionStorage.getItem("code_verifier");
-      
-      if (!codeVerifier) {
-        console.error("Code verifier not found in session storage");
-        router.push("/login?error=Session expired. Please try again.");
-        return;
-      }
-
-      // Clear code verifier immediately for security
-      sessionStorage.removeItem("code_verifier");
-
-      try {
-        const result = await googleLogin({
-          code,
-          codeVerifier,
-          redirectUri,
-        });
-
-        if (!result) {
-          router.push("/login?error=Authentication failed");
-          return;
-        }
-
-        // Successful login
-        router.push("/");
-      } catch (err) {
-        console.error("OAuth callback error:", err);
-        router.push("/login?error=Something went wrong");
-      }
-    };
-
-    handleAuth();
-  }, [searchParams, router, googleLogin, redirectUri]);
-
+export default function OAuthCallbackPage() {
   return (
-    <div className="h-screen flex items-center justify-center">
-      <h1 className="sr-only">Completing Sign In</h1>
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="animate-spin size-8" />
-        <span className="text-muted-foreground">Completing sign in...</span>
-      </div>
-    </div>
+    <Suspense
+      fallback={
+        <div className="h-screen flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="animate-spin size-8" />
+            <span className="text-muted-foreground">Completing sign in...</span>
+          </div>
+        </div>
+      }
+    >
+      <OAuthCallback />
+    </Suspense>
   );
-};
-
-export default OAuthCallback;
+}

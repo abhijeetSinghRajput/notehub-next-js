@@ -26,7 +26,6 @@ export interface LocalStorageState {
 }
 
 const localStorageCreator: StateCreator<LocalStorageState> = (set, get) => ({
-  // Search history state
   searchHistory: [],
   addSearchHistory: (user) => {
     const newHistory = [
@@ -44,7 +43,6 @@ const localStorageCreator: StateCreator<LocalStorageState> = (set, get) => ({
     set({ searchHistory: [] });
   },
 
-  // Collections state
   openedCollections: {},
   toggleCollection: (collectionId, isExpanded) => {
     set({
@@ -65,7 +63,6 @@ const localStorageCreator: StateCreator<LocalStorageState> = (set, get) => ({
     set({ openedCollections: expandedState });
   },
 
-  // Pinned collections
   pinnedCollections: [],
   togglePinnedCollection: (collectionId) => {
     const { pinnedCollections } = get();
@@ -76,7 +73,6 @@ const localStorageCreator: StateCreator<LocalStorageState> = (set, get) => ({
     });
   },
 
-  // Theme state
   theme: "zinc",
   setTheme: (newTheme) => {
     set({ theme: newTheme });
@@ -89,18 +85,25 @@ const localStorageCreator: StateCreator<LocalStorageState> = (set, get) => ({
   },
 });
 
+// SSR-safe localStorage storage
+const storage = createJSONStorage(() =>
+  typeof window !== "undefined"
+    ? window.localStorage
+    : ({
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      } as unknown as Storage)
+);
 
 export const useLocalStorage = create<LocalStorageState>()(
-  persist(
-    localStorageCreator,
-    {
-      name: "local-storage-state",
-      storage: createJSONStorage(() => window.localStorage),
-      onRehydrateStorage: () => (state) => {
-        if (state?.theme && typeof document !== "undefined") {
-          document.documentElement.setAttribute("data-theme", state.theme);
-        }
-      },
-    }
-  )
+  persist(localStorageCreator, {
+    name: "local-storage-state",
+    storage,
+    onRehydrateStorage: () => (state) => {
+      if (state?.theme && typeof document !== "undefined") {
+        document.documentElement.setAttribute("data-theme", state.theme);
+      }
+    },
+  })
 );
