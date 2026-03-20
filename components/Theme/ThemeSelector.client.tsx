@@ -42,8 +42,10 @@ const themes: {
 ];
 
 function getActiveTheme(dataTheme: string, mode: string): ThemeId {
-  if (dataTheme === "warm") return "warm";
+  // When dark mode is active (via toggle), neither warm nor light should show as active
   if (mode === "dark") return "dark";
+  // Only check data-theme for light variants
+  if (dataTheme === "warm") return "warm";
   return "light";
 }
 
