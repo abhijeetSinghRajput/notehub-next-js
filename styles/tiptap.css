@@ -307,7 +307,7 @@ div:has(> .tiptap.ProseMirror) {
 .tiptap pre code {
   @apply p-0 m-0 leading-relaxed;
   white-space: pre;
-  font-size: 0.875rem;
+  font-size: 0.875em;
   display: block;
 }
 
@@ -346,7 +346,7 @@ div:has(> .tiptap.ProseMirror) {
   width: 100%;
   margin: 0 0 1.5rem 0;
   display: table;
-  font-size: 14px;
+  font-size: 0.875em;
   line-height: 20px;
 }
 

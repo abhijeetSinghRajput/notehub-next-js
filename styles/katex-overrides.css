@@ -75,12 +75,18 @@
   background: transparent;
 }
 
-.katex-display {
+span[data-type="inline-math"] {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .katex-display {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
   overflow-x: auto;
   overflow-y: hidden;
   max-width: 100%;
