@@ -1,5 +1,5 @@
+// app > [username] > collectionSlug > [noteSlug] > NotePageClient.tsx
 "use client";
-
 import { useEffect, useMemo, useCallback, useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter } from "next/navigation";

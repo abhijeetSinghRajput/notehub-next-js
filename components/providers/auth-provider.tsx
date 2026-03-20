@@ -21,19 +21,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [checkAuth]);
 
   // Show loading screen while checking auth
-  if (isCheckingAuth || isInitializing) {
-    return (
-      <ThemeProvider
-        defaultTheme="system"
-        storageKey="theme" // ✅ FIXED
-      >
-        <div className="flex flex-col gap-2 items-center justify-center h-screen">
-          <Logo className="text-xl text-foreground/70"/>
-          <Loader className="animate-spin text-muted-foreground" />
-        </div>
-      </ThemeProvider>
-    );
-  }
+  // if (isCheckingAuth || isInitializing) {
+  //   return (
+  //     <ThemeProvider
+  //       defaultTheme="system"
+  //       storageKey="theme" // ✅ FIXED
+  //     >
+  //       <div className="flex flex-col gap-2 items-center justify-center h-screen">
+  //         <Logo className="text-xl text-foreground/70"/>
+  //         <Loader className="animate-spin text-muted-foreground" />
+  //       </div>
+  //     </ThemeProvider>
+  //   );
+  // }
 
   return <>{children}</>;
 }
