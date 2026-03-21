@@ -257,6 +257,34 @@
     <priority>0.6</priority>
   </url>
 
+  <url>
+    <loc>https://notehub-official.vercel.app/sarvjeet-989feb</loc>
+    <lastmod>2026-02-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/manish-b6b69e</loc>
+    <lastmod>2026-02-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/gobinda-47c138</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/dolly-fcb638</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
   <!-- 📁 COLLECTIONS -->
 
   <url>
@@ -323,6 +351,13 @@
   </url>
 
   <url>
+    <loc>https://notehub-official.vercel.app/vikashkumar/w2c-car-xml-project</loc>
+    <lastmod>2026-03-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
     <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill</loc>
     <lastmod>2025-06-17</lastmod>
     <changefreq>weekly</changefreq>
@@ -358,6 +393,13 @@
   </url>
 
   <url>
+    <loc>https://notehub-official.vercel.app/gyan-prakash/data-science-using-r</loc>
+    <lastmod>2026-02-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
     <loc>https://notehub-official.vercel.app/utsavraj/daa-pyq</loc>
     <lastmod>2025-12-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -388,64 +430,22 @@
   <!-- 📝 NOTES -->
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/hwi-practice</loc>
-    <lastmod>2025-12-21</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/machine-learning</loc>
+    <lastmod>2025-04-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/fenwick-tree</loc>
-    <lastmod>2025-11-18</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/how-machine-learns</loc>
+    <lastmod>2026-03-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/segment-tree-problem</loc>
-    <lastmod>2025-07-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/manachers-algorithm</loc>
-    <lastmod>2025-07-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/square-root-decomposition</loc>
-    <lastmod>2025-07-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/segment-tree</loc>
-    <lastmod>2025-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/mos-algorithm</loc>
-    <lastmod>2025-07-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/17-march-linked-list-questions</loc>
-    <lastmod>2025-07-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/id3-algorithm</loc>
-    <lastmod>2026-01-13</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/type-of-learning-models</loc>
+    <lastmod>2025-06-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -458,84 +458,14 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/data-preprocessing-and-grid-search</loc>
-    <lastmod>2025-12-19</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/linear-regression</loc>
+    <lastmod>2025-12-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/decision-tree-algorithm</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/dimensionality-reduction</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/loss-function</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/perceptron</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/artificial-neural-network</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/apriori-algorithm</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/k-means-clustering</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/decision-tree</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/bayesian-classifier-naive-boryes</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/knn-classification</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/svm</loc>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/polynomial-regression</loc>
     <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -549,15 +479,106 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/polynomial-regression</loc>
-    <lastmod>2025-12-19</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-1</loc>
+    <lastmod>2026-01-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/linear-regression</loc>
-    <lastmod>2025-12-18</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-2</loc>
+    <lastmod>2026-01-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-3</loc>
+    <lastmod>2026-01-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-4</loc>
+    <lastmod>2026-01-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-5</loc>
+    <lastmod>2026-01-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-6</loc>
+    <lastmod>2026-01-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-7</loc>
+    <lastmod>2026-01-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-8</loc>
+    <lastmod>2026-01-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-3</loc>
+    <lastmod>2025-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-4</loc>
+    <lastmod>2025-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-5</loc>
+    <lastmod>2025-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-6</loc>
+    <lastmod>2025-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-7</loc>
+    <lastmod>2025-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-8</loc>
+    <lastmod>2025-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/svm</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -570,15 +591,43 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/type-of-learning-models</loc>
-    <lastmod>2025-06-16</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/knn-classification</loc>
+    <lastmod>2026-03-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/how-machine-learns</loc>
-    <lastmod>2025-06-16</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/17-march-linked-list-questions</loc>
+    <lastmod>2025-07-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/bayesian-classifier-naive-boryes</loc>
+    <lastmod>2026-03-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/decision-tree</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/id3-algorithm</loc>
+    <lastmod>2026-03-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/k-means-clustering</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -598,106 +647,64 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/machine-learning</loc>
-    <lastmod>2025-04-01</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/apriori-algorithm</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-8</loc>
-    <lastmod>2026-01-26</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/artificial-neural-network</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-6</loc>
-    <lastmod>2026-01-26</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/perceptron</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-5</loc>
-    <lastmod>2026-01-26</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/loss-function</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-4</loc>
-    <lastmod>2026-01-26</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/dimensionality-reduction</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-3</loc>
-    <lastmod>2026-01-26</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/decision-tree-algorithm</loc>
+    <lastmod>2026-03-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-2</loc>
-    <lastmod>2026-01-26</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/ai-ml/data-preprocessing-and-grid-search</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-1</loc>
-    <lastmod>2026-01-26</lastmod>
+    <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill/distance-and-time</loc>
+    <lastmod>2026-01-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel/nptel-week-7</loc>
-    <lastmod>2026-01-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-8</loc>
-    <lastmod>2025-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-7</loc>
-    <lastmod>2025-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-6</loc>
-    <lastmod>2025-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-5</loc>
-    <lastmod>2025-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-4</loc>
-    <lastmod>2025-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/nptel-solutions/week-3</loc>
-    <lastmod>2025-03-21</lastmod>
+    <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill/profit-and-loss</loc>
+    <lastmod>2026-01-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -717,13 +724,6 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill/profit-and-loss</loc>
-    <lastmod>2026-01-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
     <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill/miscellaneous-quant</loc>
     <lastmod>2026-01-22</lastmod>
     <changefreq>weekly</changefreq>
@@ -731,36 +731,50 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill/distance-and-time</loc>
-    <lastmod>2026-01-22</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/segment-tree</loc>
+    <lastmod>2025-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill/data-sufficiency</loc>
-    <lastmod>2025-11-03</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/square-root-decomposition</loc>
+    <lastmod>2025-07-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill/blood-relation</loc>
-    <lastmod>2025-10-14</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/mos-algorithm</loc>
+    <lastmod>2025-07-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/all-pairs-shortest-path-floyd-s</loc>
-    <lastmod>2026-02-01</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/segment-tree-problem</loc>
+    <lastmod>2025-07-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/dijkstra-s-algorithm</loc>
-    <lastmod>2026-01-21</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/manachers-algorithm</loc>
+    <lastmod>2025-07-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/fenwick-tree</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/dsa/hwi-practice</loc>
+    <lastmod>2025-12-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -773,71 +787,15 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/graph</loc>
-    <lastmod>2025-12-19</lastmod>
+    <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill/blood-relation</loc>
+    <lastmod>2025-10-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/minimax-using-divide-and-conquer-approach</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/permutation-and-combination</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/binary-search-tree</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/tower-of-hanoi</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/fraction-knapsack</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/dynamic-programming-0-1-knapsack</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/mst-kruskal-s-prim-s-algorithm</loc>
-    <lastmod>2025-12-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/quick-sort</loc>
-    <lastmod>2025-12-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/binary-search-recurrence-relation</loc>
-    <lastmod>2025-12-18</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/asymtotic-notation</loc>
+    <lastmod>2026-02-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -850,22 +808,8 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/optimal-binary-search-tree-obst</loc>
-    <lastmod>2025-12-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/greedy-approach-for-algorithm-design</loc>
-    <lastmod>2025-12-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/merge-sort</loc>
-    <lastmod>2025-09-02</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/ensambling-learning</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -878,63 +822,21 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/spectral-clustering</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/lstm-long-short-term-memory</loc>
-    <lastmod>2025-12-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/gaussian-mixture-model</loc>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/random-forest-id3-algorithm</loc>
     <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/time-series-arima-model-of-forecasting</loc>
-    <lastmod>2025-12-19</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/binary-search-recurrence-relation</loc>
+    <lastmod>2025-12-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/ica</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/convolutional-neural-network-cnn</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/markov-decision-process-mdp</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/nlp</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/xg-boost</loc>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/rectified-linear-unit-in-cnn</loc>
     <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -948,29 +850,36 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/rectified-linear-unit-in-cnn</loc>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/xg-boost</loc>
+    <lastmod>2026-02-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/merge-sort</loc>
+    <lastmod>2025-09-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/quick-sort</loc>
+    <lastmod>2025-12-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/convolutional-neural-network-cnn</loc>
     <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/random-forest-id3-algorithm</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/ensambling-learning</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/rest-api</loc>
-    <lastmod>2025-11-20</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/lstm-long-short-term-memory</loc>
+    <lastmod>2025-12-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -985,6 +894,20 @@
   <url>
     <loc>https://notehub-official.vercel.app/abhijeetsingh/placement/accenture-oa-round-2-coding-test</loc>
     <lastmod>2025-10-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/divyasachan/sql/triggers</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/divyasachan/sql/sql-quick-recap</loc>
+    <lastmod>2025-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1032,7 +955,84 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/divyasachan/sql/assignment-7</loc>
+    <loc>https://notehub-official.vercel.app/divyasachan/carrier-skill/data-sufficiency</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/greedy-approach-for-algorithm-design</loc>
+    <lastmod>2025-12-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/graph</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/all-pairs-shortest-path-floyd-s</loc>
+    <lastmod>2026-02-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/minimax-using-divide-and-conquer-approach</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/permutation-and-combination</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/binary-search-tree</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/gaussian-mixture-model</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/spectral-clustering</loc>
+    <lastmod>2026-01-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/markov-decision-process-mdp</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/nlp</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/rest-api</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1053,15 +1053,15 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/divyasachan/sql/sql-quick-recap</loc>
-    <lastmod>2025-10-31</lastmod>
+    <loc>https://notehub-official.vercel.app/divyasachan/sql/assignment-7</loc>
+    <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/divyasachan/sql/triggers</loc>
-    <lastmod>2025-10-30</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/time-series-arima-model-of-forecasting</loc>
+    <lastmod>2025-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1074,6 +1074,48 @@
   </url>
 
   <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/ica</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/tower-of-hanoi</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/fraction-knapsack</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/dynamic-programming-0-1-knapsack</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/mst-kruskal-s-prim-s-algorithm</loc>
+    <lastmod>2025-12-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/dijkstra-s-algorithm</loc>
+    <lastmod>2026-01-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://notehub-official.vercel.app/utsavraj/daa-pyq/daa-pyq</loc>
     <lastmod>2025-12-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -1081,57 +1123,8 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/naveen09/react/use-of-props</loc>
-    <lastmod>2026-02-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/naveen09/react/use-of-rel</loc>
-    <lastmod>2026-02-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/naveen09/react/practice-questions-of-usestate</loc>
-    <lastmod>2026-02-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/naveen09/react/deep-dive-in-hooks</loc>
-    <lastmod>2026-02-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/naveen09/react/usestate</loc>
-    <lastmod>2026-02-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/naveen09/react/concept-of-controlled-and-uncontrolled</loc>
-    <lastmod>2026-02-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/naveen09/react/day-3</loc>
-    <lastmod>2026-02-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://notehub-official.vercel.app/naveen09/react/day-2</loc>
-    <lastmod>2026-02-03</lastmod>
+    <loc>https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/optimal-binary-search-tree-obst</loc>
+    <lastmod>2025-12-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1139,6 +1132,13 @@
   <url>
     <loc>https://notehub-official.vercel.app/naveen09/react/day-1</loc>
     <lastmod>2025-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/naveen09/react/day-2</loc>
+    <lastmod>2026-02-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1165,8 +1165,8 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/vikashkumar/blog-by-vikash/how-to-work-browser-internal</loc>
-    <lastmod>2026-02-01</lastmod>
+    <loc>https://notehub-official.vercel.app/vikashkumar/blog-by-vikash/tcp-vs-udp</loc>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1179,8 +1179,8 @@
   </url>
 
   <url>
-    <loc>https://notehub-official.vercel.app/vikashkumar/blog-by-vikash/tcp-vs-udp</loc>
-    <lastmod>2026-01-30</lastmod>
+    <loc>https://notehub-official.vercel.app/vikashkumar/blog-by-vikash/how-to-work-browser-internal</loc>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1195,6 +1195,104 @@
   <url>
     <loc>https://notehub-official.vercel.app/shanti-0847a4/dsa/array</loc>
     <lastmod>2026-02-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/naveen09/react/day-3</loc>
+    <lastmod>2026-02-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/naveen09/react/concept-of-controlled-and-uncontrolled</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/naveen09/react/use-of-rel</loc>
+    <lastmod>2026-02-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/naveen09/react/usestate</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/naveen09/react/deep-dive-in-hooks</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/naveen09/react/practice-questions-of-usestate</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/naveen09/react/use-of-props</loc>
+    <lastmod>2026-02-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/vikashkumar/dsa-notes-by-vikash/understanding-strings-in-various-programming-language</loc>
+    <lastmod>2026-02-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/gyan-prakash/data-science-using-r/data-science</loc>
+    <lastmod>2026-02-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/gyan-prakash/data-science-using-r/data-visualization</loc>
+    <lastmod>2026-03-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/gyan-prakash/data-science-using-r/data-modelling</loc>
+    <lastmod>2026-02-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/vikashkumar/dsa-notes-by-vikash/pointers-and-reference-variable</loc>
+    <lastmod>2026-02-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/vikashkumar/w2c-car-xml-project/cecklist</loc>
+    <lastmod>2026-03-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://notehub-official.vercel.app/vikashkumar/w2c-car-xml-project/short-checklist</loc>
+    <lastmod>2026-03-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
