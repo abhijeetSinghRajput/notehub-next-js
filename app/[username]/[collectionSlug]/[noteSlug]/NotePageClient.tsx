@@ -36,7 +36,7 @@ const NotePageClient: FC<NotePageClientProps> = ({ initialNote, initialAuthor })
   const router = useRouter();
   const { authUser } = useAuthStore();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialNote);
   const [isPrivate, setIsPrivate] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
     null,
