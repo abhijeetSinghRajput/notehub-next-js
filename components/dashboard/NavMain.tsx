@@ -61,7 +61,7 @@ const NoteItem = ({ note }: NoteItemProps) => {
   const { setOpenMobile, isMobile } = useSidebar();
   const [isNoteRenaming, setIsNoteRenaming] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { selectedNote, setselectedNote, renameNote } = useNoteStore();
+  const { selectedNote, setSelectedNote, renameNote } = useNoteStore();
 
   useEffect(() => {
     if (isNoteRenaming && inputRef.current) {
@@ -98,7 +98,7 @@ const NoteItem = ({ note }: NoteItemProps) => {
       <SidebarMenuSubButton
         asChild
         className={cn("p-0 h-auto")}
-        onClick={() => !isNoteRenaming && setselectedNote(note._id)}
+        onClick={() => !isNoteRenaming && setSelectedNote(note._id)}
       >
         <div
           className={cn(
