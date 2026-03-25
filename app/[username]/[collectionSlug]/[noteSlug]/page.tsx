@@ -103,8 +103,9 @@ export default async function NotePage({ params }: Props) {
       next: { revalidate: 3600 },
     });
 
+
     if (!response.ok) {
-      return <NotePageClient />;
+      return <NotePageClient initialNote={null} initialAuthor={null} />;
     }
 
     const { note, author } = await response.json();
@@ -217,11 +218,11 @@ export default async function NotePage({ params }: Props) {
             __html: JSON.stringify([techArticleSchema, breadcrumbSchema]),
           }}
         />
-        <NotePageClient />
+        <NotePageClient initialNote={note} initialAuthor={author} />
       </>
     );
   } catch (error) {
     console.error("Error loading note page:", error);
-    return <NotePageClient />;
+    return <NotePageClient initialNote={null} initialAuthor={null} />;
   }
 }

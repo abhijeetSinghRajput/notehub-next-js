@@ -20,7 +20,14 @@ import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { useTocTracking } from "@/hooks/useTocTracking";
 
 // ─── Main component ────────────────────────────────────────────────────────────
-const NotePageClient = () => {
+import type { FC } from "react";
+
+interface NotePageClientProps {
+  initialNote: INote | null;
+  initialAuthor: IUser | null;
+}
+
+const NotePageClient: FC<NotePageClientProps> = ({ initialNote, initialAuthor }) => {
   const { username, collectionSlug, noteSlug } = useParams<{
     username: string;
     collectionSlug: string;
@@ -37,8 +44,8 @@ const NotePageClient = () => {
   const [noteImages, setNoteImages] = useState<{ src: string; alt: string }[]>(
     [],
   );
-  const [note, setNote] = useState<INote | null>(null);
-  const [author, setAuthor] = useState<IUser | null>(null);
+  const [note, setNote] = useState<INote | null>(initialNote ?? null);
+  const [author, setAuthor] = useState<IUser | null>(initialAuthor ?? null);
   const { getImages } = useImageStore();
 
   const [tocOpen, setTocOpen] = useState(false);

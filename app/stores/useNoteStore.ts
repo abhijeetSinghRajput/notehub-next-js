@@ -2,13 +2,15 @@ import { create, type StateCreator } from "zustand";
 import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
-
 import { INote, ICollection, IUser } from "@/types/model";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 type NoteStatusKey = "note" | "collection" | "noteContent" | "collaborator";
+type StatusState = "idle" | "loading" | "saving" | "creating" | "deleting" | "moving" | "error";
 
 type NoteStatus = {
-  state: string;
+  state: StatusState;
   error: string | null;
 };
 
@@ -20,226 +22,221 @@ export interface PaginationState {
   hasMore: boolean;
 }
 
-export interface NoteStore {
-  status: Record<NoteStatusKey, NoteStatus>;
-  setStatus: (key: NoteStatusKey, value: NoteStatus) => void;
+// Unified cache entry — TTL-aware
+interface CacheEntry<T> {
+  data: T;
+  fetchedAt: number; // Date.now()
+}
 
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+const isFresh = <T>(entry: CacheEntry<T> | undefined): boolean =>
+  !!entry && Date.now() - entry.fetchedAt < CACHE_TTL_MS;
+
+// ─── Store interface ──────────────────────────────────────────────────────────
+
+export interface NoteStore {
+  // Status
+  status: Record<NoteStatusKey, NoteStatus>;
+  setStatus: (key: NoteStatusKey, value: Partial<NoteStatus>) => void;
+
+  // Selection
   selectedNote: string | null;
   noteNotFound: boolean;
   setNoteNotFound: (value: boolean) => void;
+  setSelectedNote: (noteId: string | null) => void;
 
+  // Collections
   collections: ICollection[];
-  notesCache: Record<string, INote>;
-  notes: INote[];
 
+  // Notes (public feed)
+  notes: INote[];
   pagination: PaginationState;
   setNotes: (notes: INote[]) => void;
   setPagination: (pagination: PaginationState) => void;
-  getPublicNotes: (params: {
-    page: number;
-    limit: number;
-    user?: boolean;
-  }) => Promise<{
-    notes: INote[];
-    pagination: PaginationState;
-  } | null>;
 
-  getNoteContent: (noteId: string) => Promise<INote | null>;
+  // Unified caches
+  noteCache: Record<string, CacheEntry<INote>>;       // noteId → full note
+  collectionCache: Record<string, CacheEntry<ICollection[]>>; // userId → collections
+
+  // ── Reads ──
+  getPublicNotes: (params: { page: number; limit: number; user?: boolean }) => Promise<{ notes: INote[]; pagination: PaginationState } | null>;
+  getNoteContent: (noteId: string, force?: boolean) => Promise<INote | null>;
   getNoteName: (noteId: string) => string | null;
+  getAllCollections: (params: { userId: string; guest?: boolean; force?: boolean }) => Promise<ICollection[] | null>;
+
+  // ── Writes (all optimistic) ──
   updateContent: (data: { noteId: string; content: string }) => Promise<void>;
-  setselectedNote: (noteId: string | null) => void;
-
-  insertNoteInCollection: (collectionId: string, note: INote) => void;
-  deleteNoteFromCollection: (noteId: string) => void;
-  replaceNoteFromCollection: (note: INote) => void;
-
   createCollection: (data: Partial<ICollection>) => Promise<ICollection | null>;
   deleteCollection: (collectionId: string) => Promise<void>;
-  getAllCollections: (params: {
-    userId: string;
-    guest?: boolean;
-  }) => Promise<ICollection[] | null>;
   renameCollection: (data: { _id: string; newName: string }) => Promise<void>;
-  updateCollectionVisibility: (data: {
-    collectionId: string;
-    visibility: "public" | "private";
-  }) => Promise<void>;
-  updateCollectionCollaborators: (data: {
-    collectionId: string;
-    collaborators: IUser[];
-  }) => Promise<void>;
-
-  createNote: (
-    data: Partial<INote> & { collectionId: string },
-  ) => Promise<string | null>;
+  updateCollectionVisibility: (data: { collectionId: string; visibility: "public" | "private" }) => Promise<void>;
+  updateCollectionCollaborators: (data: { collectionId: string; collaborators: IUser[] }) => Promise<void>;
+  createNote: (data: Partial<INote> & { collectionId: string }) => Promise<string | null>;
   deleteNote: (noteId: string) => Promise<void>;
   renameNote: (data: { noteId: string; newName: string }) => Promise<void>;
   moveTo: (data: { noteId: string; collectionId: string }) => Promise<void>;
-  updateNoteCollaborators: (data: {
-    noteId: string;
-    collaborators: IUser[];
-  }) => Promise<void>;
-  updateNoteVisibility: (data: {
-    noteId: string;
-    visibility: "public" | "private";
-  }) => Promise<"public" | "private" | undefined>;
+  updateNoteCollaborators: (data: { noteId: string; collaborators: IUser[] }) => Promise<void>;
+  updateNoteVisibility: (data: { noteId: string; visibility: "public" | "private" }) => Promise<"public" | "private" | undefined>;
+
+  // ── Cache helpers ──
+  invalidateNoteCache: (noteId: string) => void;
+  invalidateCollectionCache: (userId: string) => void;
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 type ApiErrorResponse = { message?: string };
 
-const getApiErrorMessage = (error: unknown, fallback: string) => {
+const getApiErrorMessage = (error: unknown, fallback: string): string => {
   const err = error as AxiosError<ApiErrorResponse>;
   return err?.response?.data?.message || err?.message || fallback;
 };
 
+/** Apply a patch to every note in every collection (and the flat notes array) matching noteId */
+const patchNote = (
+  state: Pick<NoteStore, "collections" | "notes" | "noteCache">,
+  noteId: string,
+  patch: Partial<INote>,
+): Partial<NoteStore> => {
+  const patchedCollections = state.collections.map((col) => ({
+    ...col,
+    notes: col.notes?.map((n) =>
+      String(n._id) === noteId ? { ...n, ...patch } : n,
+    ),
+  }));
+
+  const patchedNotes = state.notes.map((n) =>
+    String(n._id) === noteId ? { ...n, ...patch } : n,
+  );
+
+  // Also patch the noteCache if present
+  const existing = state.noteCache[noteId];
+  const patchedNoteCache = existing
+    ? { ...state.noteCache, [noteId]: { data: { ...existing.data, ...patch }, fetchedAt: existing.fetchedAt } }
+    : state.noteCache;
+
+  return { collections: patchedCollections, notes: patchedNotes, noteCache: patchedNoteCache };
+};
+
+/** Apply a patch to a collection in the collections array */
+const patchCollection = (
+  collections: ICollection[],
+  collectionId: string,
+  patch: Partial<ICollection>,
+): ICollection[] =>
+  collections.map((c) =>
+    String(c._id) === collectionId ? { ...c, ...patch } : c,
+  );
+
+// ─── Store ────────────────────────────────────────────────────────────────────
+
 const createNoteStore: StateCreator<NoteStore> = (set, get) => {
+  // ── Status helper ──────────────────────────────────────────────────────────
   const setStatus: NoteStore["setStatus"] = (key, value) =>
-    set((state: NoteStore) => ({
-      status: { ...state.status, [key]: value },
+    set((s) => ({
+      status: {
+        ...s.status,
+        [key]: { ...s.status[key], ...value },
+      },
     }));
 
-  const updateCollectionInNotesArray = (
-    collectionId: string,
-    updatedCollection: Partial<ICollection>,
-  ) => {
-    set((state: NoteStore) => ({
-      notes: state.notes.map((note) =>
-        (note.collectionId as unknown as { _id?: string })?._id === collectionId
-          ? ({
-              ...note,
-              collectionId: {
-                ...(note.collectionId as unknown as ICollection),
-                ...updatedCollection,
-              },
-            } as unknown as INote)
-          : note,
-      ) as INote[],
-    }));
-  };
-
-  const updateNoteInNotesArray = (noteId: string, updates: Partial<INote>) => {
-    set((state: NoteStore) => {
-      const index = state.notes.findIndex(
-        (note) => String(note._id) === noteId,
-      );
-      if (index === -1) return state;
-
-      const newNotes = [...state.notes];
-      newNotes[index] = {
-        ...newNotes[index],
-        ...updates,
-      };
-      return { notes: newNotes };
-    });
+  // ── withStatus: wraps an async op with status bookkeeping ─────────────────
+  const withStatus = async <T>(
+    key: NoteStatusKey,
+    loadingState: StatusState,
+    fn: () => Promise<T>,
+  ): Promise<T> => {
+    setStatus(key, { state: loadingState, error: null });
+    try {
+      return await fn();
+    } catch (error) {
+      setStatus(key, { state: "error", error: getApiErrorMessage(error, "Something went wrong") });
+      throw error;
+    } finally {
+      setStatus(key, { state: "idle", error: null });
+    }
   };
 
   return {
+    // ── Initial state ────────────────────────────────────────────────────────
     status: {
-      note: { state: "idle", error: null },
-      collection: { state: "idle", error: null },
+      note:        { state: "idle", error: null },
+      collection:  { state: "idle", error: null },
       noteContent: { state: "idle", error: null },
-      collaborator: { state: "idle", error: null },
+      collaborator:{ state: "idle", error: null },
     },
     setStatus,
 
     selectedNote: null,
     noteNotFound: false,
-    setNoteNotFound: (value: boolean) => set({ noteNotFound: value }),
+    setNoteNotFound: (value) => set({ noteNotFound: value }),
+    setSelectedNote: (noteId) => set({ selectedNote: noteId }),
 
     collections: [],
-    notesCache: {},
     notes: [],
+    pagination: { currentPage: 1, totalPages: 0, totalNotes: 0, notesPerPage: 10, hasMore: false },
+    setNotes: (notes) => set({ notes }),
+    setPagination: (pagination) => set({ pagination }),
 
-    pagination: {
-      currentPage: 1,
-      totalPages: 0,
-      totalNotes: 0,
-      notesPerPage: 10,
-      hasMore: false,
-    },
+    noteCache: {},
+    collectionCache: {},
 
-    setNotes: (notes: INote[]) => set({ notes }),
-    setPagination: (pagination: PaginationState) => set({ pagination }),
+    invalidateNoteCache: (noteId) =>
+      set((s) => {
+        const { [noteId]: _, ...rest } = s.noteCache;
+        return { noteCache: rest };
+      }),
 
-    getPublicNotes: async ({
-      page,
-      limit,
-      user,
-    }: {
-      page: number;
-      limit: number;
-      user?: boolean;
-    }) => {
-      setStatus("note", { state: "loading", error: null });
-      try {
+    invalidateCollectionCache: (userId) =>
+      set((s) => {
+        const { [userId]: _, ...rest } = s.collectionCache;
+        return { collectionCache: rest };
+      }),
+
+    // ── Reads ────────────────────────────────────────────────────────────────
+
+    getPublicNotes: async ({ page, limit, user }) => {
+      return withStatus("note", "loading", async () => {
         const res = await axiosInstance.get("/note", {
-          params: {
-            page,
-            limit,
-            user: user ? "true" : undefined,
-          },
+          params: { page, limit, user: user ? "true" : undefined },
         });
-
-        const data = res.data as {
-          data: { notes: INote[]; pagination: PaginationState };
+        const { notes: newNotes, pagination } = (res.data as any).data as {
+          notes: INote[];
+          pagination: PaginationState;
         };
-        const newNotes = data.data.notes;
-        set({
-          notes: page === 1 ? newNotes : [...get().notes, ...newNotes],
-          pagination: data.data.pagination,
-        });
-
-        return {
-          notes: newNotes,
-          pagination: data.data.pagination,
-        };
-      } catch (error) {
-        console.error("Error fetching public notes", error);
-        setStatus("note", {
-          state: "error",
-          error: getApiErrorMessage(error, "Failed to load notes"),
-        });
-        return null;
-      } finally {
-        setStatus("note", { state: "idle", error: null });
-      }
+        set((s) => ({
+          notes: page === 1 ? newNotes : [...s.notes, ...newNotes],
+          pagination,
+        }));
+        return { notes: newNotes, pagination };
+      }).catch(() => null);
     },
 
-    getNoteContent: async (noteId: string) => {
-      const { notesCache } = get();
+    getNoteContent: async (noteId, force = false) => {
+      const { noteCache } = get();
+      const cached = noteCache[noteId];
 
-      if (noteId in notesCache) {
-        return notesCache[noteId];
-      }
+      // Return from cache if fresh and not forced
+      if (!force && isFresh(cached)) return cached.data;
 
-      setStatus("noteContent", { state: "loading", error: null });
-
-      try {
+      return withStatus("noteContent", "loading", async () => {
         const res = await axiosInstance.get(`note/${noteId}`);
         const note = res.data.note as INote;
-
-        set({
-          notesCache: {
-            ...notesCache,
-            [noteId]: note,
-          },
+        set((s) => ({
+          noteCache: { ...s.noteCache, [noteId]: { data: note, fetchedAt: Date.now() } },
           noteNotFound: false,
-        });
-
+        }));
         return note;
-      } catch (error) {
-        console.error("Error fetching note content", error);
+      }).catch(() => {
         set({ noteNotFound: true });
         return null;
-      } finally {
-        setStatus("noteContent", { state: "idle", error: null });
-      }
+      });
     },
 
-    getNoteName: (noteId: string) => {
-      const { collections } = get();
-      for (const collection of collections) {
-        const note = collection.notes?.find((n) => String(n._id) === noteId);
+    getNoteName: (noteId) => {
+      for (const col of get().collections) {
+        const note = col.notes?.find((n) => String(n._id) === noteId);
         if (note) {
           set({ noteNotFound: false });
           return note.name;
@@ -249,134 +246,32 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
       return null;
     },
 
-    updateContent: async (data: { noteId: string; content: string }) => {
-      setStatus("noteContent", { state: "saving", error: null });
-      try {
-        const res = await axiosInstance.put("/note/", data);
+    getAllCollections: async ({ userId, guest = false, force = false }) => {
+      const { collectionCache } = get();
+      const cached = collectionCache[userId];
 
-        const { note, message } = res.data as {
-          note: INote;
-          message?: string;
-        };
-        set((state: NoteStore) => ({
-          notesCache: {
-            ...state.notesCache,
-            [String(note._id)]: note,
-          },
-        }));
-
-        get().replaceNoteFromCollection(note);
-        updateNoteInNotesArray(String(note._id), {
-          content: note.content,
-          contentUpdatedAt: note.contentUpdatedAt,
-        });
-
-        toast.success(message || "Note updated");
-      } catch (error) {
-        console.error("Error updating content", error);
-        toast.error(getApiErrorMessage(error, "Failed to update content"));
-      } finally {
-        setStatus("noteContent", { state: "idle", error: null });
+      // Return from cache if fresh and not forced (only for non-guest)
+      if (!force && !guest && isFresh(cached)) {
+        set({ collections: cached.data });
+        return cached.data;
       }
-    },
 
-    setselectedNote: (noteId: string | null) => {
-      set({ selectedNote: noteId });
-    },
-
-    insertNoteInCollection: (collectionId: string, note: INote) => {
-      set((state: NoteStore) => ({
-        collections: state.collections.map((collection) =>
-          String(collection._id) === collectionId
-            ? { ...collection, notes: [...(collection.notes ?? []), note] }
-            : collection,
-        ),
-      }));
-    },
-
-    deleteNoteFromCollection: (noteId: string) => {
-      set((state: NoteStore) => ({
-        collections: state.collections.map((collection) => ({
-          ...collection,
-          notes: collection.notes?.filter(
-            (note) => String(note._id) !== noteId,
-          ),
-        })),
-      }));
-    },
-
-    replaceNoteFromCollection: (updatedNote: INote) => {
-      set((state: NoteStore) => ({
-        collections: state.collections.map((collection: ICollection) => ({
-          ...collection,
-          notes: collection.notes?.map((note) =>
-            String(note._id) === String(updatedNote._id) ? updatedNote : note,
-          ),
-        })),
-      }));
-    },
-
-    createCollection: async (data: Partial<ICollection>) => {
-      setStatus("collection", { state: "creating", error: null });
-      try {
-        const res = await axiosInstance.post("/collection", data);
-        const { collection, message } = res.data as {
-          collection: ICollection;
-          message?: string;
-        };
-        set((state: NoteStore) => ({
-          collections: [...state.collections, collection],
-        }));
-        toast.success(message || "Collection created");
-        return collection;
-      } catch (error) {
-        toast.error(getApiErrorMessage(error, "Failed to create collection"));
-        return null;
-      } finally {
-        setStatus("collection", { state: "idle", error: null });
-      }
-    },
-
-    deleteCollection: async (collectionId: string) => {
-      setStatus("collection", { state: "deleting", error: null });
-      try {
-        const res = await axiosInstance.delete(`/collection/${collectionId}`);
-        set((state: NoteStore) => ({
-          collections: state.collections.filter(
-            (collection) => String(collection._id) !== collectionId,
-          ),
-        }));
-        toast.success(res.data.message || "Collection deleted");
-      } catch (error) {
-        toast.error(getApiErrorMessage(error, "Failed to delete collection"));
-      } finally {
-        setStatus("collection", { state: "idle", error: null });
-      }
-    },
-
-    getAllCollections: async ({
-      userId,
-      guest = false,
-    }: {
-      userId: string;
-      guest?: boolean;
-    }) => {
       if (!guest) setStatus("collection", { state: "loading", error: null });
 
       try {
-        const res = await axiosInstance.get("collection/all-collections", {
-          params: { userId },
-        });
-        const { collections } = res.data as {
-          collections: ICollection[];
-        };
+        const res = await axiosInstance.get("collection/all-collections", { params: { userId } });
+        const { collections } = res.data as { collections: ICollection[] };
+
         if (!guest) {
-          set({ collections });
+          set((s) => ({
+            collections,
+            collectionCache: {
+              ...s.collectionCache,
+              [userId]: { data: collections, fetchedAt: Date.now() },
+            },
+          }));
           if (typeof window !== "undefined") {
-            localStorage.setItem(
-              "collectionLength",
-              JSON.stringify(collections.length),
-            );
+            localStorage.setItem("collectionLength", JSON.stringify(collections.length));
           }
         }
         return collections;
@@ -385,267 +280,224 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
         toast.error(getApiErrorMessage(error, "Failed to load collections"));
         return null;
       } finally {
-        setStatus("collection", { state: "idle", error: null });
+        if (!guest) setStatus("collection", { state: "idle", error: null });
       }
     },
 
-    renameCollection: async (data: { _id: string; newName: string }) => {
-      try {
-        const res = await axiosInstance.put("collection/", data);
-        const { collection, message } = res.data as {
-          collection: ICollection;
-          message?: string;
-        };
-        set((state: NoteStore) => ({
-          collections: state.collections.map((c: ICollection) =>
-            String(c._id) === String(collection._id)
-              ? {
-                  ...c,
-                  name: collection.name,
-                  updatedAt: collection.updatedAt,
-                }
-              : c,
-          ),
+    // ── Writes (Optimistic) ──────────────────────────────────────────────────
+
+    updateContent: async ({ noteId, content }) => {
+      // Optimistic
+      const prev = get().noteCache[noteId]?.data;
+      set((s) => ({ ...patchNote(s, noteId, { content }) }));
+
+      await withStatus("noteContent", "saving", async () => {
+        const res = await axiosInstance.put("/note/", { noteId, content });
+        const { note } = res.data as { note: INote; message?: string };
+        // Sync with server truth
+        set((s) => ({
+          ...patchNote(s, noteId, { content: note.content, contentUpdatedAt: note.contentUpdatedAt }),
+          noteCache: { ...s.noteCache, [noteId]: { data: note, fetchedAt: Date.now() } },
         }));
-        toast.success(message || "Collection renamed");
-      } catch (error) {
-        console.error(error);
-        toast.error(getApiErrorMessage(error, "Failed to rename collection"));
-      }
+        toast.success(res.data.message || "Note updated");
+      }).catch(() => {
+        // Rollback
+        if (prev) set((s) => ({ ...patchNote(s, noteId, { content: prev.content }) }));
+        toast.error("Failed to update content");
+      });
     },
 
-    createNote: async (data: Partial<INote> & { collectionId: string }) => {
-      setStatus("note", { state: "creating", error: null });
-      const { collectionId } = data;
-      try {
+    createCollection: async (data) => {
+      return withStatus("collection", "creating", async () => {
+        const res = await axiosInstance.post("/collection", data);
+        const { collection, message } = res.data as { collection: ICollection; message?: string };
+        set((s) => ({ collections: [...s.collections, collection] }));
+        toast.success(message || "Collection created");
+        return collection;
+      }).catch(() => {
+        toast.error("Failed to create collection");
+        return null;
+      });
+    },
+
+    deleteCollection: async (collectionId) => {
+      // Optimistic
+      const prevCollections = get().collections;
+      set((s) => ({ collections: s.collections.filter((c) => String(c._id) !== collectionId) }));
+
+      await withStatus("collection", "deleting", async () => {
+        const res = await axiosInstance.delete(`/collection/${collectionId}`);
+        toast.success(res.data.message || "Collection deleted");
+      }).catch(() => {
+        set({ collections: prevCollections }); // Rollback
+        toast.error("Failed to delete collection");
+      });
+    },
+
+    renameCollection: async ({ _id, newName }) => {
+      // Optimistic
+      const prevCollections = get().collections;
+      set((s) => ({ collections: patchCollection(s.collections, _id, { name: newName }) }));
+
+      await axiosInstance.put("collection/", { _id, newName })
+        .then((res) => {
+          const { collection } = res.data as { collection: ICollection };
+          // Sync exact server values (slug etc.)
+          set((s) => ({ collections: patchCollection(s.collections, _id, { name: collection.name, updatedAt: collection.updatedAt }) }));
+          toast.success(res.data.message || "Collection renamed");
+        })
+        .catch(() => {
+          set({ collections: prevCollections }); // Rollback
+          toast.error("Failed to rename collection");
+        });
+    },
+
+    updateCollectionVisibility: async ({ collectionId, visibility }) => {
+      // Optimistic
+      const prevCollections = get().collections;
+      set((s) => ({
+        collections: patchCollection(s.collections, collectionId, { visibility }),
+        notes: s.notes.map((n) =>
+          (n.collectionId as unknown as { _id?: string })?._id === collectionId
+            ? { ...n, collectionId: { ...(n.collectionId as any), visibility } }
+            : n,
+        ),
+      }));
+
+      await axiosInstance.put("collection/update-visibility", { visibility, collectionId })
+        .then((res) => {
+          const { collection } = res.data as { collection: ICollection };
+          set((s) => ({ collections: patchCollection(s.collections, collectionId, { visibility: collection.visibility, updatedAt: collection.updatedAt }) }));
+          toast.success(res.data.message || "Visibility updated");
+        })
+        .catch(() => {
+          set({ collections: prevCollections }); // Rollback
+          toast.error("Failed to update visibility");
+        });
+    },
+
+    updateCollectionCollaborators: async ({ collectionId, collaborators }) => {
+      await withStatus("collaborator", "saving", async () => {
+        const res = await axiosInstance.put("collection/update-collaborators", { collectionId, collaborators });
+        const { collection } = res.data as { collection: ICollection & { collaborators: IUser[] }; message?: string };
+        set((s) => ({ collections: patchCollection(s.collections, collectionId, { collaborators: collection.collaborators, updatedAt: collection.updatedAt }) }));
+        toast.success(res.data.message || "Collaborators updated");
+      }).catch(() => toast.error("Failed to update collaborators"));
+    },
+
+    createNote: async (data) => {
+      return withStatus("note", "creating", async () => {
         const res = await axiosInstance.post("note/", data);
         const { note, message } = res.data as { note: INote; message?: string };
-
-        get().insertNoteInCollection(String(collectionId), note);
-
+        set((s) => ({
+          collections: s.collections.map((col) =>
+            String(col._id) === data.collectionId
+              ? { ...col, notes: [...(col.notes ?? []), note] }
+              : col,
+          ),
+        }));
         toast.success(message || "Note created");
         return String(note._id);
-      } catch (error) {
-        console.error(error);
-        toast.error(getApiErrorMessage(error, "Failed to create note"));
+      }).catch(() => {
+        toast.error("Failed to create note");
         return null;
-      } finally {
-        setStatus("note", { state: "idle", error: null });
-      }
+      });
     },
 
-    deleteNote: async (noteId: string) => {
-      try {
-        const res = await axiosInstance.delete(`note/${noteId}`);
+    deleteNote: async (noteId) => {
+      // Optimistic
+      const prevState = { collections: get().collections, notes: get().notes };
+      set((s) => ({
+        collections: s.collections.map((col) => ({
+          ...col,
+          notes: col.notes?.filter((n) => String(n._id) !== noteId),
+        })),
+        notes: s.notes.filter((n) => String(n._id) !== noteId),
+      }));
 
-        get().deleteNoteFromCollection(noteId);
-        set((state: NoteStore) => ({
-          notes: state.notes.filter((note) => String(note._id) !== noteId),
-        }));
-
-        toast.success(res.data.message || "Note deleted");
-      } catch (error) {
-        console.error(error);
-        toast.error(getApiErrorMessage(error, "Failed to delete note"));
-      }
+      await axiosInstance.delete(`note/${noteId}`)
+        .then((res) => toast.success(res.data.message || "Note deleted"))
+        .catch(() => {
+          set(prevState); // Rollback
+          toast.error("Failed to delete note");
+        });
     },
 
-    renameNote: async (data: { noteId: string; newName: string }) => {
-      try {
-        const res = await axiosInstance.put("note/rename", data);
-        const { note, message } = res.data as { note: INote; message?: string };
+    renameNote: async ({ noteId, newName }) => {
+      // Optimistic
+      const prevState = { collections: get().collections, notes: get().notes };
+      set((s) => ({ ...patchNote(s, noteId, { name: newName }) }));
 
-        get().replaceNoteFromCollection(note);
-        updateNoteInNotesArray(String(note._id), {
-          slug: note.slug,
-          name: note.name,
-          updatedAt: note.updatedAt,
+      await axiosInstance.put("note/rename", { noteId, newName })
+        .then((res) => {
+          const { note } = res.data as { note: INote };
+          // Sync server values (slug may change on rename)
+          set((s) => ({ ...patchNote(s, noteId, { name: note.name, slug: note.slug, updatedAt: note.updatedAt }) }));
+          toast.success(res.data.message || "Note renamed");
+        })
+        .catch(() => {
+          set(prevState); // Rollback
+          toast.error("Failed to rename note");
         });
-
-        toast.success(message || "Note renamed");
-      } catch (error) {
-        console.error(error);
-        toast.error(getApiErrorMessage(error, "Failed to rename note"));
-      }
     },
 
-    moveTo: async (data: { noteId: string; collectionId: string }) => {
-      try {
-        setStatus("note", { state: "moving", error: null });
-        const res = await axiosInstance.post("/note/move-to", data);
-        const { collection, note, message } = res.data as {
-          collection: ICollection;
-          note: INote;
-          message?: string;
-        };
-        get().deleteNoteFromCollection(String(note._id));
-        get().insertNoteInCollection(String(collection._id), note);
+    moveTo: async ({ noteId, collectionId }) => {
+      // Optimistic: remove from old collection (we'll add after server confirms with correct data)
+      const prevCollections = get().collections;
+      set((s) => ({
+        collections: s.collections.map((col) => ({
+          ...col,
+          notes: col.notes?.filter((n) => String(n._id) !== noteId),
+        })),
+      }));
 
-        updateNoteInNotesArray(String(note._id), {
-          collectionId: collection as unknown as INote["collectionId"],
-          updatedAt: note.updatedAt,
-        });
-
-        toast.success(message || "Note moved");
-      } catch (error) {
-        console.error(error);
-        toast.error(getApiErrorMessage(error, "Failed to move note"));
-      } finally {
-        setStatus("note", { state: "idle", error: null });
-      }
-    },
-
-    updateCollectionVisibility: async ({
-      visibility,
-      collectionId,
-    }: {
-      visibility: "public" | "private";
-      collectionId: string;
-    }) => {
-      try {
-        const res = await axiosInstance.put("collection/update-visibility", {
-          visibility,
-          collectionId,
-        });
-        const { collection, message } = res.data as {
-          collection: ICollection;
-          message?: string;
-        };
-        updateCollectionInNotesArray(String(collection._id), {
-          visibility: collection.visibility,
-        });
-        set((state: NoteStore) => ({
-          collections: state.collections.map((c: ICollection) =>
-            String(c._id) === String(collection._id)
-              ? {
-                  ...c,
-                  visibility: collection.visibility,
-                  updatedAt: collection.updatedAt,
-                }
-              : c,
+      await withStatus("note", "moving", async () => {
+        const res = await axiosInstance.post("/note/move-to", { noteId, collectionId });
+        const { collection, note } = res.data as { collection: ICollection; note: INote };
+        set((s) => ({
+          collections: s.collections.map((col) =>
+            String(col._id) === String(collection._id)
+              ? { ...col, notes: [...(col.notes ?? []), note] }
+              : col,
           ),
+          ...patchNote(s, noteId, {
+            collectionId: collection as unknown as INote["collectionId"],
+            updatedAt: note.updatedAt,
+          }),
         }));
-        toast.success(message || "Visibility updated");
-      } catch (error) {
-        console.error(error);
-        toast.error(getApiErrorMessage(error, "Failed to update visibility"));
-      }
+        toast.success(res.data.message || "Note moved");
+      }).catch(() => {
+        set({ collections: prevCollections }); // Rollback
+        toast.error("Failed to move note");
+      });
     },
 
-    updateCollectionCollaborators: async ({
-      collectionId,
-      collaborators,
-    }: {
-      collectionId: string;
-      collaborators: IUser[];
-    }) => {
-      setStatus("collaborator", { state: "saving", error: null });
-      try {
-        const res = await axiosInstance.put("collection/update-collaborators", {
-          collectionId,
-          collaborators,
-        });
-        const { collection, message } = res.data as {
-          collection: ICollection & { collaborators: IUser[] };
-          message?: string;
-        };
-
-        set((state: NoteStore) => ({
-          collections: state.collections.map((c: ICollection) =>
-            String(c._id) === String(collection._id)
-              ? {
-                  ...c,
-                  collaborators: collection.collaborators,
-                  updatedAt: collection.updatedAt,
-                }
-              : c,
-          ),
-        }));
-
-        toast.success(message || "Collaborators updated");
-      } catch (error) {
-        console.error(error);
-        toast.error(
-          getApiErrorMessage(error, "Failed to update collaborators"),
-        );
-      } finally {
-        setStatus("collaborator", { state: "idle", error: null });
-      }
+    updateNoteCollaborators: async ({ noteId, collaborators }) => {
+      await withStatus("collaborator", "saving", async () => {
+        const res = await axiosInstance.put("note/update-collaborators", { noteId, collaborators });
+        const { note } = res.data as { note: INote };
+        set((s) => ({ ...patchNote(s, noteId, { collaborators: note.collaborators as any }) }));
+        toast.success(res.data.message || "Note collaborators updated");
+      }).catch(() => toast.error("Failed to update note collaborators"));
     },
 
-    updateNoteCollaborators: async ({
-      noteId,
-      collaborators,
-    }: {
-      noteId: string;
-      collaborators: IUser[];
-    }) => {
-      setStatus("collaborator", { state: "saving", error: null });
-      try {
-        const res = await axiosInstance.put("note/update-collaborators", {
-          noteId,
-          collaborators,
+    updateNoteVisibility: async ({ noteId, visibility }) => {
+      // Optimistic
+      const prevState = { collections: get().collections, notes: get().notes };
+      set((s) => ({ ...patchNote(s, noteId, { visibility }) }));
+
+      return axiosInstance.put("note/update-visibility", { noteId, visibility })
+        .then((res) => {
+          const { note } = res.data as { note: INote };
+          set((s) => ({ ...patchNote(s, noteId, { visibility: note.visibility, updatedAt: note.updatedAt }) }));
+          toast.success(res.data.message || "Note visibility updated");
+          return note.visibility;
+        })
+        .catch(() => {
+          set(prevState); // Rollback
+          toast.error("Failed to update note visibility");
+          return undefined;
         });
-        const { note: updatedNote, message } = res.data as {
-          note: INote;
-          message?: string;
-        };
-        get().replaceNoteFromCollection(updatedNote);
-
-        toast.success(message || "Note collaborators updated");
-      } catch (error) {
-        console.error(error);
-        toast.error(
-          getApiErrorMessage(error, "Failed to update note collaborators"),
-        );
-      } finally {
-        setStatus("collaborator", { state: "idle", error: null });
-      }
-    },
-
-    updateNoteVisibility: async ({
-      noteId,
-      visibility,
-    }: {
-      noteId: string;
-      visibility: "public" | "private";
-    }) => {
-      try {
-        const res = await axiosInstance.put("note/update-visibility", {
-          noteId,
-          visibility,
-        });
-        const { note: updatedNote, message } = res.data as {
-          note: INote;
-          message?: string;
-        };
-
-        set((state: NoteStore) => ({
-          collections: state.collections.map((collection: ICollection) => ({
-            ...collection,
-            notes: collection.notes?.map((note) =>
-              String(note._id) === String(updatedNote._id)
-                ? { ...note, visibility: updatedNote.visibility }
-                : note,
-            ),
-          })),
-        }));
-
-        updateNoteInNotesArray(String(updatedNote._id), {
-          visibility: updatedNote.visibility,
-          updatedAt: updatedNote.updatedAt,
-        });
-
-        toast.success(message || "Note visibility updated");
-
-        return updatedNote.visibility;
-      } catch (error) {
-        console.error(error);
-        toast.error(
-          getApiErrorMessage(error, "Failed to update note visibility"),
-        );
-        return undefined;
-      }
     },
   };
 };
