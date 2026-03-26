@@ -2,8 +2,8 @@
 import { Metadata } from "next";
 import NotePageClient from "./NotePageClient";
 import { getDefaultMetadata } from "@/lib/metadata";
+import { processNoteContent } from "@/lib/note/processNoteContent";
 
-// ✅ FIX: Add proper TypeScript types and await params
 type Props = {
   params: Promise<{
     username: string;
@@ -13,34 +13,28 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  // ✅ CRITICAL: Await params in Next.js 15+
   const { username, collectionSlug, noteSlug } = await params;
 
   try {
     const noteApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/note/${username}/${collectionSlug}/${noteSlug}`;
-
-    const response = await fetch(noteApiUrl, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    });
+    const response = await fetch(noteApiUrl, { next: { revalidate: 3600 } });
 
     if (!response.ok) {
       return getDefaultMetadata({
         title: `${noteSlug} by ${username}`,
         description: `View Notes on NoteHub`,
-        noIndex: true, // Private note
+        noIndex: true,
       });
     }
 
     const { note, author } = await response.json();
 
-    // Extract plain text from HTML
     const plainText = note.content
       .replace(/<[^>]*>/g, "")
       .replace(/\s+/g, " ")
       .trim()
       .slice(0, 160);
 
-    // ✅ BUILD OG IMAGE URL WITH QUERY PARAMS
     const ogImageParams = new URLSearchParams({
       title: note.name || "Untitled Note",
       collection: note.collection?.name || collectionSlug || "General",
@@ -60,14 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description: plainText,
         url: noteUrl,
         siteName: "NoteHub",
-        images: [
-          {
-            url: ogImageUrl,
-            width: 1200,
-            height: 630,
-            alt: note.name,
-          },
-        ],
+        images: [{ url: ogImageUrl, width: 1200, height: 630, alt: note.name }],
         type: "article",
         publishedTime: note.createdAt,
         modifiedTime: note.contentUpdatedAt,
@@ -80,29 +67,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: [ogImageUrl],
         creator: `@${author.userName}`,
       },
-      alternates: {
-        canonical: noteUrl,
-      },
+      alternates: { canonical: noteUrl },
     };
   } catch (error) {
     console.error("Error generating metadata:", error);
-    return {
-      title: "Note",
-      description: "View this note on NoteHub",
-    };
+    return { title: "Note", description: "View this note on NoteHub" };
   }
 }
 
-// ✅ Also await params in the page component
 export default async function NotePage({ params }: Props) {
   const { username, collectionSlug, noteSlug } = await params;
 
   try {
     const noteApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/note/${username}/${collectionSlug}/${noteSlug}`;
-    const response = await fetch(noteApiUrl, {
-      next: { revalidate: 3600 },
-    });
-
+    const response = await fetch(noteApiUrl, { next: { revalidate: 3600 } });
 
     if (!response.ok) {
       return <NotePageClient initialNote={null} initialAuthor={null} />;
@@ -110,19 +88,22 @@ export default async function NotePage({ params }: Props) {
 
     const { note, author } = await response.json();
 
+    // ✅ Process content server-side — hljs, KaTeX, and all injected buttons
+    // are baked into the HTML string before it ever reaches the browser.
+    // Cost: ~5-20ms, cached for 1 hour by Next.js (revalidate: 3600).
+    note.content = await processNoteContent(note.content);
+
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const profileUrl = `${baseUrl}/${username}`;
     const collectionUrl = `${baseUrl}/${username}/${collectionSlug}`;
     const noteUrl = `${baseUrl}/${username}/${collectionSlug}/${noteSlug}`;
 
-    // Strip HTML for description
     const plainText = note.content
       .replace(/<[^>]*>/g, "")
       .replace(/\s+/g, " ")
       .trim()
       .slice(0, 200);
 
-    // OG image reused as the schema image
     const ogImageParams = new URLSearchParams({
       title: note.name || "Untitled Note",
       collection: note.collectionId?.name || collectionSlug,
@@ -140,12 +121,7 @@ export default async function NotePage({ params }: Props) {
       url: noteUrl,
       datePublished: new Date(note.createdAt).toISOString(),
       dateModified: new Date(note.contentUpdatedAt || note.updatedAt).toISOString(),
-      image: {
-        "@type": "ImageObject",
-        url: ogImageUrl,
-        width: 1200,
-        height: 630,
-      },
+      image: { "@type": "ImageObject", url: ogImageUrl, width: 1200, height: 630 },
       author: {
         "@type": "Person",
         name: author.fullName,
@@ -157,23 +133,14 @@ export default async function NotePage({ params }: Props) {
         "@type": "Organization",
         name: "NoteHub",
         url: baseUrl,
-        logo: {
-          "@type": "ImageObject",
-          url: `${baseUrl}/icon.png`,
-          width: 512,
-          height: 512,
-        },
+        logo: { "@type": "ImageObject", url: `${baseUrl}/icon.png`, width: 512, height: 512 },
       },
       isPartOf: {
         "@type": "CollectionPage",
         name: note.collectionId?.name || collectionSlug,
         url: collectionUrl,
       },
-      mainEntityOfPage: {
-        "@type": "WebPage",
-        "@id": noteUrl,
-      },
-      // Signals this is educational/instructional content
+      mainEntityOfPage: { "@type": "WebPage", "@id": noteUrl },
       learningResourceType: "Note",
       educationalUse: "Self Study",
       inLanguage: "en",
@@ -183,30 +150,10 @@ export default async function NotePage({ params }: Props) {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Home",
-          item: baseUrl,
-        },
-        {
-          "@type": "ListItem",
-          position: 2,
-          name: author.fullName,
-          item: profileUrl,
-        },
-        {
-          "@type": "ListItem",
-          position: 3,
-          name: note.collectionId?.name || collectionSlug,
-          item: collectionUrl,
-        },
-        {
-          "@type": "ListItem",
-          position: 4,
-          name: note.name,
-          item: noteUrl,
-        },
+        { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
+        { "@type": "ListItem", position: 2, name: author.fullName, item: profileUrl },
+        { "@type": "ListItem", position: 3, name: note.collectionId?.name || collectionSlug, item: collectionUrl },
+        { "@type": "ListItem", position: 4, name: note.name, item: noteUrl },
       ],
     };
 
