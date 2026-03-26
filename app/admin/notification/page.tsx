@@ -335,7 +335,7 @@ export default function NotificationPage() {
                   <div
                     key={user._id}
                     onClick={() => toggleUser(user)}
-                    className={`flex min-h-[56px] cursor-pointer items-center gap-3 px-4 py-3 transition-colors ${
+                    className={`flex min-h-14 cursor-pointer items-center gap-3 px-4 py-3 transition-colors ${
                       i !== users.length - 1 ? "border-b" : ""
                     } ${isSelected ? "bg-primary/5" : "hover:bg-muted/40 active:bg-muted/60"}`}
                   >

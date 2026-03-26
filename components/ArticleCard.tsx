@@ -42,6 +42,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "./ui/accordion";
+import Image from "next/image";
 
 const TableOfContent = lazy(() => import("./table-of-content"));
 
@@ -147,15 +148,17 @@ const CardHeaderContent = memo<CardHeaderContentProps>(
         href={`/${author?.userName}`}
         className="flex flex-row items-center w-max gap-3"
       >
-        <Avatar className="w-10 h-10">
-          <AvatarImage
-            src={author?.avatar}
+        <div className="relative w-10 h-10 shrink-0 rounded-full overflow-hidden bg-muted">
+          <Image
+            src={author?.avatar || "/avatar.svg"}
             alt={author?.fullName || "User Profile Photo"}
+            fill
+            sizes="40px"
+            className="object-cover"
+            loading="lazy" // ✅ critical for 200+ images
+            fetchPriority="low"
           />
-          <AvatarFallback>
-            {(author?.fullName || "U").charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        </div>
         <div className="flex flex-col">
           <div className="font-semibold flex gap-2 items-center text-sm">
             <span>{author?.fullName}</span>
@@ -380,9 +383,9 @@ export const ArticleCard = memo<ArticleCardProps>(function ArticleCard({
               </Link>
             </CardTitle>
 
-            <TableOfContentsSection 
+            <TableOfContentsSection
               noteLink={`${process.env.NEXT_PUBLIC_BASE_URL}/${author?.userName}/${collection.slug}/${note.slug}`}
-              headings={note.tableOfContent} 
+              headings={note.tableOfContent}
             />
 
             <p className="text-muted-foreground text-sm line-clamp-3">

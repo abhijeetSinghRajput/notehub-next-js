@@ -1,13 +1,18 @@
+import Image from "next/image";
 import { IUser } from "@/types/model";
 import TooltipWrapper from "./TooltipWrapper";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { cn } from "@/lib/utils"; // Assuming you have a cn utility
-
+import { cn } from "@/lib/utils";
 
 type AvatarStackProps = {
   collaborators?: IUser[];
   maxVisible?: number;
   size?: "sm" | "md" | "lg";
+};
+
+const sizeConfig = {
+  sm: { px: 24,  avatar: "h-6 w-6",  text: "text-[10px]", margin: "-mr-1.5", border: "border" },
+  md: { px: 32,  avatar: "h-8 w-8",  text: "text-xs",     margin: "-mr-3",   border: "border-2" },
+  lg: { px: 40,  avatar: "h-10 w-10", text: "text-sm",    margin: "-mr-3",   border: "border-2" },
 };
 
 const AvatarStack = ({
@@ -19,58 +24,46 @@ const AvatarStack = ({
 
   const visibleAvatars = Math.min(collaborators.length, maxVisible);
   const hiddenCount = Math.max(collaborators.length - maxVisible, 0);
+  const current = sizeConfig[size] ?? sizeConfig.md;
+  const sizesAttr = `${current.px}px`;
 
-  // Size configuration
-  const sizeConfig = {
-    sm: {
-      avatar: "h-6 w-6",
-      text: "text-[10px]",
-      margin: "-mr-1.5",
-      border: "border",
-    },
-    md: {
-      avatar: "h-8 w-8",
-      text: "text-xs",
-      margin: "-mr-3",
-      border: "border-2",
-    },
-    lg: {
-      avatar: "h-10 w-10",
-      text: "text-sm",
-      margin: "-mr-3",
-      border: "border-2",
-    },
-  };
-
-  const currentSize = sizeConfig[size] || sizeConfig.md;
   return (
     <div className="flex flex-row-reverse">
+      {/* Overflow avatar (+N) */}
       {hiddenCount > 0 && (
         <TooltipWrapper
           message={`${hiddenCount} more collaborator${hiddenCount > 1 ? "s" : ""}`}
         >
-          <Avatar
+          <div
             className={cn(
-              "relative shadow-md",
-              currentSize.avatar,
-              currentSize.border,
-              currentSize.margin,
+              "relative shadow-md rounded-full overflow-hidden shrink-0",
+              current.avatar,
+              current.border,
+              current.margin,
               "border-background",
             )}
           >
-            <AvatarImage
-              src={collaborators[maxVisible]?.avatar}
+            <Image
+              src={collaborators[maxVisible]?.avatar || "/avatar.svg"}
               alt="Collaborator Profile Photo"
+              fill
+              sizes={sizesAttr}
+              className="object-cover"
+              loading="lazy"
+              fetchPriority="low"
+              unoptimized={!!collaborators[maxVisible]?.avatar} // Cloudinary already optimized
             />
-            <div className="absolute bg-black/50 inset-0 flex items-center justify-center rounded-full">
-              <span className={cn("text-white font-medium", currentSize.text)}>
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+              <span className={cn("text-white font-medium", current.text)}>
                 +{hiddenCount}
               </span>
             </div>
-          </Avatar>
+          </div>
         </TooltipWrapper>
       )}
 
+      {/* Visible collaborator avatars */}
       {collaborators
         .slice(0, visibleAvatars)
         .reverse()
@@ -79,23 +72,38 @@ const AvatarStack = ({
             key={collaborator._id ? String(collaborator._id) : index}
             message={`@${collaborator.userName ?? ""}`}
           >
-            <Avatar
+            <div
               className={cn(
-                "shadow-md",
-                currentSize.avatar,
-                currentSize.border,
-                currentSize.margin,
-                "border-background",
+                "relative shadow-md rounded-full overflow-hidden shrink-0",
+                current.avatar,
+                current.border,
+                current.margin,
+                "border-background bg-muted",
               )}
             >
-              <AvatarImage
-                src={collaborator.avatar}
-                alt={collaborator.fullName || "Collaborator Profile Photo"}
-              />
-              <AvatarFallback className={cn("bg-muted", currentSize.text)}>
-                {collaborator.fullName?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+              {collaborator.avatar ? (
+                <Image
+                  src={collaborator.avatar}
+                  alt={collaborator.fullName || "Collaborator Profile Photo"}
+                  fill
+                  sizes={sizesAttr}
+                  className="object-cover"
+                  loading="lazy"
+                  fetchPriority="low"
+                  unoptimized // Cloudinary already optimized
+                />
+              ) : (
+                // Fallback initials
+                <div
+                  className={cn(
+                    "flex size-full items-center justify-center bg-muted font-medium",
+                    current.text,
+                  )}
+                >
+                  {collaborator.fullName?.charAt(0).toUpperCase() ?? "U"}
+                </div>
+              )}
+            </div>
           </TooltipWrapper>
         ))}
     </div>

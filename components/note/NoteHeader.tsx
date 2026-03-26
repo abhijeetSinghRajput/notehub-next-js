@@ -9,6 +9,7 @@ import { Calendar, Clock, Globe, Lock, Pencil } from "lucide-react";
 import { format, formatDate, formatTimeAgo } from "@/lib/utils";
 import DateMeta from "./DateMeta";
 import type { INote } from "@/types/model";
+import Image from "next/image";
 
 export type NoteHeaderProps = {
   note: INote;
@@ -41,16 +42,16 @@ export default function NoteHeader({
           href={`/${author?.userName}`}
           className="flex flex-row items-center w-max gap-3"
         >
-          <Avatar className="size-12 bg-muted">
-            <AvatarImage
-              className="w-full h-full object-cover m-0!"
-              src={author?.avatar}
+          <div className="relative size-12 shrink-0 rounded-full overflow-hidden">
+            <Image
+              src={author.avatar || "/avatar.svg"}
               alt={author?.fullName || "Author"}
+              fill
+              sizes="48px"
+              className="object-cover"
+              priority
             />
-            <AvatarFallback>
-              {(author?.fullName || "U").charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          </div>
           <div className="flex flex-col">
             <div className="font-semibold flex gap-4  items-center text-sm">
               <div className="flex gap-2 items-center">

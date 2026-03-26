@@ -23,6 +23,7 @@ import { LabeledInput } from "@/components//labeled-input";
 
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 type UserPreview = {
   fullName: string;
@@ -167,17 +168,16 @@ const ForgotPasswordPage = () => {
             {/* User preview when identifier is valid */}
             {user && (
               <div className="flex gap-2 bg-accent/50 p-2 rounded-xl items-center">
-                <Avatar className="size-10">
-                  <AvatarImage
-                    src={user.avatar}
-                    alt={user.fullName || "User"}
+                <div className="relative size-10 shrink-0 rounded-full overflow-hidden">
+                  <Image
+                    src={user.avatar || "/avatar.svg"}
+                    alt={user?.fullName || "User"}
+                    fill
+                    sizes="40px"
                     className="object-cover"
-                    referrerPolicy="no-referrer"
+                    priority
                   />
-                  <AvatarFallback className="bg-muted text-xs font-medium">
-                    {user.fullName?.[0]?.toUpperCase() ?? "U"}
-                  </AvatarFallback>
-                </Avatar>
+                </div>
 
                 <div className="text-sm">
                   <div className="flex gap-1.5 items-center">

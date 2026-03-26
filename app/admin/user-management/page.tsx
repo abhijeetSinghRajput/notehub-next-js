@@ -36,6 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import BadgeIcon from "@/components/icons/BadgeIcon";
+import Image from "next/image";
 
 const PAGE_SIZE = 10;
 
@@ -122,12 +123,16 @@ export default function UserManagementPage() {
                   <TableRow key={user._id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar className="size-8">
-                          <AvatarImage src={user.avatar} alt={user.fullName} />
-                          <AvatarFallback>
-                            {user.fullName.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className="relative size-8 shrink-0 rounded-full overflow-hidden bg-muted">
+                          <Image
+                            src={user.avatar || "/avatar.svg"}
+                            alt={user.fullName || "User"}
+                            fill
+                            sizes="32px"
+                            className="object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
                         <p className="max-w-44 truncate font-medium">
                           {user.userName}
                         </p>

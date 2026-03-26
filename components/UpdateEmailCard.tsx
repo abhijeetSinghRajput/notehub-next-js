@@ -14,7 +14,6 @@ import { Loader2 } from "lucide-react";
 
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Label } from "./ui/label";
 import BadgeIcon from "./icons/BadgeIcon";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback";
@@ -123,23 +122,19 @@ const UpdateEmailCard = () => {
       <Label>Update Email Address</Label>
       <div className="space-y-4">
         <div className="flex gap-2 bg-accent/50 p-2 px-3 rounded-xl items-center">
-          <Avatar className="size-10">
-            <AvatarImage
-              className="w-full h-full object-cover rounded-full"
-              src={authUser.avatar}
-              alt={authUser.fullName}
+          <div className="relative size-10 shrink-0 rounded-full overflow-hidden">
+            <Image
+              src={authUser.avatar || "/avatar.svg"}
+              alt={authUser.fullName || "User avatar"}
+              fill
+              sizes="40px"
+              className="object-cover"
+              loading="lazy"
+              fetchPriority="low"
               referrerPolicy="no-referrer"
+              unoptimized={!!authUser.avatar} // Cloudinary already optimized
             />
-            <AvatarFallback className="bg-transparent">
-              <Image
-                src="/avatar.svg"
-                alt="Default avatar"
-                fill
-                className="object-cover"
-                priority
-              />
-            </AvatarFallback>
-          </Avatar>
+          </div>
           <div className="text-sm">
             <div className="flex items-center gap-1.5">
               <strong className="font-semibold">{authUser.fullName}</strong>

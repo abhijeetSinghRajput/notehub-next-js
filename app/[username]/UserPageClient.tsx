@@ -30,6 +30,7 @@ import AddNoteDialog from "@/components/AddNoteDialog";
 import SharePopoverWrapper from "@/components/ShareNotePopover.client";
 import ImageLightbox from "@/components/ImageLightbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Image from "next/image";
 
 const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   const { username } = useParams();
@@ -164,61 +165,40 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
           isLoading && "animate-pulse",
         )}
       >
-        <Avatar
+        <div
           className="relative rounded-none max-h-48 h-full w-full overflow-hidden cursor-pointer"
           style={{ aspectRatio: "3/1" }}
-          onClick={() => {
-            setSelectedImage(user?.cover || "/profile-cover.svg");
-          }}
+          onClick={() => setSelectedImage(user?.cover || "/profile-cover.svg")}
         >
-          <AvatarImage
-            src={user?.cover}
-            alt="User cover Photo"
-            loading="eager" // ⚠️ important for LCP
-            fetchPriority="high" // ⚠️ important for LCP
+          <Image
+            src={user?.cover || "/profile-cover.svg"}
+            alt="User cover photo"
+            fill
+            sizes="100vw" // ✅ cover spans full width
+            className="object-cover"
+            priority // ✅ LCP element
+            fetchPriority="high"
             decoding="async"
-            className="w-full h-full max-h-48 object-cover"
-            style={{ aspectRatio: "3 / 1" }}
           />
-          <AvatarFallback className="rounded-none brightness-[0.2]">
-            <img
-              src="/placeholder.svg"
-              alt="placeholder"
-              className="w-full h-full object-cover"
-              style={{ aspectRatio: "3/1" }}
-            />
-          </AvatarFallback>
-        </Avatar>
+        </div>
         <CardContent>
           <div className="flex flex-col sm:flex-row items-start sm:gap-8 gap-2 sm:items-center">
-            <Avatar
-              className="relative shadow-md w-28 h-28 sm:w-48 sm:h-48 shrink-0 border-4 sm:border-8 border-background -mt-14 rounded-full cursor-pointer"
-              onClick={() => {
-                setSelectedImage(user?.avatar || "/avatar.svg");
-              }}
+            <div
+              className="relative shadow-md w-28 h-28 sm:w-48 sm:h-48 shrink-0 border-4 sm:border-8 border-background -mt-14 rounded-full overflow-hidden cursor-pointer"
+              onClick={() => setSelectedImage(user?.avatar || "/avatar.svg")}
               role="button"
               aria-label="View profile photo"
             >
-              <AvatarImage
+              <Image
                 src={user?.avatar || "/avatar.svg"}
                 alt="User avatar"
+                fill
+                sizes="(max-width: 640px) 112px, 192px" // ✅ matches w-28 / sm:w-48
+                className="object-cover"
                 loading="lazy"
                 fetchPriority="low"
-                className="w-full h-full object-cover"
               />
-              <AvatarFallback
-                className="text-4xl flex items-center justify-center bg-muted dark:brightness-[0.2]"
-                aria-hidden="true"
-              >
-                <img
-                  src="/avatar.svg"
-                  alt="fallback avatar"
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                  decoding="async"
-                />
-              </AvatarFallback>
-            </Avatar>
+            </div>
 
             <div className="flex m-0 justify-between w-full items-start gap-2">
               <div>

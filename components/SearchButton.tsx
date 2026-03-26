@@ -42,6 +42,7 @@ import BadgeIcon from "./icons/BadgeIcon";
 import { useDebounceCallback } from "../hooks/useDebounceCallback";
 import { useRouter } from "next/navigation";
 import { INote, IUser, PopulatedNote } from "@/types/model";
+import Image from "next/image";
 
 interface PaginationState {
   currentPage: number;
@@ -423,17 +424,26 @@ export function SearchButton() {
                                 </div>
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                   <div className="flex items-center gap-1">
-                                    <Avatar className="size-4">
-                                      <AvatarImage
-                                        src={(note.userId as IUser)?.avatar}
-                                        alt="Author Profile Photo"
+                                    <div className="relative size-4 shrink-0 rounded-full overflow-hidden bg-muted">
+                                      <Image
+                                        src={
+                                          (note.userId as IUser)?.avatar ||
+                                          "/avatar.svg"
+                                        }
+                                        alt={
+                                          (note.userId as IUser)?.fullName ||
+                                          "Author Profile Photo"
+                                        }
+                                        fill
+                                        sizes="16px"
+                                        className="object-cover"
+                                        loading="lazy"
+                                        fetchPriority="low"
+                                        unoptimized={
+                                          !!(note.userId as IUser)?.avatar
+                                        } // ✅ Cloudinary already optimized
                                       />
-                                      <AvatarFallback>
-                                        {(
-                                          note.userId as IUser
-                                        )?.fullName?.charAt(0)}
-                                      </AvatarFallback>
-                                    </Avatar>
+                                    </div>
                                     <span>
                                       {(note.userId as IUser)?.fullName}
                                     </span>
@@ -495,17 +505,18 @@ export function SearchButton() {
                             }}
                             className="flex items-center gap-3 p-2 rounded-md hover:bg-accent cursor-pointer"
                           >
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage
-                                src={user.avatar}
+                            <div className="relative size-8 shrink-0 rounded-full overflow-hidden bg-muted">
+                              <Image
+                                src={user.avatar || "/avatar.svg"}
                                 alt={user.fullName || "User Profile Photo"}
+                                fill
+                                sizes="32px"
+                                className="object-cover"
+                                loading="lazy"
+                                fetchPriority="low"
+                                unoptimized={!!user.avatar}
                               />
-                              <AvatarFallback>
-                                {user.fullName?.charAt(0) || (
-                                  <User className="h-4 w-4" />
-                                )}
-                              </AvatarFallback>
-                            </Avatar>
+                            </div>
                             <div>
                               <p className="font-medium flex items-center gap-1.5">
                                 {user.fullName as string}

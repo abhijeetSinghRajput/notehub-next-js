@@ -21,6 +21,7 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import BadgeIcon from "../icons/BadgeIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const NavUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -38,9 +39,8 @@ const NavUser = () => {
     }
     router.replace("/");
   };
-  
 
-  if(!authUser) return null;
+  if (!authUser) return null;
 
   return (
     <SidebarMenu>
@@ -51,22 +51,18 @@ const NavUser = () => {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage
-                  src={authUser?.avatar}
+              <div className="relative size-8 shrink-0 rounded-lg overflow-hidden bg-muted">
+                <Image
+                  src={authUser?.avatar || "/avatar.svg"}
                   alt={authUser?.fullName || "User Profile Photo"}
+                  fill
+                  sizes="32px"
+                  className="object-cover"
+                  loading="lazy"
+                  fetchPriority="low"
+                  unoptimized={!!authUser?.avatar}
                 />
-                <AvatarFallback className="rounded-lg">
-                  {authUser?.fullName
-                    ? authUser.fullName
-                        .trim()
-                        .split(/\s+/)
-                        .map((w) => w[0]?.toUpperCase())
-                        .join("")
-                        .slice(0, 2)
-                    : "NH"}
-                </AvatarFallback>
-              </Avatar>
+              </div>
 
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <div className="flex gap-1.5 items-center">
