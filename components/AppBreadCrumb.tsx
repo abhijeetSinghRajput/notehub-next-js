@@ -150,6 +150,7 @@ export default function AppBreadcrumbs() {
             <BreadcrumbItem className={cn(idx === visible.length - 1 && "min-w-0")}>
               <Link
                 href={route.path}
+                aria-label={route.name}
                 className={cn(
                   "flex items-center gap-2 min-w-0",
                   idx === visible.length - 1 ? "text-foreground truncate" : "",
@@ -157,7 +158,7 @@ export default function AppBreadcrumbs() {
                 )}
               >
                 {route.path === "/" && (
-                  <LogoIcon/>
+                  <LogoIcon aria-hidden="true"/>
                 )}
                 <span
                   className={cn(

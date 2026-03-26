@@ -50,12 +50,17 @@ const DashboardHeader = () => {
 
           {!isMobile && (
             <TooltipWrapper message="Source Code">
-              <a href="https://github.com/abhijeetSinghRajput/notehub">
-                <Button size="sm" className="p-2" variant="ghost">
-                  <GithubIcon />
+              <Button asChild size="sm" className="p-2" variant="ghost">
+                <a
+                  href="https://github.com/abhijeetSinghRajput/notehub"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`View NoteHub GitHub repository with ${githubStarCount || 0} stars`}
+                >
+                  <GithubIcon aria-hidden="true" />
                   {githubStarCount || ""}
-                </Button>
-              </a>
+                </a>
+              </Button>
             </TooltipWrapper>
           )}
 
