@@ -1,5 +1,5 @@
-// app > [username] > collectionSlug > [noteSlug] > NotePageClient.tsx
 "use client";
+
 import { useEffect, useMemo, useCallback, useState } from "react";
 import Head from "next/head";
 import { useParams, useRouter } from "next/navigation";
@@ -18,8 +18,6 @@ import NoteLayout from "@/components/note/NoteLayout";
 import { useNoteContentProcessing } from "@/hooks/useNoteContentProcessing";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { useTocTracking } from "@/hooks/useTocTracking";
-
-// ─── Main component ────────────────────────────────────────────────────────────
 import type { FC } from "react";
 
 interface NotePageClientProps {
@@ -27,7 +25,10 @@ interface NotePageClientProps {
   initialAuthor: IUser | null;
 }
 
-const NotePageClient: FC<NotePageClientProps> = ({ initialNote, initialAuthor }) => {
+const NotePageClient: FC<NotePageClientProps> = ({
+  initialNote,
+  initialAuthor,
+}) => {
   const { username, collectionSlug, noteSlug } = useParams<{
     username: string;
     collectionSlug: string;
@@ -35,6 +36,7 @@ const NotePageClient: FC<NotePageClientProps> = ({ initialNote, initialAuthor })
   }>();
   const router = useRouter();
   const { authUser } = useAuthStore();
+  const { editorFontFamily, editorFontSizeIndex } = useEditorStore();
 
   const [isLoading, setIsLoading] = useState(!initialNote);
   const [isPrivate, setIsPrivate] = useState(false);
@@ -46,97 +48,128 @@ const NotePageClient: FC<NotePageClientProps> = ({ initialNote, initialAuthor })
   );
   const [note, setNote] = useState<INote | null>(initialNote ?? null);
   const [author, setAuthor] = useState<IUser | null>(initialAuthor ?? null);
-  const { getImages } = useImageStore();
-
   const [tocOpen, setTocOpen] = useState(false);
-  const { editorFontFamily, editorFontSizeIndex } = useEditorStore();
 
   const fontSize = FONT_SIZE[editorFontSizeIndex] ?? FONT_SIZE[1];
   const toc = note?.tableOfContent ?? [];
 
-  // ── Shared hooks ─────────────────────────────────────────────────────────────
   const progress = useScrollProgress();
   const activeId = useTocTracking(toc);
   useNoteContentProcessing(note?.content, setNoteImages, setSelectedImageIndex);
 
-  // ── Derived ──────────────────────────────────────────────────────────────────
   const isAuthor = useMemo(
-    () => !!authUser && !!note && String(authUser._id) === String(author?._id),
-    [authUser, note, author?._id],
+    () => !!authUser && !!author && String(authUser._id) === String(author._id),
+    [authUser, author],
   );
+
   const isAdmin = useMemo(() => authUser?.role === "admin", [authUser?.role]);
   const isOwner = useMemo(() => isAuthor || isAdmin, [isAuthor, isAdmin]);
 
-  // ── Callbacks ────────────────────────────────────────────────────────────────
   const handleTocItemClick = useCallback((itemId: string) => {
     const el = document.getElementById(itemId);
+
     if (el) {
       const y = el.getBoundingClientRect().top + window.scrollY - 88;
       document.documentElement.style.scrollBehavior = "auto";
-      window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
+      window.scrollTo({ top: y });
       document.documentElement.style.scrollBehavior = "";
     }
-    history.replaceState(null, "", `#${itemId}`);
+
+    window.history.replaceState(null, "", `#${itemId}`);
     setTocOpen(false);
   }, []);
 
   const handleNavigateToEditor = useCallback(() => {
-    if (note?._id) router.push(`/note/${String(note._id)}/editor`);
-    else toast.error("Note not loaded yet!");
+    if (note?._id) {
+      router.push(`/note/${String(note._id)}/editor`);
+      return;
+    }
+
+    toast.error("Note not loaded yet!");
   }, [note?._id, router]);
 
-  const handleCloseLightbox = useCallback(
-    () => setSelectedImageIndex(null),
-    [],
-  );
+  const handleCloseLightbox = useCallback(() => {
+    setSelectedImageIndex(null);
+  }, []);
 
-  const shareLink = useMemo(
-    () =>
-      `${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${noteSlug}`,
-    [username, collectionSlug, noteSlug],
-  );
+  const shareLink = useMemo(() => {
+    return `${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${noteSlug}`;
+  }, [username, collectionSlug, noteSlug]);
 
-  // ── Fetch ────────────────────────────────────────────────────────────────────
+
+  // Fetch only when SSR did not provide note data
   useEffect(() => {
-    let cancelled = false;
+    if (initialNote) {
+      setIsLoading(false);
+      setIsPrivate(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        setIsPrivate(false);
+
         const response = await axiosInstance.get(
           `/note/${username}/${collectionSlug}/${noteSlug}`,
+          {
+            signal: controller.signal,
+          },
         );
-        if (!cancelled) {
-          setNote(response.data.note);
-          setAuthor(response.data.author);
+
+        if (!isMounted || controller.signal.aborted) return;
+
+        setNote(response.data.note);
+        setAuthor(response.data.author);
+      } catch (error: any) {
+        if (
+          controller.signal.aborted ||
+          error?.code === "ERR_CANCELED" ||
+          error?.name === "CanceledError"
+        ) {
+          return;
         }
-      } catch (error) {
-        if (cancelled) return;
-        const err = error as { response?: { status?: number } };
-        if (err.response?.status === 403) setIsPrivate(true);
-        else {
+
+        if (!isMounted) return;
+
+        const status = error?.response?.status;
+
+        if (status === 403) {
+          setIsPrivate(true);
+          setNote(null);
+          setAuthor(null);
+        } else {
           console.error(error);
           toast.error("Failed to load note");
         }
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (isMounted && !controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
-    getImages();
-    fetchData();
-    return () => {
-      cancelled = true;
-    };
-  }, [username, collectionSlug, noteSlug, authUser, getImages]);
 
-  // ADD after fetch completes, inside useEffect or after setNote:
+    fetchData();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [username, collectionSlug, noteSlug, initialNote]);
+
+  // Scroll to hash after content is available/rendered
   useEffect(() => {
-    if (!note) return;
+    if (!note?.content) return;
+
     const hash = window.location.hash.slice(1);
     if (!hash) return;
 
-    // Wait for content to render
-    const id = requestAnimationFrame(() => {
+    const frameId = window.requestAnimationFrame(() => {
       const el = document.getElementById(hash);
+
       if (el) {
         const y = el.getBoundingClientRect().top + window.scrollY - 88;
         document.documentElement.style.scrollBehavior = "auto";
@@ -145,18 +178,20 @@ const NotePageClient: FC<NotePageClientProps> = ({ initialNote, initialAuthor })
       }
     });
 
-    return () => cancelAnimationFrame(id);
-  }, [note]);
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [note?.content]);
 
-  // ── Render guards ────────────────────────────────────────────────────────────
   if (isLoading) return <NoteSkeleton />;
   if (isPrivate) return <PrivateNote />;
-  if (!note?.content?.trim())
+
+  if (!note?.content?.trim()) {
     return (
       <EmptyNoteContent onEdit={isOwner ? handleNavigateToEditor : undefined} />
     );
+  }
 
-  // Structured data for Article
   const articleJsonLd =
     note && author
       ? {
@@ -176,7 +211,6 @@ const NotePageClient: FC<NotePageClientProps> = ({ initialNote, initialAuthor })
         }
       : null;
 
-  // Structured data for Breadcrumb
   const breadcrumbJsonLd =
     note && author
       ? {
@@ -214,6 +248,7 @@ const NotePageClient: FC<NotePageClientProps> = ({ initialNote, initialAuthor })
             dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
           />
         )}
+
         {breadcrumbJsonLd && (
           <script
             type="application/ld+json"
@@ -223,6 +258,7 @@ const NotePageClient: FC<NotePageClientProps> = ({ initialNote, initialAuthor })
           />
         )}
       </Head>
+
       <NoteLayout
         note={note}
         headerProps={{
