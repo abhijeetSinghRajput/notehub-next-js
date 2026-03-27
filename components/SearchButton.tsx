@@ -21,7 +21,6 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Separator } from "./ui/separator";
 import { axiosInstance } from "@/lib/axios";
@@ -65,15 +64,17 @@ interface NotesSearchResponse {
 
 interface UsersSearchResponse {
   users: IUser[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number; // Changed from totalUsers
-    itemsPerPage: number; // Changed from usersPerPage
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
+  pagination: PaginationState;
 }
+
+const DEFAULT_PAGINATION: PaginationState = {
+  currentPage: 1,
+  totalPages: 0,
+  totalItems: 0,
+  itemsPerPage: 10,
+  hasNextPage: false,
+  hasPreviousPage: false,
+};
 
 export function getFirstMatchSnippets(
   html: string,
@@ -83,30 +84,23 @@ export function getFirstMatchSnippets(
 ) {
   if (!html || !query) return [];
 
-  // Normalize block tags
   const normalizedHtml = html
     .replace(/<\/(p|div|h1|h2|h3|h4|h5|h6|li|tr|td|th|blockquote)>/gi, " ")
     .replace(/<br\s*\/?>/gi, " ");
 
-  // HTML → text once
   const div = document.createElement("div");
   div.innerHTML = normalizedHtml;
-  let text = stripLatex(div.textContent || "");
-
+  const text = stripLatex(div.textContent || "");
   const lowerText = text.toLowerCase();
   const keywords = removeStopwords(query.toLowerCase().split(/\s+/));
-
   const snippets = [];
 
   for (const word of keywords) {
     if (snippets.length >= limit) break;
-
     const index = lowerText.indexOf(word);
     if (index === -1) continue;
-
     const start = Math.max(0, index - radius);
     const end = Math.min(text.length, index + word.length + radius);
-
     snippets.push(
       <span key={word}>
         {start > 0 && "..."}
@@ -127,130 +121,150 @@ export function SearchButton() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [activeTab, setActiveTab] = React.useState<"notes" | "users">("notes");
   const [searchResults, setSearchResults] = React.useState<SearchResults>({
     notes: [],
     users: [],
   });
   const [pagination, setPagination] = React.useState({
-    notes: {
-      currentPage: 1,
-      totalPages: 0,
-      totalItems: 0,
-      itemsPerPage: 10,
-      hasNextPage: false,
-      hasPreviousPage: false,
-    },
-    users: {
-      currentPage: 1,
-      totalPages: 0,
-      totalItems: 0,
-      itemsPerPage: 10,
-      hasNextPage: false,
-      hasPreviousPage: false,
-    },
+    notes: DEFAULT_PAGINATION,
+    users: DEFAULT_PAGINATION,
   });
   const [isSearching, setIsSearching] = React.useState(false);
-  const { getAllUsers } = useAuthStore();
   const [isTyping, setIsTyping] = React.useState(false);
+
+  const { getAllUsers } = useAuthStore();
   const {
     searchHistory,
     addSearchHistory,
     removeSearchHistory,
     clearSearchHistory,
   } = useLocalStorage();
+
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  // Debounced search for both notes and users
-  const fetchSearchResults = useDebounceCallback(
-    async (query: string, notesPage = 1, usersPage = 1) => {
-      setIsTyping(false);
+  // One AbortController ref per tab
+  const notesAbortRef = React.useRef<AbortController | null>(null);
+  const usersAbortRef = React.useRef<AbortController | null>(null);
 
-      const trimmedQuery = query.trim();
+  const fetchNotes = React.useCallback(
+    async (query: string, page = 1) => {
+      notesAbortRef.current?.abort();
+      notesAbortRef.current = new AbortController();
 
-      // Reset state for empty query
-      if (!trimmedQuery) {
-        setSearchResults({ notes: [], users: [] });
-        setPagination({
-          notes: {
-            currentPage: 1,
-            totalPages: 0,
-            totalItems: 0,
-            itemsPerPage: 10,
-            hasNextPage: false,
-            hasPreviousPage: false,
-          },
-          users: {
-            currentPage: 1,
-            totalPages: 0,
-            totalItems: 0,
-            itemsPerPage: 10,
-            hasNextPage: false,
-            hasPreviousPage: false,
-          },
-        });
-        setIsSearching(false);
+      const trimmed = query.trim();
+      if (!trimmed) {
+        setSearchResults((s) => ({ ...s, notes: [] }));
+        setPagination((s) => ({ ...s, notes: DEFAULT_PAGINATION }));
         return;
       }
 
       try {
         setIsSearching(true);
-
-        const [notesResponse, usersResponse] = await Promise.all([
-          axiosInstance.get<NotesSearchResponse>(
-            `/note/search?q=${encodeURIComponent(trimmedQuery)}&page=${notesPage}&limit=10`,
-          ),
-          getAllUsers({
-            page: usersPage as number,
-            limit: 10,
-            filter: "all",
-            search: trimmedQuery,
-          }) as Promise<UsersSearchResponse>,
-        ]);
-
-        setSearchResults({
-          notes: notesResponse.data.notes || [],
-          users: usersResponse.users || [],
-        });
-
-        setPagination({
-          notes: notesResponse.data.pagination,
-          users: usersResponse.pagination,
-        });
-      } catch (err) {
-        console.error("Failed to search:", err);
-        setSearchResults({ notes: [], users: [] });
-        // Optionally show error toast here
+        const res = await axiosInstance.get<NotesSearchResponse>(
+          `/note/search?q=${encodeURIComponent(trimmed)}&page=${page}&limit=10`,
+          { signal: notesAbortRef.current.signal },
+        );
+        setSearchResults((s) => ({ ...s, notes: res.data.notes || [] }));
+        setPagination((s) => ({ ...s, notes: res.data.pagination }));
+      } catch (err: any) {
+        if (err?.code === "ERR_CANCELED") return;
+        console.error("Notes search failed:", err);
+        setSearchResults((s) => ({ ...s, notes: [] }));
       } finally {
         setIsSearching(false);
       }
     },
-    300,
+    [],
   );
 
-  // Handle search input changes (reset to page 1)
+  const fetchUsers = React.useCallback(
+    async (query: string, page = 1) => {
+      usersAbortRef.current?.abort();
+      usersAbortRef.current = new AbortController();
+
+      const trimmed = query.trim();
+      if (!trimmed) {
+        setSearchResults((s) => ({ ...s, users: [] }));
+        setPagination((s) => ({ ...s, users: DEFAULT_PAGINATION }));
+        return;
+      }
+
+      try {
+        setIsSearching(true);
+        const res = await getAllUsers({
+          page,
+          limit: 10,
+          filter: "all",
+          search: trimmed,
+        }) as UsersSearchResponse;
+        setSearchResults((s) => ({ ...s, users: res.users || [] }));
+        setPagination((s) => ({ ...s, users: res.pagination }));
+      } catch (err: any) {
+        if (err?.code === "ERR_CANCELED") return;
+        console.error("Users search failed:", err);
+        setSearchResults((s) => ({ ...s, users: [] }));
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [getAllUsers],
+  );
+
+  // Debounced versions
+  const debouncedFetchNotes = useDebounceCallback(fetchNotes, 300);
+  const debouncedFetchUsers = useDebounceCallback(fetchUsers, 300);
+
+  // Fire only the active tab's fetch on query change
   React.useEffect(() => {
-    fetchSearchResults(searchQuery, 1, 1);
-
+    setIsTyping(true);
+    if (activeTab === "notes") {
+      debouncedFetchNotes(searchQuery, 1);
+    } else {
+      debouncedFetchUsers(searchQuery, 1);
+    }
     return () => {
-      fetchSearchResults.cancel();
+      debouncedFetchNotes.cancel();
+      debouncedFetchUsers.cancel();
     };
-  }, [searchQuery, fetchSearchResults]);
+  }, [searchQuery, activeTab]);
 
-  // Handle pagination changes
-  const handleNotesPageChange = (page: number) => {
-    fetchSearchResults(searchQuery, page, pagination.users.currentPage);
-  };
+  // When tab switches, fetch if we don't have results yet for that tab
+  const handleTabChange = React.useCallback(
+    (tab: string) => {
+      const t = tab as "notes" | "users";
+      setActiveTab(t);
+      const hasResults =
+        t === "notes"
+          ? searchResults.notes.length > 0
+          : searchResults.users.length > 0;
 
-  const handleUsersPageChange = (page: number) => {
-    fetchSearchResults(searchQuery, pagination.notes.currentPage, page);
-  };
+      // Only fetch if query exists and we don't have results for this tab yet
+      if (searchQuery.trim() && !hasResults) {
+        if (t === "notes") debouncedFetchNotes(searchQuery, 1);
+        else debouncedFetchUsers(searchQuery, 1);
+      }
+    },
+    [searchQuery, searchResults, debouncedFetchNotes, debouncedFetchUsers],
+  );
+
+  const handleNotesPageChange = (page: number) => fetchNotes(searchQuery, page);
+  const handleUsersPageChange = (page: number) => fetchUsers(searchQuery, page);
+
+  // Cleanup abort controllers on unmount
+  React.useEffect(() => {
+    return () => {
+      notesAbortRef.current?.abort();
+      usersAbortRef.current?.abort();
+    };
+  }, []);
 
   // Keyboard shortcut
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen((o) => !o);
       }
     };
     document.addEventListener("keydown", down);
@@ -262,16 +276,17 @@ export function SearchButton() {
     [searchQuery],
   );
 
-  const memoizedNotes = React.useMemo(() => {
-    return searchResults.notes.map((note) => ({
-      ...note,
-      snippets: generateSnippet(note.content),
-    }));
-  }, [searchResults.notes, generateSnippet]);
+  const memoizedNotes = React.useMemo(
+    () =>
+      searchResults.notes.map((note) => ({
+        ...note,
+        snippets: generateSnippet(note.content),
+      })),
+    [searchResults.notes, generateSnippet],
+  );
 
   return (
     <>
-      {/* Square search button */}
       <Button
         tooltip="Ctrl + K"
         variant="ghost"
@@ -283,7 +298,6 @@ export function SearchButton() {
         <Search className="h-4 w-4" />
       </Button>
 
-      {/* Search Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           closeButtonClassName="hidden"
@@ -323,12 +337,8 @@ export function SearchButton() {
                   <div className="absolute left-0 w-1/2 h-full bg-primary/30 animate-slide" />
                   <style jsx>{`
                     @keyframes slide {
-                      0% {
-                        left: -50%;
-                      }
-                      100% {
-                        left: 100%;
-                      }
+                      0% { left: -50%; }
+                      100% { left: 100%; }
                     }
                     .animate-slide {
                       animation: slide 1.5s infinite linear;
@@ -339,7 +349,11 @@ export function SearchButton() {
             </div>
           </DialogHeader>
 
-          <Tabs defaultValue="notes" className="gap-0">
+          <Tabs
+            defaultValue="notes"
+            className="gap-0"
+            onValueChange={handleTabChange}
+          >
             <TabsList className="h-auto! grid grid-cols-2 w-full">
               <TabsTrigger
                 value="notes"
@@ -347,9 +361,7 @@ export function SearchButton() {
               >
                 Notes
                 {pagination.notes.totalItems > 0 && (
-                  <Badge className={"px-1.5"}>
-                    {pagination.notes.totalItems}
-                  </Badge>
+                  <Badge className="px-1.5">{pagination.notes.totalItems}</Badge>
                 )}
               </TabsTrigger>
               <TabsTrigger
@@ -358,9 +370,7 @@ export function SearchButton() {
               >
                 Users
                 {pagination.users.totalItems > 0 && (
-                  <Badge className={"px-1.5"}>
-                    {pagination.users.totalItems}
-                  </Badge>
+                  <Badge className="px-1.5">{pagination.users.totalItems}</Badge>
                 )}
               </TabsTrigger>
             </TabsList>
@@ -392,7 +402,7 @@ export function SearchButton() {
                         {memoizedNotes.map((note, index) => (
                           <div
                             key={note._id || index}
-                            className="flex border-b border-primary/20 hover:bg-primary/10 items-start gap-3 p-2 px-4  group cursor-pointer"
+                            className="flex border-b border-primary/20 hover:bg-primary/10 items-start gap-3 p-2 px-4 group cursor-pointer"
                             onClick={() => {
                               router.push(
                                 `/${(note.userId as IUser)?.userName}/${(note.collectionId as any)?.slug}/${note.slug}`,
@@ -401,7 +411,6 @@ export function SearchButton() {
                             }}
                           >
                             <div className="flex-1 space-y-3">
-                              {/* note name and description */}
                               <div className="w-full min-w-0">
                                 <p className="line-clamp-1 font-medium text-lg">
                                   {note.name}
@@ -410,8 +419,6 @@ export function SearchButton() {
                                   {note.snippets}
                                 </p>
                               </div>
-
-                              {/* meta data collection and author  */}
                               <div className="space-y-1">
                                 <div className="flex gap-1 items-center">
                                   <Folder
@@ -426,27 +433,17 @@ export function SearchButton() {
                                   <div className="flex items-center gap-1">
                                     <div className="relative size-4 shrink-0 rounded-full overflow-hidden bg-muted">
                                       <Image
-                                        src={
-                                          (note.userId as IUser)?.avatar ||
-                                          "/avatar.svg"
-                                        }
-                                        alt={
-                                          (note.userId as IUser)?.fullName ||
-                                          "Author Profile Photo"
-                                        }
+                                        src={(note.userId as IUser)?.avatar || "/avatar.svg"}
+                                        alt={(note.userId as IUser)?.fullName || "Author Profile Photo"}
                                         fill
                                         sizes="16px"
                                         className="object-cover"
                                         loading="lazy"
                                         fetchPriority="low"
-                                        unoptimized={
-                                          !!(note.userId as IUser)?.avatar
-                                        } // ✅ Cloudinary already optimized
+                                        unoptimized={!!(note.userId as IUser)?.avatar}
                                       />
                                     </div>
-                                    <span>
-                                      {(note.userId as IUser)?.fullName}
-                                    </span>
+                                    <span>{(note.userId as IUser)?.fullName}</span>
                                   </div>
                                 </div>
                               </div>
@@ -455,8 +452,6 @@ export function SearchButton() {
                         ))}
                       </div>
                     </div>
-
-                    {/* Notes Pagination */}
                     {pagination.notes.totalPages > 1 && (
                       <div className="border-t p-4 sticky bottom-0 bg-muted">
                         <CustomPagination
@@ -532,8 +527,6 @@ export function SearchButton() {
                         ))}
                       </div>
                     </div>
-
-                    {/* Users Pagination */}
                     {pagination.users.totalPages > 1 && (
                       <div className="border-t p-4 sticky bottom-0 bg-muted">
                         <CustomPagination
@@ -546,7 +539,6 @@ export function SearchButton() {
                   </>
                 )}
 
-                {/* Search History */}
                 {searchHistory.length > 0 && (
                   <>
                     <Separator />
@@ -576,20 +568,19 @@ export function SearchButton() {
                               router.push(`/${user.userName}`);
                               setOpen(false);
                             }}
-                            className="flex items-center gap-3 p-2 rounded-md  cursor-pointer group"
+                            className="flex items-center gap-3 p-2 rounded-md cursor-pointer group"
                           >
                             <div className="relative">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage
-                                  src={user.avatar as string}
-                                  alt={"Users Profile Photo"}
+                              <div className="relative size-10 shrink-0 rounded-full overflow-hidden">
+                                <Image
+                                  src={(user.avatar as string) || "/avatar.svg"}
+                                  alt="Users Profile Photo"
+                                  fill
+                                  sizes="40px"
+                                  className="object-cover"
+                                  priority
                                 />
-                                <AvatarFallback>
-                                  {(user.fullName as string)?.charAt(0) || (
-                                    <User className="h-4 w-4" />
-                                  )}
-                                </AvatarFallback>
-                              </Avatar>
+                              </div>
                               <Clock className="absolute -bottom-1 -right-1 h-4 w-4 text-muted-foreground bg-muted rounded-full p-0.5" />
                             </div>
                             <div className="flex-1">
@@ -627,7 +618,6 @@ export function SearchButton() {
   );
 }
 
-// Custom Pagination Component
 function CustomPagination({
   currentPage,
   totalPages,
@@ -642,39 +632,17 @@ function CustomPagination({
     const showEllipsis = totalPages > 7;
 
     if (!showEllipsis) {
-      // Show all pages if 7 or fewer
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      // Always show first page
       pages.push(1);
-
       if (currentPage <= 3) {
-        // Near the start
         pages.push(2, 3, 4, "ellipsis", totalPages);
       } else if (currentPage >= totalPages - 2) {
-        // Near the end
-        pages.push(
-          "ellipsis",
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages,
-        );
+        pages.push("ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
       } else {
-        // In the middle
-        pages.push(
-          "ellipsis",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "ellipsis",
-          totalPages,
-        );
+        pages.push("ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages);
       }
     }
-
     return pages;
   };
 
@@ -684,14 +652,9 @@ function CustomPagination({
         <PaginationItem>
           <PaginationPrevious
             onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-            className={
-              currentPage === 1
-                ? "pointer-events-none opacity-50"
-                : "cursor-pointer"
-            }
+            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
           />
         </PaginationItem>
-
         {getPageNumbers().map((page, index) => (
           <PaginationItem key={index}>
             {page === "ellipsis" ? (
@@ -707,17 +670,10 @@ function CustomPagination({
             )}
           </PaginationItem>
         ))}
-
         <PaginationItem>
           <PaginationNext
-            onClick={() =>
-              currentPage < totalPages && onPageChange(currentPage + 1)
-            }
-            className={
-              currentPage === totalPages
-                ? "pointer-events-none opacity-50"
-                : "cursor-pointer"
-            }
+            onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
           />
         </PaginationItem>
       </PaginationContent>
@@ -725,26 +681,16 @@ function CustomPagination({
   );
 }
 
-export function Searching({
-  searchQuery = "",
-  type = "users",
-}: {
-  searchQuery?: string;
-  type?: string;
-}) {
+export function Searching({ searchQuery = "", type = "users" }: { searchQuery?: string; type?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-4 gap-6 animate-pulse">
       <div className="bg-primary/20 rounded-full p-5">
         <Search className="h-10 w-10 stroke-1.5 text-muted-foreground/80" />
       </div>
-
       <div className="text-center space-y-1 max-w-md px-4">
-        <h3 className="text-xl font-medium tracking-tight">
-          {`Searching for ${type}`}
-        </h3>
+        <h3 className="text-xl font-medium tracking-tight">{`Searching for ${type}`}</h3>
         <p className="text-muted-foreground">{searchQuery}</p>
       </div>
-
       <div className="text-sm text-muted-foreground/60">
         <p>Try different keywords or check spelling</p>
       </div>
@@ -752,19 +698,12 @@ export function Searching({
   );
 }
 
-export function NotFound({
-  searchQuery = "",
-  type = "users",
-}: {
-  searchQuery?: string;
-  type?: string;
-}) {
+export function NotFound({ searchQuery = "", type = "users" }: { searchQuery?: string; type?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-4 gap-6">
       <div className="bg-primary/20 rounded-full p-5 animate-pulse">
         <Ghost className="h-10 w-10 stroke-1.5 text-muted-foreground/80" />
       </div>
-
       <div className="text-center space-y-1 max-w-md px-4">
         <h3 className="text-xl font-medium tracking-tight">
           {searchQuery ? "No results found" : `Search for ${type}`}
@@ -777,7 +716,6 @@ export function NotFound({
               : "Type a name, username, or email to discover people"}
         </p>
       </div>
-
       <div className="text-sm text-muted-foreground/60">
         <p>Try different keywords or check spelling</p>
       </div>

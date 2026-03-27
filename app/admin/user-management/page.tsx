@@ -186,12 +186,16 @@ export default function UserManagementPage() {
               >
                 {/* Avatar with optional admin badge */}
                 <div className="relative shrink-0">
-                  <Avatar className="size-11">
-                    <AvatarImage src={user.avatar} alt={user.fullName} />
-                    <AvatarFallback className="text-sm font-semibold">
-                      {user.fullName.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative size-11 shrink-0 rounded-full overflow-hidden">
+                    <Image
+                      src={user.avatar || "/avatar.svg"}
+                      alt={user?.fullName || "User"}
+                      fill
+                      sizes="44px"
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
                   {user.role === "admin" && (
                     <span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-background">
                       <BadgeIcon className="size-4 text-blue-500" />

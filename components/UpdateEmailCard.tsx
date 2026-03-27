@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LabeledInput } from "@/components//labeled-input";
 
@@ -42,11 +42,19 @@ const UpdateEmailCard = () => {
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
-  // ✅ Stable callback reference
+  const abortRef = useRef<AbortController | null>(null);
+
   const checkAvailability = useCallback(async (email: string) => {
+    // Abort previous in-flight request
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+
     setCheckingEmail(true);
     try {
-      const available = await isEmailAvailable(email);
+      const available = await isEmailAvailable(email, abortRef.current.signal);
+
+      if (available === null) return; // Was aborted — ignore, don't update state
+
       setEmailStatus(available ? "available" : "taken");
       setEmailError(available ? "" : "Email already in use");
     } catch {
@@ -54,6 +62,11 @@ const UpdateEmailCard = () => {
     } finally {
       setCheckingEmail(false);
     }
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => abortRef.current?.abort();
   }, []); // Empty deps - no external dependencies
 
   const debouncedCheckAvailability = useDebounceCallback(

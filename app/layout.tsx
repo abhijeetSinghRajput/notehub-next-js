@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-import { Merriweather, Roboto, Lora } from "next/font/google";
+import { Roboto } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
 
-import "katex/dist/katex.min.css";
-import "@/styles/katex-overrides.css";
 import "@/styles/theme.css";
 import "@/styles/tiptap.css";
 import "@/styles/hljs.css";
-
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeShortcut } from "@/components/theme-shortcut";
@@ -23,22 +20,14 @@ import { Toaster } from "sonner";
 import { NavigationLoader } from "@/components/NavigationLoader";
 import React from "react";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.trim() || "http://localhost:3000";
+const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL?.trim() || "http://localhost:3000";
 
-const merriweather = Merriweather({
-  subsets: ["latin"],
-  weight: ["300", "400", "700"],
-  variable: "--font-merriweather",
-});
 const roboto = Roboto({
   subsets: ["latin"],
   weight: ["100", "400", "700"],
   variable: "--font-roboto",
-});
-const lora = Lora({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-lora",
+  display: "swap",
 });
 
 const organizationSchema = {
@@ -52,7 +41,12 @@ const organizationSchema = {
     width: 512,
     height: 512,
   },
-  sameAs: [],  // Add your Twitter/GitHub/LinkedIn URLs here
+  sameAs: [
+    "https://github.com/abhijeetSinghRajput",
+    "https://www.linkedin.com/in/abhijeet-singh-rajput1/",
+    "https://www.youtube.com/@mrcodium",
+    "https://x.com/abhijeet62008",
+  ],
   description:
     "NoteHub — a collaborative platform for capturing, organizing, and sharing notes. Built for students and developers.",
 };
@@ -136,14 +130,16 @@ export default function RootLayout({
             __html: JSON.stringify([organizationSchema, websiteSchema]),
           }}
         />
-        <link rel="preconnect" href="https://notehub-38kp.onrender.com" crossOrigin="" />
+        <link
+          rel="preconnect"
+          href="https://notehub-38kp.onrender.com"
+          crossOrigin=""
+        />
         <link rel="dns-prefetch" href="https://notehub-38kp.onrender.com" />
       </head>
       <body
         className={`
-          ${merriweather.variable} 
           ${roboto.variable} 
-          ${lora.variable} 
           antialiased
         `}
       >

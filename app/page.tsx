@@ -1,13 +1,14 @@
 import HomePageClient from "./HomePageClient";
 import { Metadata } from "next";
+import { cache } from "react";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "");
 
-async function getInitialNotes() {
+const getInitialNotes = cache(async () => {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
   try {
     const res = await fetch(`${apiBaseUrl}/note?server=true&page=1&limit=10`, {
-      cache: "no-store", // or revalidate
+      next: { revalidate: 60 }, // cache for 60s instead of no-store
     });
     const json = await res.json();
     return json?.data ?? null;
@@ -15,7 +16,7 @@ async function getInitialNotes() {
     console.error("Failed to fetch notes", e);
     return null;
   }
-}
+});
 
 // Generate dynamic metadata
 export async function generateMetadata(): Promise<Metadata> {
@@ -90,7 +91,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const data = await getInitialNotes();
-  console.log("server fetched public notes: ", data);
   const notes = data?.notes ?? [];
 
   const webPageSchema = {

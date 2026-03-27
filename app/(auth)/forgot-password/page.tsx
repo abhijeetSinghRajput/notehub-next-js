@@ -79,33 +79,60 @@ const ForgotPasswordPage = () => {
 
   // Debounced identifier lookup
   useEffect(() => {
+    if (!identifier) {
+      setIdentifierError("");
+      setIsValidIdentifier(false);
+      setUser(null);
+      setIsCheckingIdentifier(false);
+      return;
+    }
+
+    if (!validateIdentifierFormat(identifier)) {
+      setIdentifierError("Please enter a valid username or email address");
+      setIsValidIdentifier(false);
+      setUser(null);
+      setIsCheckingIdentifier(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
     const timer = setTimeout(async () => {
-      if (identifier && validateIdentifierFormat(identifier)) {
-        setIsCheckingIdentifier(true);
-        try {
-          const userData = await getUser(identifier);
+      setIsCheckingIdentifier(true);
+
+      try {
+        const userData = await getUser(identifier, controller.signal);
+
+        if (!controller.signal.aborted) {
           setUser(userData);
           setIdentifierError("");
           setIsValidIdentifier(true);
-        } catch (error) {
+        }
+      } catch (error) {
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          "code" in error &&
+          (error as any).code === "ERR_CANCELED"
+        )
+          return;
+
+        if (!controller.signal.aborted) {
           setUser(null);
           setIdentifierError("No account found with this username/email");
           setIsValidIdentifier(false);
-        } finally {
+        }
+      } finally {
+        if (!controller.signal.aborted) {
           setIsCheckingIdentifier(false);
         }
-      } else if (identifier) {
-        setIdentifierError("Please enter a valid username or email address");
-        setIsValidIdentifier(false);
-        setUser(null);
-      } else {
-        setIdentifierError("");
-        setIsValidIdentifier(false);
-        setUser(null);
       }
     }, 500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [identifier, getUser]);
 
   // Cooldown timer
@@ -198,7 +225,7 @@ const ForgotPasswordPage = () => {
               type="text"
               placeholder="Enter username or email"
               value={identifier}
-              onChange={(e) => setIdentifier(e.target.value.trim())}
+              onChange={(e) => setIdentifier(e.target.value)}
               disabled={isSendingOtp || isResettingPassword}
               loading={isCheckingIdentifier}
               error={identifierError}

@@ -25,8 +25,6 @@ import {
 import { Placeholder } from "@tiptap/extensions";
 import { SlashCommand } from "@/components/SlashCommand";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { createLowlight } from "lowlight";
-import { all } from "lowlight";
 import CodeBlockComponent from "@/components/CodeBlockComponent";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { Extension, findChildren } from "@tiptap/core";
@@ -37,6 +35,23 @@ import Link from "@tiptap/extension-link";
 import MathExtension from "@tiptap/extension-mathematics";
 
 import { ResizableImageExtension } from "../ResizableImageExtension";
+
+import { createLowlight } from "lowlight";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import python from "highlight.js/lib/languages/python";
+import cpp from "highlight.js/lib/languages/cpp";
+import c from "highlight.js/lib/languages/c";
+import java from "highlight.js/lib/languages/java";
+import css from "highlight.js/lib/languages/css";
+import html from "highlight.js/lib/languages/xml";        // html uses xml parser
+import json from "highlight.js/lib/languages/json";
+import bash from "highlight.js/lib/languages/bash";
+import sql from "highlight.js/lib/languages/sql";
+import markdown from "highlight.js/lib/languages/markdown";
+import rust from "highlight.js/lib/languages/rust";
+import go from "highlight.js/lib/languages/go";
+import plaintext from "highlight.js/lib/languages/plaintext";
 
 
 declare module "@tiptap/core" {
@@ -52,7 +67,29 @@ declare module "@tiptap/core" {
   }
 }
 
-const lowlight = createLowlight(all);
+const lowlight = createLowlight();
+lowlight.register("javascript", javascript);
+lowlight.register("js", javascript);
+lowlight.register("typescript", typescript);
+lowlight.register("ts", typescript);
+lowlight.register("python", python);
+lowlight.register("py", python);
+lowlight.register("cpp", cpp);
+lowlight.register("c", c);
+lowlight.register("java", java);
+lowlight.register("css", css);
+lowlight.register("html", html);
+lowlight.register("xml", html);
+lowlight.register("json", json);
+lowlight.register("bash", bash);
+lowlight.register("sh", bash);
+lowlight.register("sql", sql);
+lowlight.register("markdown", markdown);
+lowlight.register("md", markdown);
+lowlight.register("rust", rust);
+lowlight.register("go", go);
+lowlight.register("plaintext", plaintext);
+lowlight.register("text", plaintext);
 
 // ─── Tab / Shift-Tab ──────────────────────────────────────────────────────────
 //

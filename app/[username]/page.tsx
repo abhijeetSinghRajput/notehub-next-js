@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import UserPageClient from "./UserPageClient";
 import { IUser } from "@/types/model";
 import { getDefaultMetadata } from "@/lib/metadata";
+import { cache } from "react";
 
 type Props = {
   params: Promise<{
@@ -11,25 +12,28 @@ type Props = {
   }>;
 };
 
+const getUser = cache(async (username: string) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`,
+    { next: { revalidate: 3600 } }
+  );
+  if (!response.ok) return null;
+  return response.json();
+});
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
 
   try {
-    const userApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`;
+    const user = await getUser(username);
 
-    const response = await fetch(userApiUrl, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    });
-
-    if (!response.ok) {
+    if (!user) {
       return getDefaultMetadata({
         title: `${username}`,
         description: "This user profile could not be found.",
         noIndex: true, // Private collection
       });
     }
-
-    const user: IUser = await response.json();
 
     // Build OG image URL with user data
     const ogImageParams = new URLSearchParams({
@@ -86,12 +90,8 @@ export default async function UserPage({ params }: Props) {
   const { username } = await params;
 
   try {
-    const userApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`;
-    const response = await fetch(userApiUrl);
-
-    if (!response.ok) notFound();
-
-    const user: IUser = await response.json();
+    const user = await getUser(username);
+    if(!user) notFound();
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const profileUrl = `${baseUrl}/${username}`;

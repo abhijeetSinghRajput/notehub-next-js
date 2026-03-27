@@ -21,6 +21,7 @@ import Link from "next/link";
 import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "next/navigation";
 import AddNoteDialog from "./AddNoteDialog";
+import Image from "next/image";
 
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
@@ -100,15 +101,16 @@ const DashboardHeader = () => {
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage
-                        src={authUser?.avatar}
-                        alt={authUser?.fullName || "User Profile Photo"}
+                    <div className="relative size-8 shrink-0 rounded-full overflow-hidden">
+                      <Image
+                        src={authUser.avatar || "/avatar.svg"}
+                        alt={authUser?.fullName || "User"}
+                        fill
+                        sizes="32px"
+                        className="object-cover"
+                        priority
                       />
-                      <AvatarFallback>
-                        {(authUser?.fullName || "U").charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent align="end" className="max-w-64 text-pretty">
                     <div>

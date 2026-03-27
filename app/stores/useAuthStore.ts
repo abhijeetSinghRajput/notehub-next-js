@@ -48,7 +48,7 @@ export interface AuthStore {
   requestResetPasswordOtp: (
     identifier: string,
   ) => Promise<ApiMessageResponse | null>;
-  isEmailAvailable: (email: string) => Promise<boolean>;
+  isEmailAvailable: (email: string, signal?: AbortSignal) => Promise<boolean | null>;
   resetPassword: (
     data: ResetPasswordFormData,
   ) => Promise<ApiMessageResponse | null>;
@@ -56,7 +56,7 @@ export interface AuthStore {
     currentPassword: string;
     newPassword: string;
   }) => Promise<ApiMessageResponse | null>;
-  getUser: (identifier: string) => Promise<IUser | null>;
+  getUser: (identifier: string, signal?: AbortSignal) => Promise<IUser | null>;
   getAllUsers: (options?: {
     page?: number;
     limit?: number;
@@ -166,9 +166,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
   },
 
-  isEmailAvailable: async (email) => {
+  isEmailAvailable: async (email, signal?) => {
     try {
-      const response = await axiosInstance.get(`/user/check-email/${email}`);
+      const response = await axiosInstance.get(`/user/check-email/${email}`, {
+        signal,
+      });
       return response.data.available;
     } catch (error) {
       console.error("Email check failed:", error);
@@ -213,9 +215,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
   },
 
-  getUser: async (identifier) => {
+  getUser: async (identifier, signal) => {
     try {
-      const response = await axiosInstance.get(`/user/${identifier}`);
+      const response = await axiosInstance.get(`/user/${identifier}`, {
+        signal,
+      });
       return response.data;
     } catch (error) {
       return null;
@@ -386,8 +390,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   updateUserField: async (apiEndPoint, data) => {
     try {
-      let res;
-      res = await axiosInstance.put(apiEndPoint, data);
+      const res = await axiosInstance.put(apiEndPoint, data);
       set({ authUser: res.data.user });
       toast.success(res.data.message);
       return true;

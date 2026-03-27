@@ -89,22 +89,16 @@ const NavUser = () => {
                 onClick={() => isMobile && setOpenMobile(false)}
                 className="h-auto!"
               >
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage
-                    src={authUser?.avatar}
-                    alt={authUser?.fullName}
+                <div className="relative size-8 shrink-0 rounded-full overflow-hidden">
+                  <Image
+                    src={authUser.avatar || "/avatar.svg"}
+                    alt={authUser?.fullName || "User"}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                    priority
                   />
-                  <AvatarFallback className="rounded-lg">
-                    {authUser?.fullName
-                      ? authUser.fullName
-                          .trim()
-                          .split(/\s+/)
-                          .map((w) => w[0]?.toUpperCase())
-                          .join("")
-                          .slice(0, 2)
-                      : "NH"}
-                  </AvatarFallback>
-                </Avatar>
+                </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <div className="flex gap-1.5 items-center">
                     <span className="truncate font-semibold">

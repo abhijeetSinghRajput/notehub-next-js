@@ -1,5 +1,5 @@
 // src > pages > collection > CollaboratorsDialog
-"use client"
+"use client";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -20,6 +20,7 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { Loader2, Search, X } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { IUser } from "@/types/model";
+import Image from "next/image";
 
 // Debounce hook
 const useDebounce = <T,>(value: T, delay: number): T => {
@@ -68,8 +69,14 @@ interface BaseCollaboratorsDialogProps {
   targetId: string;
   type: "collection" | "note";
   closeDialog: () => void;
-  updateNoteCollaborators: (data: { noteId: string; collaborators: IUser[] }) => Promise<void>;
-  updateCollectionCollaborators: (data: { collectionId: string; collaborators: IUser[] }) => Promise<void>;
+  updateNoteCollaborators: (data: {
+    noteId: string;
+    collaborators: IUser[];
+  }) => Promise<void>;
+  updateCollectionCollaborators: (data: {
+    collectionId: string;
+    collaborators: IUser[];
+  }) => Promise<void>;
   isSaving: boolean;
 }
 
@@ -155,7 +162,9 @@ const BaseCollaboratorsDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">Manage Collaborators</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
+            Manage Collaborators
+          </DialogTitle>
           <DialogDescription>
             Add or remove people who can access
           </DialogDescription>
@@ -191,7 +200,10 @@ interface SearchBarProps {
   currentCollaborators: IUser[];
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onUserSelect, currentCollaborators }) => {
+const SearchBar: React.FC<SearchBarProps> = ({
+  onUserSelect,
+  currentCollaborators,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<IUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -344,15 +356,16 @@ interface UserInfoProps {
 
 const UserInfo: React.FC<UserInfoProps> = ({ user, className = "" }) => (
   <div className={cn("flex gap-2 items-center", className)}>
-    <Avatar className="size-10">
-      <AvatarImage
-        width={100}
-        height={100}
-        src={user.avatar}
-        alt={user.fullName || "User Profile Photo"}
+    <div className="relative size-10 shrink-0 rounded-full overflow-hidden">
+      <Image
+        src={user.avatar || "/avatar.svg"}
+        alt={user?.fullName || "User"}
+        fill
+        sizes="40px"
+        className="object-cover"
+        priority
       />
-      <AvatarFallback>{user.fullName[0].toUpperCase()}</AvatarFallback>
-    </Avatar>
+    </div>
     <div>
       <div className="font-medium flex gap-1.5 items-center justify-between">
         {user.fullName}

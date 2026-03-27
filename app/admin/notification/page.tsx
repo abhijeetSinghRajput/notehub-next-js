@@ -39,6 +39,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useAdminStore } from "@/app/stores/useAdminStore";
 import type { IUser } from "@/types/model";
+import Image from "next/image";
 
 type TemplateId = "welcome" | "noteIndexed" | "issueFixed";
 
@@ -64,7 +65,8 @@ const templates: {
     name: "Note Indexed",
     emoji: "🔍",
     description: "Notify users when a note appears on Google Search.",
-    subject: (title) => `Your note "${title || "Untitled"}" has been indexed on Google`,
+    subject: (title) =>
+      `Your note "${title || "Untitled"}" has been indexed on Google`,
     message: (title) =>
       `Great news — your note "${title || "Untitled"}" has been indexed on Google Search Engine.`,
   },
@@ -73,7 +75,8 @@ const templates: {
     name: "Issue Fixed",
     emoji: "✅",
     description: "Notify users their reported issue is fixed.",
-    subject: (title) => `Update: ${title || "Your reported issue"} has been fixed ✅`,
+    subject: (title) =>
+      `Update: ${title || "Your reported issue"} has been fixed ✅`,
     message: (title) =>
       `Congratulations! ${title || "Your reported issue"} has been fixed. Thank you for helping us improve NoteHub.`,
   },
@@ -82,8 +85,11 @@ const templates: {
 const PAGE_SIZE = 10;
 
 export default function NotificationPage() {
-  const [activeTemplateId, setActiveTemplateId] = useState<TemplateId>("welcome");
-  const [contentTitle, setContentTitle] = useState("Getting Started with NoteHub");
+  const [activeTemplateId, setActiveTemplateId] =
+    useState<TemplateId>("welcome");
+  const [contentTitle, setContentTitle] = useState(
+    "Getting Started with NoteHub",
+  );
   const [subject, setSubject] = useState(templates[0].subject(""));
   const [message, setMessage] = useState(templates[0].message(""));
   const [searchInput, setSearchInput] = useState("");
@@ -91,10 +97,13 @@ export default function NotificationPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
-  const [selectedUsersMap, setSelectedUsersMap] = useState<Record<string, IUser>>({});
+  const [selectedUsersMap, setSelectedUsersMap] = useState<
+    Record<string, IUser>
+  >({});
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  const { fetchUsers, getCachedUsers, isLoadingUsers, usersError } = useAdminStore();
+  const { fetchUsers, getCachedUsers, isLoadingUsers, usersError } =
+    useAdminStore();
 
   const activeTemplate = useMemo(
     () => templates.find((t) => t.id === activeTemplateId) ?? templates[0],
@@ -102,7 +111,12 @@ export default function NotificationPage() {
   );
 
   const userQuery = useMemo(
-    () => ({ page: currentPage, limit: itemsPerPage, search, filter: "all" as const }),
+    () => ({
+      page: currentPage,
+      limit: itemsPerPage,
+      search,
+      filter: "all" as const,
+    }),
     [currentPage, search, itemsPerPage],
   );
 
@@ -135,15 +149,24 @@ export default function NotificationPage() {
   }, [fetchUsers, userQuery]);
 
   const selectedUsers = useMemo(
-    () => Object.values(selectedUsersMap).filter((u) => selectedUserIds.includes(u._id)),
+    () =>
+      Object.values(selectedUsersMap).filter((u) =>
+        selectedUserIds.includes(u._id),
+      ),
     [selectedUserIds, selectedUsersMap],
   );
 
   const allPageSelected =
     users.length > 0 && users.every((u) => selectedUserIds.includes(u._id));
-  const selectedPageCount = users.filter((u) => selectedUserIds.includes(u._id)).length;
+  const selectedPageCount = users.filter((u) =>
+    selectedUserIds.includes(u._id),
+  ).length;
   const selectAllCheckedState =
-    selectedPageCount === 0 ? false : selectedPageCount === users.length ? true : "indeterminate";
+    selectedPageCount === 0
+      ? false
+      : selectedPageCount === users.length
+        ? true
+        : "indeterminate";
 
   const paginationPages = useMemo(() => {
     const total = pagination.totalPages;
@@ -154,7 +177,9 @@ export default function NotificationPage() {
 
   const toggleUser = (user: IUser) => {
     setSelectedUserIds((prev) =>
-      prev.includes(user._id) ? prev.filter((id) => id !== user._id) : [...prev, user._id],
+      prev.includes(user._id)
+        ? prev.filter((id) => id !== user._id)
+        : [...prev, user._id],
     );
     setSelectedUsersMap((prev) => {
       const next = { ...prev };
@@ -166,14 +191,18 @@ export default function NotificationPage() {
 
   const toggleSelectAllOnPage = () => {
     if (allPageSelected) {
-      setSelectedUserIds((prev) => prev.filter((id) => !users.some((u) => u._id === id)));
+      setSelectedUserIds((prev) =>
+        prev.filter((id) => !users.some((u) => u._id === id)),
+      );
       setSelectedUsersMap((prev) => {
         const next = { ...prev };
         users.forEach((u) => delete next[u._id]);
         return next;
       });
     } else {
-      setSelectedUserIds((prev) => Array.from(new Set([...prev, ...users.map((u) => u._id)])));
+      setSelectedUserIds((prev) =>
+        Array.from(new Set([...prev, ...users.map((u) => u._id)])),
+      );
       setSelectedUsersMap((prev) => {
         const next = { ...prev };
         users.forEach((u) => (next[u._id] = u));
@@ -216,7 +245,6 @@ export default function NotificationPage() {
 
       {/* ── MAIN GRID ── */}
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-
         {/* ════ LEFT PANEL: Builder ════ */}
         <Card className="border-none bg-transparent shadow-none sm:border sm:bg-card sm:shadow-sm">
           {/* Template chip row */}
@@ -241,7 +269,10 @@ export default function NotificationPage() {
             {/* Title + Subject */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="content-title" className="text-xs text-muted-foreground">
+                <Label
+                  htmlFor="content-title"
+                  className="text-xs text-muted-foreground"
+                >
                   Title / Issue Name
                 </Label>
                 <Input
@@ -253,7 +284,10 @@ export default function NotificationPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="subject" className="text-xs text-muted-foreground">
+                <Label
+                  htmlFor="subject"
+                  className="text-xs text-muted-foreground"
+                >
                   Email Subject
                 </Label>
                 <Input
@@ -267,7 +301,10 @@ export default function NotificationPage() {
 
             {/* Message */}
             <div className="space-y-1.5">
-              <Label htmlFor="message" className="text-xs text-muted-foreground">
+              <Label
+                htmlFor="message"
+                className="text-xs text-muted-foreground"
+              >
                 Message Body
               </Label>
               <Textarea
@@ -339,15 +376,23 @@ export default function NotificationPage() {
                       i !== users.length - 1 ? "border-b" : ""
                     } ${isSelected ? "bg-primary/5" : "hover:bg-muted/40 active:bg-muted/60"}`}
                   >
-                    <Avatar className="size-10 shrink-0">
-                      <AvatarImage src={user.avatar} alt={user.fullName} />
-                      <AvatarFallback className="text-xs font-semibold">
-                        {user.fullName.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative size-10 shrink-0 rounded-full overflow-hidden">
+                      <Image
+                        src={user.avatar || "/avatar.svg"}
+                        alt={user?.fullName || "User"}
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                        priority
+                      />
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{user.fullName}</p>
-                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                      <p className="truncate text-sm font-medium">
+                        {user.fullName}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {user.email}
+                      </p>
                     </div>
                     <Checkbox
                       checked={isSelected}
@@ -361,15 +406,20 @@ export default function NotificationPage() {
               })}
             </div>
 
-            {usersError && <p className="text-xs text-destructive">{usersError}</p>}
+            {usersError && (
+              <p className="text-xs text-destructive">{usersError}</p>
+            )}
 
             {/* Pagination row */}
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <span>
-                  {(pagination.currentPage - 1) * pagination.itemsPerPage + (users.length ? 1 : 0)}–
-                  {(pagination.currentPage - 1) * pagination.itemsPerPage + users.length} / {" "}
-                  {pagination.totalItems}
+                  {(pagination.currentPage - 1) * pagination.itemsPerPage +
+                    (users.length ? 1 : 0)}
+                  –
+                  {(pagination.currentPage - 1) * pagination.itemsPerPage +
+                    users.length}{" "}
+                  / {pagination.totalItems}
                 </span>
                 <Select
                   value={itemsPerPage.toString()}
@@ -400,7 +450,9 @@ export default function NotificationPage() {
                         if (pagination.hasPreviousPage && !isLoadingUsers)
                           setCurrentPage((p) => Math.max(p - 1, 1));
                       }}
-                      aria-disabled={!pagination.hasPreviousPage || isLoadingUsers}
+                      aria-disabled={
+                        !pagination.hasPreviousPage || isLoadingUsers
+                      }
                       className={
                         !pagination.hasPreviousPage || isLoadingUsers
                           ? "pointer-events-none opacity-50"
@@ -450,16 +502,24 @@ export default function NotificationPage() {
                     key={user._id}
                     className="flex items-center gap-1.5 rounded-full border border-border bg-muted/50 pl-1 pr-2 py-0.5 text-xs"
                   >
-                    <Avatar className="size-5">
-                      <AvatarImage src={user.avatar} alt={user.userName} />
-                      <AvatarFallback className="text-[10px]">
-                        {user.userName.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="max-w-24 truncate font-medium">{user.userName}</span>
+                    <div className="relative size-5 shrink-0 rounded-full overflow-hidden">
+                      <Image
+                        src={user.avatar || "/avatar.svg"}
+                        alt={user?.fullName || "User"}
+                        fill
+                        sizes="20px"
+                        className="object-cover"
+                        priority
+                      />
+                    </div>
+                    <span className="max-w-24 truncate font-medium">
+                      {user.userName}
+                    </span>
                     <button
                       onClick={() =>
-                        setSelectedUserIds((prev) => prev.filter((id) => id !== user._id))
+                        setSelectedUserIds((prev) =>
+                          prev.filter((id) => id !== user._id),
+                        )
                       }
                       className="ml-0.5 rounded-full p-0.5 hover:bg-muted transition-colors"
                       aria-label={`Remove ${user.userName}`}
@@ -529,7 +589,10 @@ export default function NotificationPage() {
                     )}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">Subject:</span> {subject}
+                    <span className="font-medium text-foreground">
+                      Subject:
+                    </span>{" "}
+                    {subject}
                   </p>
                 </div>
 
@@ -543,7 +606,8 @@ export default function NotificationPage() {
                 <div className="rounded-lg border border-border/50 bg-background/60 px-3 py-2 text-xs text-muted-foreground">
                   Sent to{" "}
                   <span className="font-medium text-foreground">
-                    {selectedUserIds.length} user{selectedUserIds.length !== 1 ? "s" : ""}
+                    {selectedUserIds.length} user
+                    {selectedUserIds.length !== 1 ? "s" : ""}
                   </span>{" "}
                   via bulk email.
                 </div>

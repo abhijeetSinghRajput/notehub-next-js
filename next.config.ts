@@ -4,12 +4,21 @@ const nextConfig: NextConfig = {
   compiler: {
     removeConsole:
       process.env.NODE_ENV === "production"
-        ? {
-            exclude: ["warn"], // Keep console.warn
-          }
+        ? { exclude: ["warn"] }
         : false,
   },
+
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "@tiptap/core",
+      "@tiptap/react",
+      "lowlight",
+    ],
+  },
+
   images: {
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",

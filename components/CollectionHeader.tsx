@@ -13,6 +13,7 @@ import { Pencil, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import AddNoteDialog from "./AddNoteDialog";
+import Image from "next/image";
 
 interface CollectionHeaderProps {
   user: IUser;
@@ -40,7 +41,9 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
     <div className="flex w-full flex-col gap-6">
       {selectedImageIndex !== null && (
         <ImageLightbox
-          slides={[{ src: user?.avatar || "/avatar.svg", alt: "Profile photo" }]}
+          slides={[
+            { src: user?.avatar || "/avatar.svg", alt: "Profile photo" },
+          ]}
           index={selectedImageIndex ?? 0}
           onClose={() => setSelectedImageIndex(null)}
         />
@@ -48,20 +51,16 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
       {/* User Profile Section */}
       <div className="flex items-center justify-between gap-4 w-full">
         <div className="flex items-center gap-4">
-          <Avatar
-            className="h-16 w-16 border-2 border-primary/20 cursor-pointer"
-            onClick={() => setSelectedImageIndex(0)}
-            role="button"
-            aria-label="Open profile photo"
-          >
-            <AvatarImage
-              src={user?.avatar}
-              alt={user?.fullName || "User Profile Photo"}
+          <div className="relative size-10 shrink-0 rounded-full overflow-hidden">
+            <Image
+              src={user.avatar || "/avatar.svg"}
+              alt={user?.fullName || "User"}
+              fill
+              sizes="64px"
+              className="object-cover"
+              priority
             />
-            <AvatarFallback className="bg-primary/10 text-primary font-medium">
-              {user?.fullName?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          </div>
           <div>
             <Link href={`/${user?.userName}`} className="block">
               <h2 className="flex gap-2.5 items-center text-lg sm:text-xl md:text-2xl font-bold tracking-tight">

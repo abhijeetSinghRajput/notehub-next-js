@@ -68,10 +68,6 @@
       color: var(--primary) !important;
       text-decoration: underline;
     }
-
-    p {
-      margin: auto !important;
-    }
   }
 
   /* ✅ Transparent autofill with visible background */

@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CollectionPageClient from "./CollectionPageClient";
 import { getDefaultMetadata } from "@/lib/metadata";
+import { cache } from "react";
 
 type Props = {
   params: Promise<{
@@ -11,26 +12,26 @@ type Props = {
   }>;
 };
 
+const getCollection = cache(
+  async (username: string, collectionSlug: string) => {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/collection/${username}/${collectionSlug}`,
+      { next: { revalidate: 3600 } },
+    );
+    if (!response.ok) return null;
+    return response.json();
+  },
+);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username, collectionSlug } = await params;
 
   try {
-    const collectionApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/collection/${username}/${collectionSlug}`;
+    const data = await getCollection(username, collectionSlug);
 
-    const response = await fetch(collectionApiUrl, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    });
+    if (!data) notFound();
 
-    if (!response.ok) {
-      return getDefaultMetadata({
-        title: `${collectionSlug} by ${username}`,
-        description: `View collection on NoteHub`,
-        noIndex: true, // Private collection
-      });
-    }
-
-    const data = await response.json();
-    const { collection, author } = data;
+    const { collection, author } = data!;
 
     // Extract first few notes for keywords
     const noteNames =
@@ -134,18 +135,11 @@ export default async function CollectionPage({ params }: Props) {
   const { username, collectionSlug } = await params;
 
   try {
-    const collectionApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/collection/${username}/${collectionSlug}`;
-    const response = await fetch(collectionApiUrl, {
-      next: { revalidate: 60 },
-    });
+    const data = await getCollection(username, collectionSlug);
 
-    if (!response.ok) {
-      if (response.status === 404) notFound();
-      return <CollectionPageClient />;
-    }
+    if (!data) notFound();
 
-    const data = await response.json();
-    const { collection, author } = data;
+    const { collection, author } = data!;
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const profileUrl = `${baseUrl}/${username}`;
@@ -185,7 +179,7 @@ export default async function CollectionPage({ params }: Props) {
           position: index + 1,
           name: note.name,
           url: `${collectionUrl}/${note.slug}`,
-        })
+        }),
       ),
     };
 
