@@ -34,8 +34,9 @@ const raw = (value: string): RootContent =>
 // ── Plugin 1: syntax highlighting ───────────────────────────────────────────
 function rehypeHighlight() {
   return (tree: Root) => {
-    visit(tree, "element", (node: Element) => {
+    visit(tree, "element", (node: Element, index, parent) => {
       if (node.tagName !== "code") return;
+      if (parent?.type !== "element" || parent.tagName !== "pre") return;
       if (node.properties?.dataHighlighted === "true") return;
 
       const text = node.children
