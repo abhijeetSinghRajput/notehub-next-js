@@ -145,7 +145,6 @@ const UpdateEmailCard = () => {
               loading="lazy"
               fetchPriority="low"
               referrerPolicy="no-referrer"
-              unoptimized={!!authUser.avatar} // Cloudinary already optimized
             />
           </div>
           <div className="text-sm">

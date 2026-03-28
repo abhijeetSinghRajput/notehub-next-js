@@ -1,6 +1,6 @@
 import { IconProps } from "@/types/icon";
 
-const Logo = ({
+const LogoText = ({
   size = 16,
   color = "currentColor",
   strokeWidth = 2,
@@ -22,4 +22,4 @@ const Logo = ({
   );
 };
 
-export default Logo;
+export default LogoText;

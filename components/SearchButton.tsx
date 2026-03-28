@@ -440,7 +440,6 @@ export function SearchButton() {
                                         className="object-cover"
                                         loading="lazy"
                                         fetchPriority="low"
-                                        unoptimized={!!(note.userId as IUser)?.avatar}
                                       />
                                     </div>
                                     <span>{(note.userId as IUser)?.fullName}</span>
@@ -509,7 +508,6 @@ export function SearchButton() {
                                 className="object-cover"
                                 loading="lazy"
                                 fetchPriority="low"
-                                unoptimized={!!user.avatar}
                               />
                             </div>
                             <div>

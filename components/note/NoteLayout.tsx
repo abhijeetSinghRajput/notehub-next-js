@@ -2,7 +2,6 @@
 
 import { memo } from "react";
 import { cn } from "@/lib/utils";
-import parse from "html-react-parser";
 import ImageLightbox from "@/components/ImageLightbox";
 import Footer from "@/components/Footer";
 import ScrollTopButton from "@/components/ScrollTopButton";
@@ -69,28 +68,21 @@ export default function NoteLayout({
           <NoteHeader {...headerProps} />
 
           {/* ── Note title ── */}
-          <h1 className="sr-only">
-            {note?.name || "Untitled Note"}
-          </h1>
+          <h1 className="sr-only">{note?.name || "Untitled Note"}</h1>
 
           {/* ── Note content ── */}
           <div
             className="tiptap"
-            style={{
-              fontSize: fontSize.size,
-              fontFamily,
-              lineHeight: "1.7",
-            }}
-          >
-            {parse(note?.content || "")}
-          </div>
+            style={{ fontSize: fontSize.size, fontFamily, lineHeight: "1.7" }}
+            dangerouslySetInnerHTML={{ __html: note?.content || "" }}
+          />
 
           {/* ── Floating actions ── */}
           <FloatingActionButtons {...fabProps} />
         </div>
 
         <MemoScrollTopButton />
-        <MemoFooter className="pb-28" />
+        <MemoFooter className="pb-20" />
       </div>
     </>
   );

@@ -51,7 +51,6 @@ const AvatarStack = ({
               className="object-cover"
               loading="lazy"
               fetchPriority="low"
-              unoptimized={!!collaborators[maxVisible]?.avatar} // Cloudinary already optimized
             />
             {/* Overlay */}
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
@@ -90,7 +89,6 @@ const AvatarStack = ({
                   className="object-cover"
                   loading="lazy"
                   fetchPriority="low"
-                  unoptimized // Cloudinary already optimized
                 />
               ) : (
                 // Fallback initials

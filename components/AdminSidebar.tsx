@@ -18,8 +18,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import NavUser from "./dashboard/NavUser";
-import LogoIcon from "./icons/LogoIcon";
-import Logo from "./Logo";
+
+import LogoText from "@/components/icons/logo/LogoText";
+import LogoIcon from "@/components/icons/logo/LogoIcon";
 
 const adminNavItems = [
   { title: "Overview", href: "/admin", icon: LayoutDashboard },
@@ -49,7 +50,7 @@ export function AdminSidebar({
                   <LogoIcon size={20} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <Logo className="truncate text-sm w-18" />
+                  <LogoText className="truncate text-sm w-18" />
                   <span className="truncate text-xs text-muted-foreground">Admin Panel</span>
                 </div>
               </Link>

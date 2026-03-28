@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import LogoIcon from "./icons/LogoIcon";
+import LogoIcon from "./icons/logo/LogoIcon";
 
 interface RouteItem {
   name: string;

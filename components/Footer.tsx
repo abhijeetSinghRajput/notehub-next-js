@@ -3,6 +3,12 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
+import LogoText from "@/components/icons/logo/LogoText";
+import LogoIcon from "@/components/icons/logo/LogoIcon";
+import LogoFooter from "@/components/icons/logo/LogoFooter";
+
+import { Button } from "./ui/button";
+
 const GithubIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
     <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
@@ -34,10 +40,26 @@ const XIcon = () => (
 );
 
 const socialLinks = [
-  { href: "https://github.com/abhijeetSinghRajput", icon: GithubIcon, label: "GitHub" },
-  { href: "https://www.linkedin.com/in/abhijeet-singh-rajput1/", icon: LinkedinIcon, label: "LinkedIn" },
-  { href: "https://www.youtube.com/@mrcodium", icon: YoutubeIcon, label: "YouTube" },
-  { href: "https://www.instagram.com/abhijeet_singh_rajput1", icon: InstagramIcon, label: "Instagram" },
+  {
+    href: "https://github.com/abhijeetSinghRajput",
+    icon: GithubIcon,
+    label: "GitHub",
+  },
+  {
+    href: "https://www.linkedin.com/in/abhijeet-singh-rajput1/",
+    icon: LinkedinIcon,
+    label: "LinkedIn",
+  },
+  {
+    href: "https://www.youtube.com/@mrcodium",
+    icon: YoutubeIcon,
+    label: "YouTube",
+  },
+  {
+    href: "https://www.instagram.com/abhijeet_singh_rajput1",
+    icon: InstagramIcon,
+    label: "Instagram",
+  },
   { href: "https://x.com/abhijeet62008", icon: XIcon, label: "X" },
 ];
 
@@ -90,14 +112,13 @@ const Footer = ({ className }: { className: string }) => {
       <Separator />
 
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
-        {/* Main grid: brand col + 3 link cols */}
-        <div className="grid grid-cols-2 gap-10 sm:grid-cols-[2fr_1fr_1fr_1fr]">
-
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           {/* Brand block */}
-          <div className="flex flex-col gap-4 col-span-2 sm:col-span-1">
-            <span className="text-xl font-black tracking-tight text-foreground">
-              NoteHub
-            </span>
+          <div className="flex flex-col gap-4 col-span-2 sm:col-span-3 md:col-span-2 lg:col-span-1">
+            <div className="flex items-center gap-2">
+              <LogoIcon />
+              <LogoText />
+            </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               A free platform for students to share and discover notes on DSA,
               AI/ML, web development, and more.
@@ -105,16 +126,22 @@ const Footer = ({ className }: { className: string }) => {
             {/* Social icons */}
             <div className="flex items-center gap-3 mt-1">
               {socialLinks.map(({ href, icon: Icon, label }) => (
-                <a
-                  key={href}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="shrink-0 flex size-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                <Button
+                  asChild
+                  variant={"outline"}
+                  size="icon"
+                  className="rounded-lg size-8"
                 >
-                  <Icon />
-                </a>
+                  <a
+                    key={href}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                  >
+                    <Icon />
+                  </a>
+                </Button>
               ))}
             </div>
           </div>
@@ -155,7 +182,7 @@ const Footer = ({ className }: { className: string }) => {
         <Separator className="my-8" />
 
         {/* Bottom bar */}
-        <div className="flex items-center justify-around gap-4 sm:flex-row">
+        <div className="flex items-center flex-col md:flex-row md:justify-around gap-4">
           <p className="text-sm text-muted-foreground">
             © 2025 NoteHub. All rights reserved.
           </p>
@@ -181,7 +208,9 @@ const Footer = ({ className }: { className: string }) => {
                   Abhijeet Singh Rajput
                 </a>
               </p>
-              <p className="text-xs text-muted-foreground/70">Full Stack Developer</p>
+              <p className="text-xs text-muted-foreground/70">
+                Full Stack Developer
+              </p>
             </div>
           </div>
         </div>
@@ -189,9 +218,7 @@ const Footer = ({ className }: { className: string }) => {
 
       {/* Brand watermark */}
       <div className="flex items-center justify-center overflow-hidden pb-2">
-        <span className="select-none text-6xl font-black tracking-tighter text-nowrap lg:text-9xl bg-linear-to-b from-foreground/20 to-transparent bg-clip-text text-transparent">
-          NoteHub
-        </span>
+        <LogoFooter color="currentColor" className="h-20 sm:h-28 lg:h-38.5" />
       </div>
     </footer>
   );

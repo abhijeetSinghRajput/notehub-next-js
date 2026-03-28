@@ -96,7 +96,6 @@ const NotePageClient: FC<NotePageClientProps> = ({
     return `${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${noteSlug}`;
   }, [username, collectionSlug, noteSlug]);
 
-
   // Fetch only when SSR did not provide note data
   useEffect(() => {
     if (initialNote) {
@@ -192,104 +191,37 @@ const NotePageClient: FC<NotePageClientProps> = ({
     );
   }
 
-  const articleJsonLd =
-    note && author
-      ? {
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: note.name,
-          image: noteImages.map((img) => img.src),
-          datePublished: note.createdAt,
-          dateModified: note.updatedAt,
-          author: [
-            {
-              "@type": "Person",
-              name: author.fullName || author.userName,
-              url: `${process.env.NEXT_PUBLIC_BASE_URL}/${author.userName}`,
-            },
-          ],
-        }
-      : null;
-
-  const breadcrumbJsonLd =
-    note && author
-      ? {
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            {
-              "@type": "ListItem",
-              position: 1,
-              name: author.userName,
-              item: `${process.env.NEXT_PUBLIC_BASE_URL}/${author.userName}`,
-            },
-            {
-              "@type": "ListItem",
-              position: 2,
-              name: collectionSlug,
-              item: `${process.env.NEXT_PUBLIC_BASE_URL}/${author.userName}/${collectionSlug}`,
-            },
-            {
-              "@type": "ListItem",
-              position: 3,
-              name: note.name,
-              item: `${process.env.NEXT_PUBLIC_BASE_URL}/${author.userName}/${collectionSlug}/${note.slug}`,
-            },
-          ],
-        }
-      : null;
-
   return (
-    <>
-      <Head>
-        {articleJsonLd && (
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
-          />
-        )}
-
-        {breadcrumbJsonLd && (
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(breadcrumbJsonLd),
-            }}
-          />
-        )}
-      </Head>
-
-      <NoteLayout
-        note={note}
-        headerProps={{
-          note,
-          author: {
-            userName: author?.userName,
-            fullName: author?.fullName,
-            avatar: author?.avatar,
-            role: author?.role,
-          },
-          showVisibility: isOwner,
-          showEdit: isOwner,
-          onEdit: handleNavigateToEditor,
-        }}
-        fabProps={{
-          toc,
-          tocOpen,
-          setTocOpen,
-          progress,
-          activeId,
-          handleTocItemClick,
-          shareLink,
-          onEdit: isOwner ? handleNavigateToEditor : undefined,
-        }}
-        fontSize={fontSize}
-        fontFamily={editorFontFamily}
-        selectedImageIndex={selectedImageIndex}
-        noteImages={noteImages}
-        onCloseLightbox={handleCloseLightbox}
-      />
-    </>
+    <NoteLayout
+      note={note}
+      headerProps={{
+        note,
+        author: {
+          userName: author?.userName,
+          fullName: author?.fullName,
+          avatar: author?.avatar,
+          role: author?.role,
+        },
+        showVisibility: isOwner,
+        showEdit: isOwner,
+        onEdit: handleNavigateToEditor,
+      }}
+      fabProps={{
+        toc,
+        tocOpen,
+        setTocOpen,
+        progress,
+        activeId,
+        handleTocItemClick,
+        shareLink,
+        onEdit: isOwner ? handleNavigateToEditor : undefined,
+      }}
+      fontSize={fontSize}
+      fontFamily={editorFontFamily}
+      selectedImageIndex={selectedImageIndex}
+      noteImages={noteImages}
+      onCloseLightbox={handleCloseLightbox}
+    />
   );
 };
 

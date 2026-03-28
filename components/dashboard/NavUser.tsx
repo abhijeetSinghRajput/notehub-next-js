@@ -60,7 +60,6 @@ const NavUser = () => {
                   className="object-cover"
                   loading="lazy"
                   fetchPriority="low"
-                  unoptimized={!!authUser?.avatar}
                 />
               </div>
 
@@ -94,7 +93,7 @@ const NavUser = () => {
                     src={authUser.avatar || "/avatar.svg"}
                     alt={authUser?.fullName || "User"}
                     fill
-                    sizes="40px"
+                    sizes="32px"
                     className="object-cover"
                     priority
                   />

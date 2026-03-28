@@ -112,7 +112,6 @@ const Photos = () => {
                   fill
                   sizes="176px"
                   className="object-cover"
-                  unoptimized={!!(previewavatar || authUser?.avatar)} // Cloudinary already optimized
                 />
               </div>
 

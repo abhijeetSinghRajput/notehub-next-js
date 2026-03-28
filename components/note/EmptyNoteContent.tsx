@@ -16,7 +16,7 @@ export default function EmptyNoteContent({ onEdit }: EmptyNoteContentProps) {
           onClick={onEdit}
           variant="secondary"
           size="lg"
-          className="shadow-md font-bold"
+          className="shadow-md font-semibold"
         >
           <Pencil /> Write
         </Button>

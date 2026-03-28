@@ -1,15 +1,6 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  memo,
-  lazy,
-  Suspense,
-  useCallback,
-} from "react";
+import { useEffect, useRef, useState, memo, lazy, useCallback } from "react";
 import Link from "next/link";
 import type { EmblaCarouselType } from "embla-carousel";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
   Carousel,
