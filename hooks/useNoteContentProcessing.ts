@@ -1,109 +1,95 @@
+/* hooks/useNoteContentProcessing.ts
+ * Fix #7 — Forced reflow / Fix #5 — LCP delay
+ *
+ * Original issue: this hook was parsing the note HTML string with regex
+ * on every mount, including on SSR pages where the server already gave us
+ * processednote.content. The DOM query for images also triggered a forced
+ * layout (offsetWidth-style reads).
+ *
+ * Fixes:
+ *  1. The hook receives `content` as `undefined` when the server has
+ *     already extracted images (see NotePageClient). In that case it's
+ *     a no-op — no parsing, no reflow.
+ *  2. When it DOES need to run (CSR fallback), it defers via
+ *     requestIdleCallback so it never blocks the first paint.
+ *  3. Image extraction is now a pure regex over the HTML string, which
+ *     never touches the live DOM and causes zero forced reflows.
+ */
 "use client";
 
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { useEffect } from "react";
 
-/** Convert an HTML <table> element to a GitHub-flavoured markdown table. */
-function htmlTableToMarkdown(table: HTMLTableElement): string {
-  const rows = Array.from(table.querySelectorAll("tr"));
-  if (!rows.length) return "";
+type SetImages = React.Dispatch<
+  React.SetStateAction<{ src: string; alt: string }[]>
+>;
+type SetIndex = React.Dispatch<React.SetStateAction<number | null>>;
 
-  const matrix = rows.map((row) =>
-    Array.from(row.querySelectorAll<HTMLElement>("th, td")).map((cell) => {
-      // Convert <strong>/<b> to **bold** and <em>/<i> to *italic*
-      const clone = cell.cloneNode(true) as HTMLElement;
-      clone.querySelectorAll("strong, b").forEach((el) => {
-        el.replaceWith(`**${el.textContent}**`);
-      });
-      clone.querySelectorAll("em, i").forEach((el) => {
-        el.replaceWith(`*${el.textContent}*`);
-      });
-      return (clone.textContent || "")
-        .replace(/\|/g, "\\|")
-        .replace(/\n/g, " ")
-        .trim();
-    }),
-  );
+// Pure regex-based extraction — never touches the DOM.
+function extractImagesFromHtml(
+  html: string,
+): { src: string; alt: string }[] {
+  const images: { src: string; alt: string }[] = [];
+  const imgRe = /<img\b([^>]*)>/gi;
+  const attrRe = /\b(src|alt)=["']([^"']*)["']/gi;
+  let imgMatch: RegExpExecArray | null;
 
-  // Determine column widths for padding
-  const colCount = Math.max(...matrix.map((r) => r.length));
-  const colWidths = Array.from({ length: colCount }, (_, col) =>
-    Math.max(...matrix.map((r) => (r[col] || "").length), 3),
-  );
-
-  const pad = (s: string, w: number) =>
-    s + " ".repeat(Math.max(0, w - s.length));
-
-  const lines: string[] = [];
-  matrix.forEach((row, i) => {
-    const cells = Array.from({ length: colCount }, (_, c) =>
-      pad(row[c] || "", colWidths[c]),
-    );
-    lines.push(`| ${cells.join(" | ")} |`);
-    // Insert separator after the first row (header)
-    if (i === 0) {
-      const sep = colWidths.map((w) => "-".repeat(w));
-      lines.push(`| ${sep.join(" | ")} |`);
+  while ((imgMatch = imgRe.exec(html)) !== null) {
+    const attrs = imgMatch[1];
+    let src = "";
+    let alt = "";
+    let attrMatch: RegExpExecArray | null;
+    attrRe.lastIndex = 0;
+    while ((attrMatch = attrRe.exec(attrs)) !== null) {
+      if (attrMatch[1].toLowerCase() === "src") src = attrMatch[2];
+      if (attrMatch[1].toLowerCase() === "alt") alt = attrMatch[2];
     }
-  });
+    if (src) images.push({ src, alt });
+  }
 
-  return lines.join("\n");
+  return images;
 }
 
-/**
- * Processes rendered note HTML content:
- * - Builds a table of contents from headings
- * - Applies syntax highlighting (hljs)
- * - Renders KaTeX math expressions
- * - Builds code block headers with copy buttons
- * - Sets up event delegation for copy buttons
- * - Binds image lightbox click handlers
- */
-// hooks/useNoteContentProcessing.ts
-
 export function useNoteContentProcessing(
+  /** Pass `undefined` to skip processing (images already supplied by server). */
   content: string | undefined,
-  setNoteImages: Dispatch<SetStateAction<{ src: string; alt: string }[]>>,
-  setSelectedImageIndex: Dispatch<SetStateAction<number | null>>,
+  setNoteImages: SetImages,
+  setSelectedImageIndex: SetIndex,
 ) {
   useEffect(() => {
+    // Fix #5 — skip entirely when the server did the work
     if (!content) return;
-    const imageClickHandlers = new Map<HTMLImageElement, () => void>();
 
-    // ✅ REMOVED: hljs highlighting — done server-side
-    // ✅ REMOVED: KaTeX rendering — done server-side
-    // ✅ REMOVED: heading button injection — done server-side
-    // ✅ REMOVED: code header injection — done server-side
-    // ✅ REMOVED: table copy button injection — done server-side
+    // Fix #7 — defer to after first paint so this never delays LCP
+    const ric =
+      typeof window !== "undefined" && "requestIdleCallback" in window
+        ? window.requestIdleCallback
+        : (fn: () => void) => setTimeout(fn, 50);
 
-    // ── Event delegation for copy/wrap/heading/table buttons ──────────────
-    const handleClick = async (e: MouseEvent) => {
-      // ... (keep all your existing click handlers unchanged)
-    };
+    const handle = ric(() => {
+      const images = extractImagesFromHtml(content);
+      setNoteImages(images);
 
-    document.addEventListener("click", handleClick);
+      // Wire up click handlers via event delegation (single listener,
+      // no per-image DOM reads, no forced reflow).
+      const container = document.querySelector(".tiptap");
+      if (!container || images.length === 0) return;
 
-    // ── Image lightbox ─────────────────────────────────────────────────────
-    const contentImages = Array.from(
-      document.querySelectorAll<HTMLImageElement>(".tiptap img"),
-    );
-    setNoteImages(
-      contentImages
-        .filter((img) => Boolean(img.getAttribute("src")))
-        .map((img) => ({
-          src: img.getAttribute("src") || "",
-          alt: img.getAttribute("alt") || "Note image",
-        })),
-    );
-    contentImages.forEach((img, index) => {
-      img.style.cursor = "zoom-in";
-      const handler = () => setSelectedImageIndex(index);
-      img.addEventListener("click", handler);
-      imageClickHandlers.set(img, handler);
+      const handleClick = (e: Event) => {
+        const target = e.target as HTMLElement;
+        if (target.tagName !== "IMG") return;
+        const src = (target as HTMLImageElement).src;
+        const idx = images.findIndex((img) => img.src === src);
+        if (idx !== -1) setSelectedImageIndex(idx);
+      };
+
+      container.addEventListener("click", handleClick);
+      return () => container.removeEventListener("click", handleClick);
     });
 
     return () => {
-      document.removeEventListener("click", handleClick);
-      imageClickHandlers.forEach((h, img) => img.removeEventListener("click", h));
+      if (typeof window !== "undefined" && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(handle as number);
+      }
     };
   }, [content, setNoteImages, setSelectedImageIndex]);
 }

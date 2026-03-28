@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import NProgress from "nprogress";
 
 const OAuthCallback = () => {
   const router = useRouter();
@@ -17,12 +18,14 @@ const OAuthCallback = () => {
 
       if (error) {
         console.error("OAuth error:", error);
+        NProgress.start();
         router.push(`/login?error=${encodeURIComponent(error)}`);
         return;
       }
 
       if (!code) {
         console.error("Authorization code missing");
+        NProgress.start();
         router.push("/login?error=Authorization code missing");
         return;
       }
@@ -31,6 +34,7 @@ const OAuthCallback = () => {
 
       if (!codeVerifier) {
         console.error("Code verifier not found in session storage");
+        NProgress.start();
         router.push("/login?error=Session expired. Please try again.");
         return;
       }
@@ -45,13 +49,16 @@ const OAuthCallback = () => {
         });
 
         if (!result) {
+          NProgress.start();
           router.push("/login?error=Authentication failed");
           return;
         }
 
+        NProgress.start();
         router.push("/");
       } catch (err) {
         console.error("OAuth callback error:", err);
+        NProgress.start();
         router.push("/login?error=Something went wrong");
       }
     };

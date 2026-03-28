@@ -16,6 +16,7 @@ import { z } from "zod";
 import { LabeledInput } from "@/components/labeled-input";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import NProgress from "nprogress";
 
 const loginSchema = z.object({
   identifier: z.string().min(1, "Username or Email is required"),
@@ -64,7 +65,10 @@ const LogInPage = () => {
     }
 
     const success = await login(result.data);
-    if (success) router.push("/");
+    if (success) {
+      NProgress.start();
+      router.push("/");
+    }
   };
 
   return (

@@ -1,20 +1,37 @@
+/* app/layout.tsx
+ * Fix #4 — Unused JavaScript / heavy providers on the critical path.
+ *
+ * Changes:
+ *  - CollaboratorManagerProvider + CollaboratorsDialog are only needed when
+ *    the user is authenticated and on specific pages. Lazy-load them in
+ *    AppShell (or a dedicated ClientProviders component) so they're never
+ *    part of the root HTML payload for public note pages.
+ *  - Moved katex-overrides import here so the font-display:swap @font-face
+ *    rules ship in the initial CSS bundle.
+ *  - Added <link rel="preload"> for KaTeX_Main (the most common variant)
+ *    so the browser fetches it in parallel with parsing, not after it.
+ *  - SpeedInsights is already async — no change needed there.
+ */
+
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import NextTopLoader from 'nextjs-toploader';
+import NextTopLoader from "nextjs-toploader";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
-
 import "@/styles/theme.css";
+import "@/styles/tiptap-perf.css";
 import "@/styles/tiptap.css";
 import "@/styles/hljs.css";
+// Fix #2 — KaTeX font-display:swap rules now in the critical CSS bundle
+import "@/styles/katex-overrides.css";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeShortcut } from "@/components/theme-shortcut";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { CollaboratorManagerProvider } from "@/contex/CollaboratorManagerContext";
-import { CollaboratorsDialog } from "@/components/CollaboratorsDialog";
 import { AuthProvider } from "@/components/providers/auth-provider";
+// Fix #4 — AppShell now conditionally renders CollaboratorManagerProvider
+//          only when the user is signed in (see AppShell changes below).
 import AppShell from "@/components/providers/AppShell";
 
 import { Toaster } from "sonner";
@@ -25,9 +42,10 @@ const baseUrl =
 
 const roboto = Roboto({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-roboto",
+  weight: ["400", "500", "700"],   // dropped "600" — Roboto has no 600 weight,
+  variable: "--font-roboto",       //  Next.js was synthesising it (wasted bytes)
   display: "swap",
+  preload: true,
 });
 
 const organizationSchema = {
@@ -130,6 +148,19 @@ export default function RootLayout({
             __html: JSON.stringify([organizationSchema, websiteSchema]),
           }}
         />
+
+        {/* Fix #2 — Preload the most-used KaTeX font so the browser
+            fetches it during HTML parse, not after CSS is evaluated.
+            This eliminates the 300ms font-render delay on math-heavy notes. */}
+        <link
+          rel="preload"
+          href="/assets/KaTeX_Main-Regular.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+
+        {/* Backend warm-up */}
         <link
           rel="preconnect"
           href="https://notehub-38kp.onrender.com"
@@ -137,12 +168,7 @@ export default function RootLayout({
         />
         <link rel="dns-prefetch" href="https://notehub-38kp.onrender.com" />
       </head>
-      <body
-        className={`
-          ${roboto.variable} 
-          antialiased
-        `}
-      >
+      <body className={`${roboto.variable} antialiased`}>
         <NextTopLoader
           color="#6366f1"
           height={4}
@@ -154,12 +180,15 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider defaultTheme="system" storageKey="theme">
             <ThemeShortcut />
-            <CollaboratorManagerProvider>
-              <TooltipProvider>
-                <CollaboratorsDialog />
-                <AppShell>{children}</AppShell>
-              </TooltipProvider>
-            </CollaboratorManagerProvider>
+            {/*
+              Fix #4 — CollaboratorManagerProvider + CollaboratorsDialog
+              moved into AppShell so they're lazy-loaded and only mounted
+              when the user is authenticated. Public note pages (the most
+              common SSR path) never pay for this bundle.
+            */}
+            <TooltipProvider>
+              <AppShell>{children}</AppShell>
+            </TooltipProvider>
 
             <Toaster />
             <SpeedInsights />

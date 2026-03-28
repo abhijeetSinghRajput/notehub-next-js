@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { ICollection, INote } from "@/types/model";
 import { cn } from "@/lib/utils";
 import { useDraftStore } from "@/app/stores/useDraftStore";
+import NProgress from "nprogress";
 
 interface AddNoteProps {
   setSelectedCollection: (collection: ICollection | null) => void;
@@ -54,6 +55,8 @@ const AddNote: React.FC<AddNoteProps> = ({
     setOpen(false);
     setSelectedCollection(null);
     setActiveTab("choose-collection");
+
+    NProgress.start();
     router.push(`/note/${draftId}/editor`);
   };
 
@@ -131,7 +134,13 @@ const AddNote: React.FC<AddNoteProps> = ({
               <div className="w-full flex grow items-start gap-3">
                 <Lock size="20" />
                 <div className="grid grow gap-2">
-                  <Label htmlFor={"note-visibility"} className={cn("capitalize", visibility !== "private" ? "text-muted-foreground" : "")}>
+                  <Label
+                    htmlFor={"note-visibility"}
+                    className={cn(
+                      "capitalize",
+                      visibility !== "private" ? "text-muted-foreground" : "",
+                    )}
+                  >
                     Private
                   </Label>
                   <p

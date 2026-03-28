@@ -8,6 +8,7 @@ import { SearchPagination } from "./SearchPagination";
 import { Searching, NotFound } from "./SearchStates";
 import type { PaginationState } from "./types";
 import type { IUser, PopulatedNote } from "@/types/model";
+import NProgress from "nprogress";
 
 interface NoteWithSnippets extends PopulatedNote {
   snippets: React.ReactNode[];
@@ -36,9 +37,11 @@ export function NotesTab({
 
   if (notes.length === 0) {
     if (searchQuery && !isTyping) {
-      return isSearching
-        ? <Searching searchQuery={searchQuery} type="notes" />
-        : <NotFound searchQuery={searchQuery} type="notes" />;
+      return isSearching ? (
+        <Searching searchQuery={searchQuery} type="notes" />
+      ) : (
+        <NotFound searchQuery={searchQuery} type="notes" />
+      );
     }
     return (
       <EmptyState
@@ -66,13 +69,18 @@ export function NotesTab({
               key={note._id || index}
               className="flex border-b border-primary/20 hover:bg-primary/10 items-start gap-3 p-2 px-4 group cursor-pointer"
               onClick={() => {
-                router.push(`/${author?.userName}/${collection?.slug}/${note.slug}`);
+                NProgress.start();
+                router.push(
+                  `/${author?.userName}/${collection?.slug}/${note.slug}`,
+                );
                 onClose();
               }}
             >
               <div className="flex-1 space-y-3">
                 <div className="w-full min-w-0">
-                  <p className="line-clamp-1 font-medium text-lg">{note.name}</p>
+                  <p className="line-clamp-1 font-medium text-lg">
+                    {note.name}
+                  </p>
                   <p className="text-primary/70 text-sm line-clamp-3">
                     {note.snippets}
                   </p>

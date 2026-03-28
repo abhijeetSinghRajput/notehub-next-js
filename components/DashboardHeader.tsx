@@ -21,6 +21,7 @@ import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "next/navigation";
 import AddNoteDialog from "./AddNoteDialog";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
+import NProgress from "nprogress";
 
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
@@ -78,7 +79,14 @@ const DashboardHeader = () => {
                   <Settings className="h-4 w-4" />
                 </Button>
               </TooltipWrapper>
-              <Button onClick={() => router.push("/login")}>Login</Button>
+              <Button
+                onClick={() => {
+                  NProgress.start();
+                  router.push("/login");
+                }}
+              >
+                Login
+              </Button>
             </div>
           ) : (
             <>

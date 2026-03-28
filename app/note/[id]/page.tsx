@@ -15,6 +15,7 @@ import NoteLayout from "@/components/note/NoteLayout";
 import { useNoteContentProcessing } from "@/hooks/useNoteContentProcessing";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { useTocTracking } from "@/hooks/useTocTracking";
+import NProgress from "nprogress";
 
 // ─── Main component ────────────────────────────────────────────────────────────
 const NotePage = () => {
@@ -57,7 +58,10 @@ const NotePage = () => {
   }, []);
 
   const handleNavigateToEditor = useCallback(() => {
-    if (noteId) router.push(`/note/${noteId}/editor`);
+    if (noteId) {
+      NProgress.start();
+      router.push(`/note/${noteId}/editor`);
+    }
   }, [noteId, router]);
 
   const handleCloseLightbox = useCallback(

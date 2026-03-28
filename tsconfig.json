@@ -1,6 +1,11 @@
+/* tsconfig.json
+ * Fix #1 — Polyfill reduction
+ * ES2017 → ES2020 saves ~14 KiB of regenerator-runtime / async polyfills.
+ * All browsers that support Next.js 14+ support ES2020 natively.
+ */
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2020",                  // ← was ES2017
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,

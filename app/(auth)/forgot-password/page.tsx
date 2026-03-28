@@ -21,6 +21,7 @@ import { LabeledInput } from "@/components//labeled-input";
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import { useRouter } from "next/navigation";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
+import NProgress from "nprogress";
 
 type UserPreview = {
   fullName: string;
@@ -173,6 +174,7 @@ const ForgotPasswordPage = () => {
     });
 
     if (res) {
+      NProgress.start();
       router.push("/login");
     }
   };

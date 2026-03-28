@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { usePathname, useRouter } from "next/navigation";
 import { LucideIcon } from "lucide-react";
 import { Button } from "./button";
+import NProgress from "nprogress";
 
 type TabItem =
   | {
@@ -57,6 +58,8 @@ export function ExpandedTabs({
 
     setSelected(index);
     onChange?.(index);
+
+    NProgress.start();
     router.push(tab.path);
   };
 

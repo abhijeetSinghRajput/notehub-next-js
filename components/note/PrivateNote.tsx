@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/stores/useAuthStore";
+import NProgress from "nprogress";
 
 export default function PrivateNote() {
   const router = useRouter();
@@ -16,10 +17,15 @@ export default function PrivateNote() {
       </div>
       <h2 className="text-2xl font-bold">This note is private</h2>
       <p className="text-muted-foreground max-w-md text-center">
-        The owner of this note has set it to private. You need permission to view
-        it.
+        The owner of this note has set it to private. You need permission to
+        view it.
       </p>
-      <Button onClick={() => router.push(authUser ? "/" : "/login")}>
+      <Button
+        onClick={() => {
+          NProgress.start();
+          router.push(authUser ? "/" : "/login");
+        }}
+      >
         {authUser ? "Browse your notes" : "Sign in to view your notes"}
       </Button>
     </div>

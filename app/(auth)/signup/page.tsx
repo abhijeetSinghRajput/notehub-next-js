@@ -24,6 +24,7 @@ import { LabeledInput } from "@/components/labeled-input";
 import { isEmail, isEmpty, isLength, isNumeric } from "@/lib/validator";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import NProgress from "nprogress";
 
 // ✅ Typed useDebounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -156,7 +157,7 @@ const SignupPage = () => {
     try {
       const result = await sendSignupOtp(trimmedEmail);
       // ✅ Type assertion for result
-      if (result && typeof result === 'object' && 'status' in result) {
+      if (result && typeof result === "object" && "status" in result) {
         const status = (result as { status: number }).status;
         if (status >= 200) {
           setCooldown(60);
@@ -242,6 +243,7 @@ const SignupPage = () => {
 
     try {
       await signup(trimmedData);
+      NProgress.start();
       router.push("/");
     } catch (error) {
       console.error("Signup failed:", error);

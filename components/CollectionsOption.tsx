@@ -32,6 +32,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/app/stores/useLocalStorage";
+import NProgress from "nprogress";
 
 import { ICollection } from "@/types/model"; // Import your ICollection type
 
@@ -41,19 +42,19 @@ interface CollectionsOptionProps {
   onRenameStart: () => void;
 }
 
-const CollectionsOption = ({ trigger, collection, onRenameStart }: CollectionsOptionProps) => {
+const CollectionsOption = ({
+  trigger,
+  collection,
+  onRenameStart,
+}: CollectionsOptionProps) => {
   const [noteName, setNoteName] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isInsertNoteDialogOpen, setIsInsertNoteDialogOpen] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
   const { pinnedCollections, togglePinnedCollection } = useLocalStorage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const {
-    deleteCollection,
-    createNote,
-    status,
-    updateCollectionVisibility,
-  } = useNoteStore();
+  const { deleteCollection, createNote, status, updateCollectionVisibility } =
+    useNoteStore();
   const router = useRouter();
 
   const isPinned = pinnedCollections.includes(collection._id);
@@ -62,7 +63,7 @@ const CollectionsOption = ({ trigger, collection, onRenameStart }: CollectionsOp
     togglePinnedCollection(collection._id);
     setDropdownOpen(false);
     toast.success(
-      isPinned ? "Collection unpinned" : "Collection pinned to top"
+      isPinned ? "Collection unpinned" : "Collection pinned to top",
     );
   }, [collection._id, togglePinnedCollection, isPinned]);
 
@@ -78,6 +79,8 @@ const CollectionsOption = ({ trigger, collection, onRenameStart }: CollectionsOp
     setNoteName("");
     setIsInsertNoteDialogOpen(false);
     setDropdownOpen(false);
+
+    NProgress.start();
     router.push(`/note/${noteId}/editor`);
   }, [noteName, collection._id, createNote, router]);
 
@@ -153,7 +156,13 @@ const CollectionsOption = ({ trigger, collection, onRenameStart }: CollectionsOp
         className: "text-destructive focus:text-destructive",
       },
     ],
-    [isPinned, togglePin, handleRename, collection.visibility, toggleVisibility]
+    [
+      isPinned,
+      togglePin,
+      handleRename,
+      collection.visibility,
+      toggleVisibility,
+    ],
   );
 
   return (
@@ -168,7 +177,7 @@ const CollectionsOption = ({ trigger, collection, onRenameStart }: CollectionsOp
           }
         }}
       >
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle className="text-destructive">
               Delete Collection
@@ -251,7 +260,7 @@ const CollectionsOption = ({ trigger, collection, onRenameStart }: CollectionsOp
           if (!open) setNoteName("");
         }}
       >
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle>Insert New Note</DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -347,7 +356,7 @@ const CollectionsOption = ({ trigger, collection, onRenameStart }: CollectionsOp
             onClick={dropdownItems[4].onClick}
             className={cn(
               "gap-2 text-sm cursor-pointer",
-              dropdownItems[4].className
+              dropdownItems[4].className,
             )}
             onSelect={(e) => e.preventDefault()}
           >

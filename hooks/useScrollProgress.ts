@@ -1,25 +1,42 @@
+/* hooks/useScrollProgress.ts
+ * Fix #7 — Forced reflow audit
+ *
+ * The original implementation was already using passive listener + rAF,
+ * which is correct. No reflow here.
+ *
+ * One micro-fix: cache `document.documentElement.scrollHeight` outside
+ * the rAF so we don't force a layout recalc on every scroll frame.
+ * scrollHeight is stable between paints so reading it once per event
+ * (before rAF queues) is safe.
+ */
 "use client";
 
 import { useEffect, useState } from "react";
 
-/**
- * Tracks the scroll progress as a percentage (0–100).
- */
 export function useScrollProgress() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     let ticking = false;
+
     const onScroll = () => {
       if (ticking) return;
+      // Fix #7 — read scrollHeight here (sync, pre-rAF) so the rAF
+      // callback itself never triggers a forced style recalculation.
+      const total =
+        document.documentElement.scrollHeight - window.innerHeight;
       ticking = true;
+
       requestAnimationFrame(() => {
-        const { scrollY, innerHeight } = window;
-        const total = document.documentElement.scrollHeight - innerHeight;
-        setProgress(total > 0 ? Math.min(100, Math.round((scrollY / total) * 100)) : 0);
+        setProgress(
+          total > 0
+            ? Math.min(100, Math.round((window.scrollY / total) * 100))
+            : 0,
+        );
         ticking = false;
       });
     };
+
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);

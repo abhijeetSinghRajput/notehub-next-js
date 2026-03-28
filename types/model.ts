@@ -1,6 +1,5 @@
 // Create one shared base:
 import { TocItem } from "@/lib/note/types";
-import { Types } from "mongoose";
 
 export interface IBase {
   _id: string;

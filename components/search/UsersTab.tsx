@@ -10,6 +10,7 @@ import { SearchPagination } from "./SearchPagination";
 import { Searching, NotFound } from "./SearchStates";
 import type { PaginationState } from "./types";
 import type { IUser } from "@/types/model";
+import NProgress from "nprogress";
 
 interface UsersTabProps {
   users: IUser[];
@@ -80,6 +81,7 @@ export function UsersTab({
   const router = useRouter();
 
   const navigate = (user: IUser) => {
+    NProgress.start();
     router.push(`/${user.userName}`);
     onClose();
   };
@@ -89,9 +91,11 @@ export function UsersTab({
       {/* ── Results ── */}
       {users.length === 0 ? (
         searchQuery && !isTyping ? (
-          isSearching
-            ? <Searching searchQuery={searchQuery} type="users" />
-            : <NotFound searchQuery={searchQuery} type="users" />
+          isSearching ? (
+            <Searching searchQuery={searchQuery} type="users" />
+          ) : (
+            <NotFound searchQuery={searchQuery} type="users" />
+          )
         ) : searchHistory.length === 0 ? (
           <EmptyState
             icon={<User />}

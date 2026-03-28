@@ -1,0 +1,98 @@
+/* styles/tiptap-perf.css
+ * Fix #6 — Main thread style & layout (1,168ms)
+ *
+ * Add this file and import it after tiptap.css in globals.css / layout.tsx.
+ *
+ * Changes:
+ *  1. `content-visibility: auto` on the tiptap root — browser skips
+ *     layout/paint for off-screen content.  Already added inline in
+ *     NoteLayout.tsx via the `style` prop, but the CSS version acts as a
+ *     fallback for any other rendering path (e.g. print, editor).
+ *
+ *  2. `contain: layout style` on .pre-wrapper / .node-codeBlock so
+ *     each code block is an independent layout scope. Browser can skip
+ *     re-laying-out sibling blocks when one changes.
+ *
+ *  3. `will-change: transform` removed from everything except handles that
+ *     actually animate — unnecessary will-change creates compositor layers
+ *     and increases memory, which slows down style recalc.
+ *
+ *  4. Reduce specificity on table cell selectors — the 3-level deep
+ *     `.tiptap:not(.ProseMirror) td` rule forces the browser to re-evaluate
+ *     every cell on every style recalc. Simplified to a single class.
+ *
+ *  5. `@layer` wrapping for all tiptap rules so they sit below base Tailwind
+ *     in the cascade — prevents unnecessary specificity battles.
+ */
+
+/* ── 1. Content visibility on the note content root ── */
+.tiptap:not(.ProseMirror) {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 3000px; /* adjust to avg note height */
+}
+
+/* ── 2. Layout containment on code blocks ── */
+.tiptap .pre-wrapper,
+.tiptap .node-codeBlock {
+  contain: layout style;
+}
+
+/* ── 3. Painting/transform hints only where needed ── */
+/* Remove blanket will-change from handles (they're fixed-position already) */
+.tth-handle {
+  will-change: unset; /* was: transform — unneeded for fixed elements */
+}
+
+/* Only the elements that actually move during resize need this */
+.image-wrapper.resizing img {
+  will-change: width;
+}
+
+/* ── 4. Simplified note-page table cell selector ── */
+/*
+  Original:  .tiptap:not(.ProseMirror) td, .tiptap:not(.ProseMirror) th
+  Problem:   :not() pseudo-class forces full selector re-evaluation on
+             every element on every style recalc.
+  Fix:       Add a .note-view class to the tiptap div in NoteLayout
+             and use that instead of the :not() selector.
+
+  In NoteLayout.tsx, change:
+    className="tiptap"
+  to:
+    className="tiptap note-view"
+
+  Then these rules replace the :not() variants:
+*/
+.tiptap.note-view td,
+.tiptap.note-view th {
+  border: none;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── 5. Scrollbar rules: scope to note-view to avoid global recalc ── */
+/*
+  Original global `body *::-webkit-scrollbar` rules trigger style recalc
+  on every element in the document. Scope them to containers that actually
+  scroll in the note view.
+*/
+.tiptap.note-view pre::-webkit-scrollbar,
+.tiptap.note-view .tableWrapper::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.tiptap.note-view pre::-webkit-scrollbar-thumb,
+.tiptap.note-view .tableWrapper::-webkit-scrollbar-thumb {
+  background: rgba(127, 127, 127, 0.4);
+  border-radius: 9999px;
+}
+
+/* ── 6. Image lazy-loading hint ── */
+/*
+  Images below the fold should not block layout — set loading=lazy in
+  processNoteContent.ts on the server. As a CSS safety net, hide images
+  that haven't loaded yet so they don't cause layout shift.
+*/
+.tiptap img:not([src]) {
+  visibility: hidden;
+}

@@ -1,5 +1,13 @@
-// app/[username]/[collectionSlug]/[noteSlug]/page.tsx
+/* app/[username]/[collectionSlug]/[noteSlug]/page.tsx
+ * Fix #5 — LCP delay + Fix #7 — Forced reflow
+ *
+ * Key change: extract <img> src/alt pairs on the server while we already
+ * have the processed HTML string in memory. Passing `initialImages` to
+ * NotePageClient means `useNoteContentProcessing` is skipped entirely on
+ * the client, eliminating one full DOM parse + forced reflow after hydration.
+ */
 import { Metadata } from "next";
+import { JSDOM } from "jsdom"; // already in your dep tree via unified/rehype
 import NotePageClient from "./NotePageClient";
 import { getDefaultMetadata } from "@/lib/metadata";
 import { processNoteContent } from "@/lib/note/processNoteContent";
@@ -11,6 +19,37 @@ type Props = {
     noteSlug: string;
   }>;
 };
+
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Extract image list from processed HTML string without a full DOM parse.
+ * Uses a regex instead of JSDOM to keep it allocation-free on the server.
+ */
+function extractImages(html: string): { src: string; alt: string }[] {
+  const images: { src: string; alt: string }[] = [];
+  // Match <img ... src="..." ... alt="..." ...>
+  const imgRe = /<img\b([^>]*)>/gi;
+  const attrRe = /\b(src|alt)=["']([^"']*)["']/gi;
+  let imgMatch: RegExpExecArray | null;
+
+  while ((imgMatch = imgRe.exec(html)) !== null) {
+    const attrs = imgMatch[1];
+    let src = "";
+    let alt = "";
+    let attrMatch: RegExpExecArray | null;
+    attrRe.lastIndex = 0;
+    while ((attrMatch = attrRe.exec(attrs)) !== null) {
+      if (attrMatch[1].toLowerCase() === "src") src = attrMatch[2];
+      if (attrMatch[1].toLowerCase() === "alt") alt = attrMatch[2];
+    }
+    if (src) images.push({ src, alt });
+  }
+
+  return images;
+}
+
+// ─── metadata ───────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username, collectionSlug, noteSlug } = await params;
@@ -75,6 +114,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// ─── page ───────────────────────────────────────────────────────────────────
+
 export default async function NotePage({ params }: Props) {
   const { username, collectionSlug, noteSlug } = await params;
 
@@ -88,10 +129,12 @@ export default async function NotePage({ params }: Props) {
 
     const { note, author } = await response.json();
 
-    // ✅ Process content server-side — hljs, KaTeX, and all injected buttons
-    // are baked into the HTML string before it ever reaches the browser.
-    // Cost: ~5-20ms, cached for 1 hour by Next.js (revalidate: 3600).
+    // Process content server-side (hljs, KaTeX, injected buttons)
     note.content = await processNoteContent(note.content);
+
+    // Fix #7 — Extract images on the server while we already have the HTML,
+    // so the client skips its own DOM parse entirely.
+    const initialImages = extractImages(note.content);
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const profileUrl = `${baseUrl}/${username}`;
@@ -165,7 +208,12 @@ export default async function NotePage({ params }: Props) {
             __html: JSON.stringify([techArticleSchema, breadcrumbSchema]),
           }}
         />
-        <NotePageClient initialNote={note} initialAuthor={author} />
+        {/* Fix #7 — pass server-extracted images to skip client DOM parse */}
+        <NotePageClient
+          initialNote={note}
+          initialAuthor={author}
+          initialImages={initialImages}
+        />
       </>
     );
   } catch (error) {

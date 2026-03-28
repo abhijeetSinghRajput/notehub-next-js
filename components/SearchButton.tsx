@@ -14,6 +14,7 @@ import {
 import { EmptyState } from "@/components/collection/EmptyState";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useLocalStorage } from "@/app/stores/useLocalStorage";
+import NProgress from "nprogress";
 import {
   Dialog,
   DialogClose,
@@ -404,6 +405,7 @@ export function SearchButton() {
                             key={note._id || index}
                             className="flex border-b border-primary/20 hover:bg-primary/10 items-start gap-3 p-2 px-4 group cursor-pointer"
                             onClick={() => {
+                              NProgress.start();
                               router.push(
                                 `/${(note.userId as IUser)?.userName}/${(note.collectionId as any)?.slug}/${note.slug}`,
                               );
@@ -494,6 +496,7 @@ export function SearchButton() {
                             key={user._id || index}
                             onClick={() => {
                               addSearchHistory(user as any);
+                              NProgress.start()
                               router.push(`/${user.userName}`);
                               setOpen(false);
                             }}
@@ -563,6 +566,7 @@ export function SearchButton() {
                           <div
                             key={user._id || index}
                             onClick={() => {
+                              NProgress.start();
                               router.push(`/${user.userName}`);
                               setOpen(false);
                             }}
