@@ -4,8 +4,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { ChevronDown, List, ListOrdered, ListTodo } from "lucide-react";
 import { LIST_BUTTONS } from "./config/menu.config";
 import { Editor } from "@tiptap/core";

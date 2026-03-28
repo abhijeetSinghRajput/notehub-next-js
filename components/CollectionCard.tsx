@@ -1,13 +1,13 @@
-import { Bookmark, Lock, MoreVertical, Pin } from "lucide-react";
+import { Bookmark, Lock, MoreVertical } from "lucide-react";
 import { useRef, useState } from "react";
-import { Input } from "./ui/input";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { Badge } from "./ui/badge";
+import { Badge } from "@/components/ui/badge";
 import CollectionsOption from "./CollectionsOption";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import TooltipWrapper from "./TooltipWrapper";
 import { useNoteStore } from "@/app/stores/useNoteStore";
-import { Card } from "./ui/card";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "@/lib/utils";
 import AvatarStack from "./CollaboratorAvatars";

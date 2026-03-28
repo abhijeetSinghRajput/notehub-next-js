@@ -40,7 +40,7 @@ export function DrawerDialog({ children, triggerButton }: DrawerDialogProps) {
           <DialogHeader>
             <DialogTitle>Edit profile</DialogTitle>
             <DialogDescription>
-              Make changes to your profile here. Click save when you're done.
+              Make changes to your profile here. Click save when you&apos;re done.
             </DialogDescription>
           </DialogHeader>
           {children}
@@ -59,7 +59,7 @@ export function DrawerDialog({ children, triggerButton }: DrawerDialogProps) {
         <DrawerHeader className="text-left">
           <DrawerTitle>Edit profile</DrawerTitle>
           <DrawerDescription>
-            Make changes to your profile here. Click save when you're done.
+            Make changes to your profile here. Click save when you&apos;re done.
           </DrawerDescription>
         </DrawerHeader>
         <div className="px-4">{children}</div>

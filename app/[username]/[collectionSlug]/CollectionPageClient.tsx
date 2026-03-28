@@ -12,9 +12,7 @@ import { CollectionHeader } from "@/components/CollectionHeader";
 import { ICollection, IUser } from "@/types/model";
 import NoteCard from "@/components/NoteCard";
 import SortSelector from "@/components/SortSelector";
-import AddNoteDialog from "@/components/AddNoteDialog";
-import { Button } from "@/components/ui/button";
-import { FileText, Plus } from "lucide-react";
+import { FileText } from "lucide-react";
 
 interface CollectionPageClientProps {
   initialData?: {

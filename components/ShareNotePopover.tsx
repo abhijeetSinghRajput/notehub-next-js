@@ -1,17 +1,13 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
+  Dialog, DialogContent,
+  DialogDescription, DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Share, Copy, Check } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import ShareIcon from "./icons/ShareIcon";
 
 import WhatsappIcon from "./icons/social/WhatsappIcon";

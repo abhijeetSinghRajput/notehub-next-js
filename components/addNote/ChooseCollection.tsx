@@ -1,7 +1,7 @@
 import { ChevronRight, FolderPlus, Lock, PackageOpen } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import AvatarStack from "../CollaboratorAvatars";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import {

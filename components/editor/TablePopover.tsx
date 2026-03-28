@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
 import * as RadixPopover from "@radix-ui/react-popover";
 import type { Editor } from "@tiptap/react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import type { VariantProps } from "class-variance-authority";
-import { buttonVariants } from "../ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 interface TableController {
   command: string;

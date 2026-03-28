@@ -2,8 +2,6 @@
 import AvatarStack from "@/components/CollaboratorAvatars";
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import SharePopoverWrapper from "@/components/ShareNotePopover.client";
-import TooltipWrapper from "@/components/TooltipWrapper";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ImageLightbox from "@/components/ImageLightbox";
@@ -28,11 +26,10 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
   isOwner,
   shareLink,
 }) => {
-  if (!user) return null;
   const { openDialog } = useCollaboratorManager();
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
-    null,
-  );
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  
+  if (!user) return null;
 
   const hasCollaborators = collection?.collaborators?.length > 0;
   const showCollaboratorSection = isOwner || hasCollaborators;

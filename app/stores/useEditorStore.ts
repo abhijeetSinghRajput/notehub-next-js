@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import type { ReactNode, RefObject } from "react";
 
 export const FONT_PRESETS = {
   original: "Roboto, sans-serif",

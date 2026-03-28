@@ -12,23 +12,29 @@ import {
   Strikethrough,
   Underline,
 } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEditorStore } from "@/app/stores/useEditorStore";
 
 export default function EditorBubbleMenu() {
   const { editor } = useCurrentEditor();
   const { openDialog } = useEditorStore();
-  if (!editor) return null;
 
   // -------- Image alignment --------
   const setAlign = (align: string) => {
+    if (!editor) return;
     editor.chain().focus().updateAttributes("image", { align }).run();
   };
 
-  const { align, isImageSelected } = useEditorState({
+  const editorState = useEditorState({
     editor,
     selector: ({ editor }) => {
+      if (!editor) {
+        return {
+          isImageSelected: false,
+          align: null,
+        };
+      }
       const { selection } = editor.state;
 
       const selectedImageNode =
@@ -48,41 +54,49 @@ export default function EditorBubbleMenu() {
     },
   });
 
+  const align = editorState?.align ?? null;
+  const isImageSelected = editorState?.isImageSelected ?? false;
+
+  if (!editor) return null;
+
   const imageActions = [
     {
       tooltip: "Left",
       onClick: () => setAlign("left"),
       isActive: align === "left",
-      isDisabled: !editor
-        .can()
-        .chain()
-        .focus()
-        .updateAttributes("image", { align: "left" })
-        .run(),
+      isDisabled: !editor ||
+        !editor
+          .can()
+          .chain()
+          .focus()
+          .updateAttributes("image", { align: "left" })
+          .run(),
       Icon: AlignLeftIcon,
     },
     {
       tooltip: "Center",
       onClick: () => setAlign("center"),
       isActive: align === "center",
-      isDisabled: !editor
-        .can()
-        .chain()
-        .focus()
-        .updateAttributes("image", { align: "center" })
-        .run(),
+      isDisabled: !editor ||
+        !editor
+          .can()
+          .chain()
+          .focus()
+          .updateAttributes("image", { align: "center" })
+          .run(),
       Icon: AlignCenterIcon,
     },
     {
       tooltip: "Right",
       onClick: () => setAlign("right"),
       isActive: align === "right",
-      isDisabled: !editor
-        .can()
-        .chain()
-        .focus()
-        .updateAttributes("image", { align: "right" })
-        .run(),
+      isDisabled: !editor ||
+        !editor
+          .can()
+          .chain()
+          .focus()
+          .updateAttributes("image", { align: "right" })
+          .run(),
       Icon: AlignRightIcon,
     },
   ];
@@ -91,36 +105,36 @@ export default function EditorBubbleMenu() {
     {
       command: "toggleBold",
       tooltip: "Bold",
-      onClick: () => editor.chain().focus().toggleBold().run(),
-      isActive: editor.isActive("bold"),
+      onClick: () => editor?.chain().focus().toggleBold().run(),
+      isActive: !!editor && editor.isActive("bold"),
       Icon: Bold,
     },
     {
       command: "toggleItalic",
       tooltip: "Italic",
-      onClick: () => editor.chain().focus().toggleItalic().run(),
-      isActive: editor.isActive("italic"),
+      onClick: () => editor?.chain().focus().toggleItalic().run(),
+      isActive: !!editor && editor.isActive("italic"),
       Icon: Italic,
     },
     {
       command: "toggleUnderline",
       tooltip: "Underline",
-      onClick: () => editor.chain().focus().toggleUnderline().run(),
-      isActive: editor.isActive("underline"),
+      onClick: () => editor?.chain().focus().toggleUnderline().run(),
+      isActive: !!editor && editor.isActive("underline"),
       Icon: Underline,
     },
     {
       command: "toggleStrike",
       tooltip: "Strike",
-      onClick: () => editor.chain().focus().toggleStrike().run(),
-      isActive: editor.isActive("strike"),
+      onClick: () => editor?.chain().focus().toggleStrike().run(),
+      isActive: !!editor && editor.isActive("strike"),
       Icon: Strikethrough,
     },
     {
       command: "toggleCode",
       tooltip: "Inline Code",
-      onClick: () => editor.chain().focus().toggleCode().run(),
-      isActive: editor.isActive("code"),
+      onClick: () => editor?.chain().focus().toggleCode().run(),
+      isActive: !!editor && editor.isActive("code"),
       Icon: Code,
     },
   ];
@@ -167,8 +181,8 @@ export default function EditorBubbleMenu() {
             ),
           )}
 
-          <span className="bg-border h-8 w-px mx-2"/>
-          
+          <span className="bg-border h-8 w-px mx-2" />
+
           <Button
             variant={"ghost"}
             className={cn(BASE_CLASS, editor.isActive("link") && "is-active")}

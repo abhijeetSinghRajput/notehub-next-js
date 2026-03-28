@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 // UI components
 import {
@@ -62,13 +62,20 @@ interface FieldProps {
 
 function Field({ label, field, apiEndPoint }: FieldProps) {
   const { authUser, updateUserField } = useAuthStore();
-  if (!authUser) return null;
 
-  const [value, setValue] = useState(authUser[field] || "");
+  const [value, setValue] = useState("");
   const [valid, setValid] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (authUser) {
+      setValue(authUser[field] || "");
+    }
+  }, [authUser, field]);
+
+  if (!authUser) return null;
 
   const validateUsername = (val: string) => {
     const v = val.trim();

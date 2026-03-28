@@ -2,7 +2,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CollectionPageClient from "./CollectionPageClient";
-import { getDefaultMetadata } from "@/lib/metadata";
 import { cache } from "react";
 
 type Props = {

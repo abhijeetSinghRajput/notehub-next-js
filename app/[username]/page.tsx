@@ -2,7 +2,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import UserPageClient from "./UserPageClient";
-import { IUser } from "@/types/model";
 import { getDefaultMetadata } from "@/lib/metadata";
 import { cache } from "react";
 
@@ -89,71 +88,74 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function UserPage({ params }: Props) {
   const { username } = await params;
 
+  let user;
+
   try {
-    const user = await getUser(username);
-    if(!user) notFound();
-
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    const profileUrl = `${baseUrl}/${username}`;
-
-    const personSchema = {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      name: user.fullName,
-      url: profileUrl,
-      image: {
-        "@type": "ImageObject",
-        url: user.avatar,
-        width: 400,
-        height: 400,
-      },
-      identifier: user.userName,
-    };
-
-    const profilePageSchema = {
-      "@context": "https://schema.org",
-      "@type": "ProfilePage",
-      name: `${user.fullName} (@${user.userName}) — NoteHub Profile`,
-      url: profileUrl,
-      description: `View ${user.fullName}'s collections and notes on NoteHub.`,
-      mainEntity: personSchema,
-      isPartOf: {
-        "@type": "WebSite",
-        name: "NoteHub",
-        url: baseUrl,
-      },
-      breadcrumb: {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: "Home",
-            item: baseUrl,
-          },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: user.fullName,
-            item: profileUrl,
-          },
-        ],
-      },
-    };
-
-    return (
-      <>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify([personSchema, profilePageSchema]),
-          }}
-        />
-        <UserPageClient initialUser={user} />
-      </>
-    );
+    user = await getUser(username);
   } catch (error) {
     console.error("Error loading user page:", error);
     notFound();
   }
+
+  if (!user) notFound();
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  const profileUrl = `${baseUrl}/${username}`;
+
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: user.fullName,
+    url: profileUrl,
+    image: {
+      "@type": "ImageObject",
+      url: user.avatar,
+      width: 400,
+      height: 400,
+    },
+    identifier: user.userName,
+  };
+
+  const profilePageSchema = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    name: `${user.fullName} (@${user.userName}) — NoteHub Profile`,
+    url: profileUrl,
+    description: `View ${user.fullName}'s collections and notes on NoteHub.`,
+    mainEntity: personSchema,
+    isPartOf: {
+      "@type": "WebSite",
+      name: "NoteHub",
+      url: baseUrl,
+    },
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: baseUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: user.fullName,
+          item: profileUrl,
+        },
+      ],
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([personSchema, profilePageSchema]),
+        }}
+      />
+      <UserPageClient initialUser={user} />
+    </>
+  );
 }

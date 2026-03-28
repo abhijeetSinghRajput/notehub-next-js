@@ -5,10 +5,10 @@ import {
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { ExternalLink, LinkIcon, Trash2 } from "lucide-react";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import { useEditorStore } from "@/app/stores/useEditorStore";
 import { isValidUrl } from "@/lib/validator";
 

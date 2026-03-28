@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, ChevronsUpDown, Loader2, LogOut, Settings } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ChevronsUpDown, Loader2, LogOut, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +20,7 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import BadgeIcon from "../icons/BadgeIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import SmartImage from "../ui/smart-image";
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 
 const NavUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -54,7 +52,7 @@ const NavUser = () => {
             >
               {/* Sidebar trigger avatar */}
               <div className="relative size-8 shrink-0 rounded-lg overflow-hidden bg-muted">
-                <SmartImage
+                <CloudinaryImage
                   src={authUser?.avatar || "/avatar.svg"}
                   alt={authUser?.fullName || "User Profile Photo"}
                   fill
@@ -92,7 +90,7 @@ const NavUser = () => {
               >
                 {/* Dropdown avatar */}
                 <div className="relative size-8 shrink-0 rounded-full overflow-hidden">
-                  <SmartImage
+                  <CloudinaryImage
                     src={authUser?.avatar || "/avatar.svg"}
                     alt={authUser?.fullName || "User"}
                     fill

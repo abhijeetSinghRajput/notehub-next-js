@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useAdminStore } from "@/app/stores/useAdminStore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,

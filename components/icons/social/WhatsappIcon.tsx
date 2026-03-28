@@ -3,7 +3,6 @@ import React from "react";
 
 const WhatsappIcon = ({
   size = 24,
-  color = "currentColor",
   className = "",
   ...props
 }: IconProps) => {

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { ChevronLeft, Lock } from "lucide-react";
 import { LabeledInput } from "@/components/labeled-input";
-import { Switch } from "../ui/switch";
-import { Label } from "../ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import FileIcon from "../icons/FileIcon";
 import { useRouter } from "next/navigation";
 import { ICollection, INote } from "@/types/model";

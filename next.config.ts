@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
 
   images: {
     formats: ["image/avif", "image/webp"],
+    // Denser breakpoints — covers 388px, 426px, 441px display sizes
+    deviceSizes: [320, 420, 540, 640, 768, 1024, 1280, 1500],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 420],
+    
     remotePatterns: [
       {
         protocol: "https",

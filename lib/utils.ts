@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { ICollection, INote, IUser, PopulatedNote } from "@/types/model";
-import { Heading } from "@/components/ArticleCard";
+import type { PopulatedNote } from "@/types/model";
+import { Heading } from "@/components/article-card";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

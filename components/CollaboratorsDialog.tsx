@@ -2,7 +2,6 @@
 "use client";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import BadgeIcon from "@/components/icons/BadgeIcon";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter } from "@/components/ui/card";
 import {

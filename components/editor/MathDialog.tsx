@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "mathlive";
 import type { Editor } from "@tiptap/react";
 

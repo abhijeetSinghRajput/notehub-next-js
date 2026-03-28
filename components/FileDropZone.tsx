@@ -1,8 +1,8 @@
 import { ImageIcon, Loader2, Upload, X } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { FileDrop } from "react-file-drop";
-import { Skeleton } from "./ui/skeleton";
-import { Button } from "./ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useImageStore } from "@/app/stores/useImageStore";
 import { toast } from "sonner";
 
@@ -15,7 +15,8 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "./ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
+import Image from "next/image";
 
 interface FileDropZoneProps {
   onImageSelect: (url: string) => void;
@@ -109,11 +110,12 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({ onImageSelect }) => {
                 key={index}
                 className="relative rounded aspect-square bg-muted/30 overflow-hidden flex items-center justify-center group"
               >
-                <img
+                <Image
                   src={url}
-                  onClick={() => onImageSelect(url)}
-                  className="w-full h-full object-cover"
                   alt="note"
+                  fill
+                  className="object-cover"
+                  onClick={() => onImageSelect(url)}
                 />
                 {isRemoving === _id && (
                   <div className="absolute z-10 inset-0 bg-black/50 flex items-center justify-center gap-2 text-white/70">

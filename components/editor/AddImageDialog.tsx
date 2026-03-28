@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import type { Editor } from "@tiptap/react";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { ImagePlusIcon } from "lucide-react";
 import FileDropZone from "../FileDropZone";
 import { useEditorStore } from "@/app/stores/useEditorStore";

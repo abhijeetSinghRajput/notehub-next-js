@@ -1,8 +1,8 @@
 import React from 'react'
-import { Skeleton } from '../ui/skeleton'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const HomePageNotesSkeleton = () => {
-  let collectionLength = localStorage.getItem("collectionLength");
+  const collectionLength = localStorage.getItem("collectionLength");
   const parsedLength = collectionLength ? (JSON.parse(collectionLength) as unknown[]).length : 0;
 
   const skeletons = [];

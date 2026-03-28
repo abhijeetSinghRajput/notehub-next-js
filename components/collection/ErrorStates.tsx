@@ -27,7 +27,7 @@ export const NotFound = () => {
         <TriangleAlert className="size-12" />
         <h2 className="text-2xl font-bold">Collection Not Found</h2>
         <p className="text-muted-foreground max-w-sm">
-          The collection you're looking for doesn't exist or may have been
+          The collection you&apos;re looking for doesn&apos;t exist or may have been
           removed.
         </p>
         <Button asChild variant="outline">

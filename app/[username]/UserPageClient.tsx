@@ -29,9 +29,7 @@ import WritingTipsCard from "@/components/WritingTipsCard";
 import AddNoteDialog from "@/components/AddNoteDialog";
 import SharePopoverWrapper from "@/components/ShareNotePopover.client";
 import ImageLightbox from "@/components/ImageLightbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Image from "next/image";
-import SmartImage from "@/components/ui/smart-image";
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 
 const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   const { username } = useParams();
@@ -142,7 +140,7 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
         <Card className="max-w-3xl w-full mx-auto p-8 text-center">
           <h2 className="text-xl font-semibold">User not found</h2>
           <p className="text-muted-foreground mt-2">
-            The user @{username} doesn't exist or you don't have permission to
+            The user @{username} doesn&apos;t exist or you don&apos;t have permission to
             view this profile.
           </p>
         </Card>
@@ -171,7 +169,7 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
           style={{ aspectRatio: "3/1" }}
           onClick={() => setSelectedImage(user?.cover || "/profile-cover.svg")}
         >
-          <SmartImage
+          <CloudinaryImage
             src={user?.cover || "/profile-cover.svg"}
             alt="User cover photo"
             fill
@@ -190,7 +188,7 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
               role="button"
               aria-label="View profile photo"
             >
-              <SmartImage
+              <CloudinaryImage
                 src={user?.avatar || "/avatar.svg"}
                 alt="User avatar"
                 fill

@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Bug, Github, Linkedin, Mail } from "lucide-react";
-import React from "react";
 
 const PolicyPage = () => {
   return (
@@ -20,7 +19,7 @@ const PolicyPage = () => {
 
       <h3>Introduction</h3>
       <p className="text-muted-foreground">
-        Welcome to <strong>NoteHub</strong> ("we", "our", "us"). We value your
+        Welcome to <strong>NoteHub</strong> (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;). We value your
         privacy and are committed to protecting your personal information. This
         Privacy Policy explains how we collect, use, and protect your data when
         you use our application.
@@ -49,7 +48,7 @@ const PolicyPage = () => {
 
       <h3>How We Use Your Information</h3>
       <ul className="text-muted-foreground">
-        <li>Provide and improve NoteHub's features.</li>
+        <li>Provide and improve NoteHub&apos;s features.</li>
         <li>Sync and store your notes securely.</li>
         <li>Analyze usage for app optimization.</li>
         <li>Ensure security and prevent abuse.</li>
@@ -123,7 +122,7 @@ const PolicyPage = () => {
         <CardHeader>
           <CardTitle>Contact Information</CardTitle>
           <CardDescription>
-            Have questions or ideas about this app? We'd love to hear from you
+            Have questions or ideas about this app? We&apos;d love to hear from you
           </CardDescription>
         </CardHeader>
         <CardContent>

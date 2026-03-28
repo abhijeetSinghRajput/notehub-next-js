@@ -4,8 +4,7 @@ import React from "react";
 
 const LogoIcon = React.forwardRef<SVGSVGElement, IconProps>(
   (
-    { size = 24, color = "currentColor", className = "", style, ...props },
-    ref,
+    { size = 24, color = "currentColor", ...props  },
   ) => (
     <svg
       width={size}
@@ -13,6 +12,7 @@ const LogoIcon = React.forwardRef<SVGSVGElement, IconProps>(
       viewBox="0 0 128 128"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      {...props}
     >
       <g clipPath="url(#clip0_79_2)">
         <circle cx="64" cy="64" r="64" fill="black" />

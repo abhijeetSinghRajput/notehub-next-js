@@ -22,10 +22,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "./ui/separator";
+import { Separator } from "@/components/ui/separator";
 import { axiosInstance } from "@/lib/axios";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Badge } from "./ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { stripLatex } from "@/lib/utils";
 import { removeStopwords } from "stopword";
 import {

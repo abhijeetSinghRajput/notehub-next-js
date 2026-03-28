@@ -87,7 +87,7 @@ export interface AuthStore {
   checkEmailStatus: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthStore>((set, get) => ({
+export const useAuthStore = create<AuthStore>((set) => ({
   authUser: null,
   isCheckingAuth: true,
   isSigningUp: false,
@@ -221,7 +221,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         signal,
       });
       return response.data;
-    } catch (error) {
+    } catch (_) {
       return null;
     }
   },
@@ -257,7 +257,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         params: { query },
       });
       return response.data;
-    } catch (error) {
+    } catch (_) {
       return [];
     }
   },
@@ -267,7 +267,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         params: { query },
       });
       return response.data;
-    } catch (error) {
+    } catch (_) {
       return [];
     }
   },

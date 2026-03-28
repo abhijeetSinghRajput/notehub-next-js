@@ -6,7 +6,7 @@ import { GripHorizontal, GripVertical, Plus } from "lucide-react";
 import { findTable, TableMap } from "prosemirror-tables";
 import { TablePopover } from "./TablePopover";
 import { TABLE_COLUMN_CONTROLS, TABLE_ROW_CONTROLS } from "./config/menu.config";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 const HANDLE_SIZE = 20;
 const GAP = 3;
@@ -85,8 +85,6 @@ export default function TableHandles() {
     isMenuRef.current = isRowMenu || isColMenu;
   }, [isRowMenu, isColMenu]);
 
-  if (!editor) return null;
-
   // ── Schedule a synchronous position update inside rAF ─────────────────────
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
@@ -163,6 +161,8 @@ export default function TableHandles() {
 
   // ── Add row / col ─────────────────────────────────────────────────────────
   const addRow = useCallback(() => {
+    if(!editor) return;
+
     const info = findTable(editor.state.selection.$from);
     if (!info) return;
     const map = TableMap.get(info.node);
@@ -171,6 +171,8 @@ export default function TableHandles() {
   }, [editor]);
 
   const addCol = useCallback(() => {
+    if (!editor) return;
+    
     const info = findTable(editor.state.selection.$from);
     if (!info) return;
     const map = TableMap.get(info.node);
@@ -256,6 +258,7 @@ export default function TableHandles() {
     };
   }, [editor, activate, hide, scheduleUpdate, clearHL, closeMenus]);
 
+  if (!editor) return null;
   const menuOpen = isRowMenu || isColMenu;
 
   return (

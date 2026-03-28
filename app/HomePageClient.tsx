@@ -2,13 +2,13 @@
 import { useEffect, useCallback, useMemo, useRef } from "react";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { ArticleCard } from "@/components/ArticleCard";
 import { noteToArticle } from "@/lib/utils";
 import { ArticleCardSkeleton } from "@/components/ArticleCardSkeleton";
 import { CheckCircle2 } from "lucide-react";
 import { PopulatedNote } from "@/types/model";
 import OnboardingCard from "@/components/OnboardingCard";
 import WritingTipsCard from "@/components/WritingTipsCard";
+import { ArticleCard } from "@/components/article-card";
 
 type Props = {
   initialData?: any;
@@ -94,9 +94,9 @@ const HomePageClient = ({ initialData }: Props) => {
           <div className="relative bg-muted rounded-full p-4 shadow-lg">
             <CheckCircle2 className="h-12 w-12 text-green-500" />
           </div>
-          <h3 className="mt-6 text-xl font-semibold">You've reached the end</h3>
+          <h3 className="mt-6 text-xl font-semibold">You&apos;ve reached the end</h3>
           <p className="mt-2 text-center text-muted-foreground max-w-md">
-            That's all for now. Check back later for more content.
+            That&apos;s all for now. Check back later for more content.
           </p>
         </div>
       )}

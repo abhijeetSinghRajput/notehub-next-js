@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
+import NextTopLoader from 'nextjs-toploader';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
@@ -17,7 +18,6 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import AppShell from "@/components/providers/AppShell";
 
 import { Toaster } from "sonner";
-import { NavigationLoader } from "@/components/NavigationLoader";
 import React from "react";
 
 const baseUrl =
@@ -143,7 +143,13 @@ export default function RootLayout({
           antialiased
         `}
       >
-        <NavigationLoader />
+        <NextTopLoader
+          color="#6366f1"
+          height={4}
+          showSpinner={false}
+          easing="cubic-bezier(0.4,0,0.2,1)"
+          speed={200}
+        />
 
         <AuthProvider>
           <ThemeProvider defaultTheme="system" storageKey="theme">

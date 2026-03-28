@@ -14,7 +14,7 @@ import { Loader2 } from "lucide-react";
 
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { cn } from "@/lib/utils";
-import { Label } from "./ui/label";
+import { Label } from "@/components/ui/label";
 import BadgeIcon from "./icons/BadgeIcon";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import { isEmail } from "@/lib/validator";
@@ -30,44 +30,49 @@ const UpdateEmailCard = () => {
     authUser,
   } = useAuthStore();
 
-  if (!authUser) return;
-
   const [newEmail, setNewEmail] = useState("");
   const [otp, setOtp] = useState("");
 
   const [emailError, setEmailError] = useState("");
   const [emailStatus, setEmailStatus] = useState<"available" | "taken" | null>(
     null,
-  ); // "available" | "taken"
+  );
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
   const abortRef = useRef<AbortController | null>(null);
 
-  const checkAvailability = useCallback(async (email: string) => {
-    // Abort previous in-flight request
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
+  const checkAvailability = useCallback(
+    async (email: string) => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-    setCheckingEmail(true);
-    try {
-      const available = await isEmailAvailable(email, abortRef.current.signal);
+      setCheckingEmail(true);
 
-      if (available === null) return; // Was aborted — ignore, don't update state
+      try {
+        const available = await isEmailAvailable(email, controller.signal);
 
-      setEmailStatus(available ? "available" : "taken");
-      setEmailError(available ? "" : "Email already in use");
-    } catch {
-      setEmailStatus(null);
-    } finally {
-      setCheckingEmail(false);
-    }
-  }, []);
+        if (available === null || abortRef.current !== controller) return;
+
+        setEmailStatus(available ? "available" : "taken");
+        setEmailError(available ? "" : "Email already in use");
+      } catch {
+        if (abortRef.current !== controller) return;
+        setEmailStatus(null);
+      } finally {
+        if (abortRef.current === controller) {
+          setCheckingEmail(false);
+        }
+      }
+    },
+    [isEmailAvailable],
+  );
 
   // Cleanup on unmount
   useEffect(() => {
     return () => abortRef.current?.abort();
-  }, []); // Empty deps - no external dependencies
+  }, []);
 
   const debouncedCheckAvailability = useDebounceCallback(
     checkAvailability,
@@ -76,6 +81,9 @@ const UpdateEmailCard = () => {
 
   useEffect(() => {
     if (!newEmail) {
+      abortRef.current?.abort();
+      debouncedCheckAvailability.cancel();
+
       setEmailStatus(null);
       setEmailError("");
       setCheckingEmail(false);
@@ -84,24 +92,24 @@ const UpdateEmailCard = () => {
 
     const trimmedEmail = newEmail.trim();
 
-    // ✅ instant format validation (NO debounce)
     if (!isEmail(trimmedEmail)) {
+      abortRef.current?.abort();
       debouncedCheckAvailability.cancel();
+
       setEmailStatus(null);
       setEmailError("Invalid email format");
       setCheckingEmail(false);
       return;
     }
 
-    // ✅ valid format → debounce API call
     setEmailError("");
     setEmailStatus(null);
     debouncedCheckAvailability(trimmedEmail);
 
     return () => debouncedCheckAvailability.cancel();
-  }, [newEmail]); // ✅ Now safe - only newEmail triggers effect
+  }, [newEmail, debouncedCheckAvailability]);
 
-  /* ------------------ OTP cooldown ------------------ */
+  // OTP cooldown
   useEffect(() => {
     if (!cooldown) return;
     const interval = setInterval(() => {
@@ -110,7 +118,6 @@ const UpdateEmailCard = () => {
     return () => clearInterval(interval);
   }, [cooldown]);
 
-  /* ------------------ Handlers ------------------ */
   const handleSendOtp = async () => {
     if (emailStatus !== "available") return;
     const res = await requestEmailUpdateOtp(newEmail);
@@ -119,8 +126,11 @@ const UpdateEmailCard = () => {
 
   const handleConfirmEmail = async () => {
     if (otp.length !== 6) return;
+
+    debouncedCheckAvailability.cancel();
+    abortRef.current?.abort();
+
     const res = await confirmEmailUpdate({ email: newEmail, otp });
-    // clean up the state
 
     setNewEmail("");
     setOtp("");
@@ -129,6 +139,8 @@ const UpdateEmailCard = () => {
     setCheckingEmail(false);
     setCooldown(0);
   };
+
+  if (!authUser) return null;
 
   return (
     <div className="space-y-2">

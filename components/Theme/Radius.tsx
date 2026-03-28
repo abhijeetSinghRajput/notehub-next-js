@@ -1,6 +1,6 @@
 import { Label } from "@radix-ui/react-dropdown-menu";
 import React from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 const radius = [0, 0.3, 0.5, 0.75, 1.0];
 

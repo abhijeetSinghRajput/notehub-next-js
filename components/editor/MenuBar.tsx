@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useCurrentEditor } from "@tiptap/react";
 import { useNoteStore } from "@/app/stores/useNoteStore";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   UploadCloudIcon,
   Loader2,
@@ -89,15 +89,6 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
     };
   }, [editor]);
 
-  if (!editor) return null;
-
-  const isEmptyContent = (html: string) => {
-    if (html.replace(/<[^>]*>/g, "").trim().length > 0) return false;
-    if (/<img\s/i.test(html)) return false;
-    if (/data-type="(inline-math|block-math)"/.test(html)) return false;
-    return true;
-  };
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -116,6 +107,16 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [noteId, status.noteContent.state, status.note.state, editor]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  if (!editor) return null;
+
+  const isEmptyContent = (html: string) => {
+    if (html.replace(/<[^>]*>/g, "").trim().length > 0) return false;
+    if (/<img\s/i.test(html)) return false;
+    if (/data-type="(inline-math|block-math)"/.test(html)) return false;
+    return true;
+  };
+
+  
   const handleContentSave = async () => {
     if (!noteId) return;
 

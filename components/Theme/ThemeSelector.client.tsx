@@ -5,7 +5,6 @@ import { useLocalStorage } from "@/app/stores/useLocalStorage";
 import { useThemeStore } from "@/app/stores/useThemeStore";
 import { useTheme } from "@/components/theme-provider";
 import ThemeSkeletonIcon from "@/components/icons/ThemeSkeletonIcon";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 

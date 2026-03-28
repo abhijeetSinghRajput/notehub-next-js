@@ -16,15 +16,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-
 import { LabeledInput } from "@/components//labeled-input";
-
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import SmartImage from "@/components/ui/smart-image";
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 
 type UserPreview = {
   fullName: string;
@@ -197,7 +193,7 @@ const ForgotPasswordPage = () => {
             {user && (
               <div className="flex gap-2 bg-accent/50 p-2 rounded-xl items-center">
                 <div className="relative size-10 shrink-0 rounded-full overflow-hidden">
-                  <SmartImage
+                  <CloudinaryImage
                     src={user.avatar || "/avatar.svg"}
                     alt={user?.fullName || "User"}
                     fill

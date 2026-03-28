@@ -52,7 +52,7 @@ export default function AppBreadcrumbs() {
     let path = "/";
 
     for (let i = 0; i < segments.length; i++) {
-      let segment = segments[i];
+      const segment = segments[i];
       path += `${segment}/`;
       
       if (segment === "note") {

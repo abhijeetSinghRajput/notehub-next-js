@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { ChevronLeft, Globe, Loader2, Lock } from "lucide-react";
 import FolderPlusIcon from "../icons/FolderPlusIcon";
-import { Switch } from "../ui/switch";
-import { Label } from "../ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { LabeledInput } from "@/components/labeled-input";
 import { ICollection } from "@/types/model";

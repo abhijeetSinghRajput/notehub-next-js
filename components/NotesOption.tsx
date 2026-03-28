@@ -5,18 +5,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "./ui/dropdown-menu";
-import { Button } from "./ui/button";
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import {
-  ChevronRight,
-  Folder,
-  FolderOutput,
+  ChevronRight, FolderOutput,
   Lock,
   LockOpen,
   Pencil,
   Trash2,
-  UserPlus2,
-  Users2,
+  UserPlus2
 } from "lucide-react";
 import {
   Command,
@@ -25,7 +22,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "./ui/command";
+} from "@/components/ui/command";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import {
   Dialog,
@@ -34,12 +31,11 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "./ui/dialog";
-import { Separator } from "./ui/separator";
+} from "@/components/ui/dialog";
 import { useCollaboratorManager } from "@/contex/CollaboratorManagerContext";
 import { cn } from "@/lib/utils";
 import AvatarStack from "./CollaboratorAvatars";
-import { Badge } from "./ui/badge";
+import { Badge } from "@/components/ui/badge";
 import FolderIcon from "./icons/FolderIcon";
 import { INote } from "@/types/model";
 

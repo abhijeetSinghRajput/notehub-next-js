@@ -7,7 +7,8 @@ import LogoText from "@/components/icons/logo/LogoText";
 import LogoIcon from "@/components/icons/logo/LogoIcon";
 import LogoFooter from "@/components/icons/logo/LogoFooter";
 
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 const GithubIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
@@ -127,6 +128,7 @@ const Footer = ({ className }: { className: string }) => {
             <div className="flex items-center gap-3 mt-1">
               {socialLinks.map(({ href, icon: Icon, label }) => (
                 <Button
+                  key={href}
                   asChild
                   variant={"outline"}
                   size="icon"
@@ -187,14 +189,13 @@ const Footer = ({ className }: { className: string }) => {
             © 2025 NoteHub. All rights reserved.
           </p>
           <div className="group flex items-center gap-3">
-            <img
+            <Image
               src="/owner.jpg"
               alt="Abhijeet Singh Rajput"
-              width="36"
-              height="36"
-              loading="lazy"
-              decoding="async"
+              width={36}
+              height={36}
               className="size-9 rounded-xl border border-border transition-all duration-300 group-hover:border-primary"
+              priority={false} // optional
             />
             <div>
               <p className="text-sm text-muted-foreground">

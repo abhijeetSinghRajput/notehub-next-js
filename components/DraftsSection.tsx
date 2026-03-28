@@ -6,7 +6,7 @@ import {
 import { useDraftStore } from "@/app/stores/useDraftStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
-} from "./ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { useState } from "react";
 
 const DraftsSection = () => {

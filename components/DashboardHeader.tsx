@@ -7,7 +7,6 @@ import { Plus, Settings } from "lucide-react";
 
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { SearchButton } from "@/components/SearchButton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggleMini } from "@/components/mode-toggle";
 import {
   Tooltip,
@@ -21,8 +20,7 @@ import Link from "next/link";
 import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "next/navigation";
 import AddNoteDialog from "./AddNoteDialog";
-import Image from "next/image";
-import SmartImage from "./ui/smart-image";
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
@@ -103,7 +101,7 @@ const DashboardHeader = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="relative size-8 shrink-0 rounded-full overflow-hidden">
-                      <SmartImage
+                      <CloudinaryImage
                         src={authUser?.avatar || "/avatar.svg"}
                         alt={authUser?.fullName || "User"}
                         fill

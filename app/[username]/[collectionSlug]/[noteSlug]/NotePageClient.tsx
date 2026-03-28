@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useCallback, useState } from "react";
-import Head from "next/head";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { axiosInstance } from "@/lib/axios";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { useImageStore } from "@/app/stores/useImageStore";
 import { FONT_SIZE, useEditorStore } from "@/app/stores/useEditorStore";
 import type { INote, IUser } from "@/types/model";
 

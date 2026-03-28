@@ -8,7 +8,7 @@ import {
   FONT_PRESETS,
   useEditorStore,
 } from "@/app/stores/useEditorStore";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import ThemeSelector from "@/components/Theme/ThemeSelector.client";
 
 const EditorTypographyControls = () => {

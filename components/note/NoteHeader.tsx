@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import BadgeIcon from "@/components/icons/BadgeIcon";
@@ -9,8 +8,7 @@ import { Calendar, Clock, Globe, Lock, Pencil } from "lucide-react";
 import { format, formatDate, formatTimeAgo } from "@/lib/utils";
 import DateMeta from "./DateMeta";
 import type { INote } from "@/types/model";
-import Image from "next/image";
-import SmartImage from "../ui/smart-image";
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 
 export type NoteHeaderProps = {
   note: INote;
@@ -44,7 +42,7 @@ export default function NoteHeader({
           className="flex flex-row items-center w-max gap-3"
         >
           <div className="relative size-12 shrink-0 rounded-full overflow-hidden">
-            <SmartImage
+            <CloudinaryImage
               src={author.avatar || "/avatar.svg"}
               alt={author?.fullName || "Author"}
               fill
