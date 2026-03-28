@@ -22,6 +22,7 @@ import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "next/navigation";
 import AddNoteDialog from "./AddNoteDialog";
 import Image from "next/image";
+import SmartImage from "./ui/smart-image";
 
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
@@ -102,13 +103,14 @@ const DashboardHeader = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="relative size-8 shrink-0 rounded-full overflow-hidden">
-                      <Image
-                        src={authUser.avatar || "/avatar.svg"}
+                      <SmartImage
+                        src={authUser?.avatar || "/avatar.svg"}
                         alt={authUser?.fullName || "User"}
                         fill
                         sizes="32px"
                         className="object-cover"
-                        priority
+                        loading="eager"
+                        fetchPriority="low"
                       />
                     </div>
                   </TooltipTrigger>

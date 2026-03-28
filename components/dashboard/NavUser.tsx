@@ -22,6 +22,7 @@ import BadgeIcon from "../icons/BadgeIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import SmartImage from "../ui/smart-image";
 
 const NavUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -51,8 +52,9 @@ const NavUser = () => {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
+              {/* Sidebar trigger avatar */}
               <div className="relative size-8 shrink-0 rounded-lg overflow-hidden bg-muted">
-                <Image
+                <SmartImage
                   src={authUser?.avatar || "/avatar.svg"}
                   alt={authUser?.fullName || "User Profile Photo"}
                   fill
@@ -88,14 +90,16 @@ const NavUser = () => {
                 onClick={() => isMobile && setOpenMobile(false)}
                 className="h-auto!"
               >
+                {/* Dropdown avatar */}
                 <div className="relative size-8 shrink-0 rounded-full overflow-hidden">
-                  <Image
-                    src={authUser.avatar || "/avatar.svg"}
+                  <SmartImage
+                    src={authUser?.avatar || "/avatar.svg"}
                     alt={authUser?.fullName || "User"}
                     fill
                     sizes="32px"
                     className="object-cover"
-                    priority
+                    loading="lazy"
+                    fetchPriority="low"
                   />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">

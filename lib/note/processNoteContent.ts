@@ -190,6 +190,45 @@ function rehypeTableButtons() {
   };
 }
 
+// ── Plugin 6: Image optimization ─────────────────────────────────
+// - add loading="lazy"
+// - add srcset
+
+function rehypeOptimizeImages() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "img") return;
+
+      const src = node.properties?.src as string;
+      if (!src) return;
+
+      // Optimize URL
+      if (src.includes("res.cloudinary.com") && !src.includes("f_auto")) {
+        node.properties.src = src.replace(
+          "/upload/",
+          "/upload/f_auto,q_auto,w_800/"
+        );
+      }
+
+      // Add lazy loading to all images
+      node.properties.loading = "lazy";
+      node.properties.decoding = "async";
+
+      // Add srcset for Cloudinary images
+      const optimizedSrc = node.properties.src as string;
+      if (optimizedSrc.includes("res.cloudinary.com")) {
+        const srcset = [320, 640, 800]
+          .map((w) => `${optimizedSrc.replace(/w_\d+/, `w_${w}`)} ${w}w`)
+          .join(", ");
+
+        node.properties.srcset = srcset;
+        node.properties.sizes =
+          "(max-width: 768px) 100vw, 800px";
+      }
+    });
+  };
+}
+
 // ── Main export ──────────────────────────────────────────────────────────────
 export async function processNoteContent(html: string): Promise<string> {
   if (!html?.trim()) return html;
@@ -201,6 +240,7 @@ export async function processNoteContent(html: string): Promise<string> {
     .use(rehypeCodeHeaders)
     .use(rehypeHeadingButtons)
     .use(rehypeTableButtons)
+    .use(rehypeOptimizeImages)
     .use(rehypeStringify, { allowDangerousHtml: true }) // needed so raw() nodes pass through
     .process(html);
 

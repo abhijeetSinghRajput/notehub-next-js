@@ -10,6 +10,7 @@ import { format, formatDate, formatTimeAgo } from "@/lib/utils";
 import DateMeta from "./DateMeta";
 import type { INote } from "@/types/model";
 import Image from "next/image";
+import SmartImage from "../ui/smart-image";
 
 export type NoteHeaderProps = {
   note: INote;
@@ -43,13 +44,14 @@ export default function NoteHeader({
           className="flex flex-row items-center w-max gap-3"
         >
           <div className="relative size-12 shrink-0 rounded-full overflow-hidden">
-            <Image
+            <SmartImage
               src={author.avatar || "/avatar.svg"}
               alt={author?.fullName || "Author"}
               fill
               sizes="48px"
               className="object-cover"
-              priority
+              preload
+              fetchPriority="high"
             />
           </div>
           <div className="flex flex-col">

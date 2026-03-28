@@ -31,6 +31,7 @@ import SharePopoverWrapper from "@/components/ShareNotePopover.client";
 import ImageLightbox from "@/components/ImageLightbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
+import SmartImage from "@/components/ui/smart-image";
 
 const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   const { username } = useParams();
@@ -170,13 +171,13 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
           style={{ aspectRatio: "3/1" }}
           onClick={() => setSelectedImage(user?.cover || "/profile-cover.svg")}
         >
-          <Image
+          <SmartImage
             src={user?.cover || "/profile-cover.svg"}
             alt="User cover photo"
             fill
-            sizes="100vw" // ✅ cover spans full width
+            sizes="100vw"
             className="object-cover"
-            priority // ✅ LCP element
+            preload
             fetchPriority="high"
             decoding="async"
           />
@@ -189,11 +190,11 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
               role="button"
               aria-label="View profile photo"
             >
-              <Image
+              <SmartImage
                 src={user?.avatar || "/avatar.svg"}
                 alt="User avatar"
                 fill
-                sizes="(max-width: 640px) 112px, 192px" // ✅ matches w-28 / sm:w-48
+                sizes="(max-width: 640px) 112px, 192px"
                 className="object-cover"
                 loading="lazy"
                 fetchPriority="low"

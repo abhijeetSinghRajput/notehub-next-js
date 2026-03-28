@@ -34,6 +34,7 @@ import {
   AccordionTrigger,
 } from "./ui/accordion";
 import Image from "next/image";
+import SmartImage from "./ui/smart-image";
 
 const TableOfContent = lazy(() => import("./table-of-content"));
 
@@ -140,13 +141,14 @@ const CardHeaderContent = memo<CardHeaderContentProps>(
         className="flex flex-row items-center w-max gap-3"
       >
         <div className="relative w-10 h-10 shrink-0 rounded-full overflow-hidden bg-muted">
-          <Image
+          {/* Avatar in article card — already correct, just swap to SmartImage */}
+          <SmartImage
             src={author?.avatar || "/avatar.svg"}
             alt={author?.fullName || "User Profile Photo"}
             fill
             sizes="40px"
             className="object-cover"
-            loading="lazy" // ✅ critical for 200+ images
+            loading="lazy"
             fetchPriority="low"
           />
         </div>
@@ -247,9 +249,21 @@ const ImageCarousel = memo<ImageCarouselProps>(({ images }) => {
                 >
                   <img
                     src={img.src}
+                    srcSet={
+                      img.src.includes("res.cloudinary.com")
+                        ? [320, 640, 800]
+                            .map(
+                              (w) =>
+                                `${img.src.replace(/w_\d+/, `w_${w}`)} ${w}w`,
+                            )
+                            .join(", ")
+                        : undefined
+                    }
+                    sizes="(max-width: 768px) 100vw, 40vw"
                     alt={img.alt}
                     className="w-full h-full object-contain"
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
               </CarouselItem>
