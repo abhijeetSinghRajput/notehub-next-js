@@ -1,6 +1,5 @@
-// src/context/CollaboratorManagerContext.tsx
 "use client";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback, useMemo } from "react";
 
 type DialogType = "collection" | "note";
 
@@ -26,38 +25,39 @@ export const CollaboratorManagerProvider = ({
   const [type, setType] = useState<DialogType | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const openDialog: CollaboratorManagerContextValue["openDialog"] = (
-    collaborators,
-    id,
-    dialogType,
-  ) => {
-    setCurrentCollaborators(collaborators || []);
-    setTargetId(id);
-    setType(dialogType);
-    setIsDialogOpen(true);
-  };
+  const openDialog = useCallback<CollaboratorManagerContextValue["openDialog"]>(
+    (collaborators, id, dialogType) => {
+      setCurrentCollaborators(collaborators || []);
+      setTargetId(id);
+      setType(dialogType);
+      setIsDialogOpen(true);
+    },
+    [],
+  );
 
-  const closeDialog = () => {
+  const closeDialog = useCallback(() => {
     setIsDialogOpen(false);
-    // Small delay to allow animations to complete before resetting
     setTimeout(() => {
       setCurrentCollaborators([]);
       setTargetId(null);
       setType(null);
     }, 300);
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      currentCollaborators,
+      targetId,
+      type,
+      isDialogOpen,
+      openDialog,
+      closeDialog,
+    }),
+    [currentCollaborators, targetId, type, isDialogOpen, openDialog, closeDialog],
+  );
 
   return (
-    <CollaboratorManagerContext.Provider
-      value={{
-        currentCollaborators,
-        targetId,
-        type,
-        isDialogOpen,
-        openDialog,
-        closeDialog,
-      }}
-    >
+    <CollaboratorManagerContext.Provider value={value}>
       {children}
     </CollaboratorManagerContext.Provider>
   );

@@ -105,13 +105,8 @@ const NotePageClient: FC<NotePageClientProps> = ({
   const handleTocItemClick = useCallback((itemId: string) => {
     const el = document.getElementById(itemId);
     if (el) {
-      // Fix #7 — read getBoundingClientRect in a single rAF, not synchronously
-      requestAnimationFrame(() => {
-        const y = el.getBoundingClientRect().top + window.scrollY - 88;
-        document.documentElement.style.scrollBehavior = "auto";
-        window.scrollTo({ top: y });
-        document.documentElement.style.scrollBehavior = "";
-      });
+      const y = el.getBoundingClientRect().top + window.scrollY - 88;
+      window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
     }
     window.history.replaceState(null, "", `#${itemId}`);
     setTocOpen(false);

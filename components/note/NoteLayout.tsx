@@ -20,7 +20,7 @@
  */
 "use client";
 
-import { memo } from "react";
+import { memo, useCallback, useState } from "react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import NoteHeader, { type NoteHeaderProps } from "./NoteHeader";
@@ -29,6 +29,7 @@ import FloatingActionButtons, {
 } from "./FloatingActionButtons";
 import SideNavToc from "./SideNavToc";
 import type { INote } from "@/types/model";
+import { useNoteInteractions } from "@/hooks/useNoteInteractions";
 
 // Fix #3 / #4 — lazy load non-critical UI
 const ImageLightbox = dynamic(() => import("@/components/ImageLightbox"), {
@@ -62,10 +63,21 @@ export default function NoteLayout({
   fabProps,
   fontSize,
   fontFamily,
-  selectedImageIndex,
   noteImages,
-  onCloseLightbox,
 }: NoteLayoutProps) {
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null,
+  );
+  const containerRef = useNoteInteractions({
+    noteImages,
+    setSelectedImageIndex,
+  });
+
+  const handleCloseLightbox = useCallback(
+    () => setSelectedImageIndex(null),
+    [],
+  );
+
   return (
     <>
       {/* Fix #3 — Only mount Lightbox when actually open (saves DOM nodes) */}
@@ -73,7 +85,7 @@ export default function NoteLayout({
         <ImageLightbox
           slides={noteImages}
           index={selectedImageIndex}
-          onClose={onCloseLightbox}
+          onClose={handleCloseLightbox}
         />
       )}
 
@@ -109,6 +121,7 @@ export default function NoteLayout({
           */}
           <div
             className="tiptap note-view"
+            ref={containerRef}
             style={{
               fontSize: fontSize.size,
               fontFamily,
