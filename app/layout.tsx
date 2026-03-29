@@ -42,10 +42,9 @@ const baseUrl =
 
 const roboto = Roboto({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],   // dropped "600" — Roboto has no 600 weight,
+  weight: ["400", "500", "700"],   
   variable: "--font-roboto",       //  Next.js was synthesising it (wasted bytes)
   display: "swap",
-  preload: true,
 });
 
 const organizationSchema = {
