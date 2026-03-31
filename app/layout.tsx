@@ -23,8 +23,6 @@ import "@/styles/theme.css";
 import "@/styles/tiptap-perf.css";
 import "@/styles/tiptap.css";
 import "@/styles/hljs.css";
-// Fix #2 — KaTeX font-display:swap rules now in the critical CSS bundle
-import "@/styles/katex-overrides.css";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeShortcut } from "@/components/theme-shortcut";
@@ -147,18 +145,6 @@ export default function RootLayout({
             __html: JSON.stringify([organizationSchema, websiteSchema]),
           }}
         />
-
-        {/* Fix #2 — Preload the most-used KaTeX font so the browser
-            fetches it during HTML parse, not after CSS is evaluated.
-            This eliminates the 300ms font-render delay on math-heavy notes. */}
-        <link
-          rel="preload"
-          href="/assets/KaTeX_Main-Regular.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-
         {/* Backend warm-up */}
         <link
           rel="preconnect"

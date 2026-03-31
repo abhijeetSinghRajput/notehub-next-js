@@ -1,10 +1,10 @@
 import { Merriweather, Lora } from "next/font/google";
-import "katex/dist/katex.min.css";
+import "@/styles/katex-base.css";
 import "@/styles/katex-overrides.css";
 
 const merriweather = Merriweather({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "700"],
   variable: "--font-merriweather",
   display: "swap",
 });

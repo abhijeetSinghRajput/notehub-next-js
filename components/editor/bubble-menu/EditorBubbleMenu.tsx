@@ -1,3 +1,4 @@
+// components > editor > bubble-menu > 
 /**
  * EditorBubbleMenu
  *

@@ -1,6 +1,5 @@
-/* src/styles/katex-overrides.css */
+/* styles/katex-overrides.css */
 
-/* Main text fonts */
 @font-face {
   font-family: "KaTeX_Main";
   src: url("/assets/KaTeX_Main-Regular.woff2") format("woff2");
@@ -17,16 +16,111 @@
   font-display: swap;
 }
 
-/* Math symbols */
+@font-face {
+  font-family: "KaTeX_Main";
+  src: url("/assets/KaTeX_Main-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_Main";
+  src: url("/assets/KaTeX_Main-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* KaTeX_Math has no Regular — only Italic variants */
 @font-face {
   font-family: "KaTeX_Math";
-  src: url("/assets/KaTeX_Math-Regular.woff2") format("woff2");
+  src: url("/assets/KaTeX_Math-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_Math";
+  src: url("/assets/KaTeX_Math-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_AMS";
+  src: url("/assets/KaTeX_AMS-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
-/* Size variants (Size1 to Size4) */
+@font-face {
+  font-family: "KaTeX_Caligraphic";
+  src: url("/assets/KaTeX_Caligraphic-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_Caligraphic";
+  src: url("/assets/KaTeX_Caligraphic-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_Fraktur";
+  src: url("/assets/KaTeX_Fraktur-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_Fraktur";
+  src: url("/assets/KaTeX_Fraktur-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_Script";
+  src: url("/assets/KaTeX_Script-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_SansSerif";
+  src: url("/assets/KaTeX_SansSerif-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_SansSerif";
+  src: url("/assets/KaTeX_SansSerif-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KaTeX_SansSerif";
+  src: url("/assets/KaTeX_SansSerif-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
 @font-face {
   font-family: "KaTeX_Size1";
   src: url("/assets/KaTeX_Size1-Regular.woff2") format("woff2");
@@ -59,16 +153,16 @@
   font-display: swap;
 }
 
-/* Optional: Auto scale math script fonts if needed */
 @font-face {
-  font-family: "KaTeX_Script";
-  src: url("/assets/KaTeX_Script-Regular.woff2") format("woff2");
+  font-family: "KaTeX_Typewriter";
+  src: url("/assets/KaTeX_Typewriter-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
-/* For KaTeX display */
+/* ── Display overrides ───────────────────────────────────────── */
+
 .katex-display::-webkit-scrollbar {
   width: 0;
   height: 0;
