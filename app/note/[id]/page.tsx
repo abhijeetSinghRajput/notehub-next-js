@@ -47,12 +47,7 @@ const NotePage = () => {
   // ── Callbacks ────────────────────────────────────────────────────────────────
   const handleTocItemClick = useCallback((itemId: string) => {
     const el = document.getElementById(itemId);
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 88;
-      document.documentElement.style.scrollBehavior = "auto";
-      window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
-      document.documentElement.style.scrollBehavior = "";
-    }
+    if (el) el.scrollIntoView({ behavior: "instant", block: "start" });
     history.replaceState(null, "", `#${itemId}`);
     setTocOpen(false);
   }, []);
@@ -92,17 +87,14 @@ const NotePage = () => {
     const hash = window.location.hash.slice(1);
     if (!hash) return;
 
-    const id = requestAnimationFrame(() => {
-      const el = document.getElementById(hash);
-      if (el) {
-        const y = el.getBoundingClientRect().top + window.scrollY - 88;
-        document.documentElement.style.scrollBehavior = "auto";
-        window.scrollTo({ top: y });
-        document.documentElement.style.scrollBehavior = "";
-      }
+    const ric = window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 50));
+    const handle = ric(() => {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "instant", block: "start" });
     });
-
-    return () => cancelAnimationFrame(id);
+    return () => {
+      if (window.cancelIdleCallback)
+        window.cancelIdleCallback(handle as number);
+    };
   }, [note]);
 
   // ── Render guards ────────────────────────────────────────────────────────────

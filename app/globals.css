@@ -158,6 +158,10 @@
   scrollbar-width: none;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  scroll-margin-top: 96px;
+}
+
 div[role="menu"] {
   @apply bg-popover text-popover-foreground rounded-xl p-1.5 shadow-md overflow-y-auto overflow-x-hidden border min-w-32 z-50;
 }

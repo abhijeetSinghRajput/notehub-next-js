@@ -102,15 +102,33 @@ const NotePageClient: FC<NotePageClientProps> = ({
   const isAdmin = useMemo(() => authUser?.role === "admin", [authUser?.role]);
   const isOwner = useMemo(() => isAuthor || isAdmin, [isAuthor, isAdmin]);
 
+  // handleTocItemClick
   const handleTocItemClick = useCallback((itemId: string) => {
-    const el = document.getElementById(itemId);
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 88;
-      window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
-    }
+    document
+      .getElementById(itemId)
+      ?.scrollIntoView({ behavior: "instant", block: "start" });
     window.history.replaceState(null, "", `#${itemId}`);
     setTocOpen(false);
   }, []);
+
+  // hash scroll useEffect
+  useEffect(() => {
+    if (!note?.content) return;
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+
+    const ric =
+      window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 50));
+    const handle = ric(() => {
+      document
+        .getElementById(hash)
+        ?.scrollIntoView({ behavior: "instant", block: "start" });
+    });
+    return () => {
+      if (window.cancelIdleCallback)
+        window.cancelIdleCallback(handle as number);
+    };
+  }, [note?.content]);
 
   const handleNavigateToEditor = useCallback(() => {
     if (note?._id) {
@@ -196,22 +214,11 @@ const NotePageClient: FC<NotePageClientProps> = ({
     const hash = window.location.hash.slice(1);
     if (!hash) return;
 
-    // Use requestIdleCallback so this never competes with the initial paint.
-    // Falls back to setTimeout for Safari.
     const ric =
       window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 50));
     const handle = ric(() => {
-      requestAnimationFrame(() => {
-        const el = document.getElementById(hash);
-        if (el) {
-          const y = el.getBoundingClientRect().top + window.scrollY - 88;
-          document.documentElement.style.scrollBehavior = "auto";
-          window.scrollTo({ top: y });
-          document.documentElement.style.scrollBehavior = "";
-        }
-      });
+      document.getElementById(hash)?.scrollIntoView({ behavior: "instant", block: "start" });
     });
-
     return () => {
       if (window.cancelIdleCallback)
         window.cancelIdleCallback(handle as number);
