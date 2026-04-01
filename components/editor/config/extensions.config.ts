@@ -977,7 +977,10 @@ export const extensions = [
   ListKeymap,
   TaskList,
   TaskItem.configure({ nested: true }),
-  Table.configure({ resizable: true }),
+  Table.configure({ 
+    resizable: true,
+    cellMinWidth: 90,
+  }),
   TableActionsExtension,
   TableRow,
   TableHeader,

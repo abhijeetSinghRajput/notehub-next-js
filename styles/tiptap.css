@@ -382,7 +382,7 @@ div:has(> .tiptap.ProseMirror) {
   border: 1px solid var(--border);
   vertical-align: top;
   text-align: start;
-  min-width: 0;
+  min-width: 90;
   min-height: 32px;
   padding: 8px 12px;
   position: relative;
@@ -411,6 +411,7 @@ div:has(> .tiptap.ProseMirror) {
 /* ── Header cells ── */
 .tiptap th {
   font-weight: 600;
+  white-space: nowrap;
   text-align: left;
   background-color: color-mix(in oklch, var(--accent) 70%, transparent);
 }
