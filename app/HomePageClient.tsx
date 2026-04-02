@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useCallback, useMemo, useRef } from "react";
+import { useEffect, useCallback, useMemo, useRef, useState } from "react";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { noteToArticle } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { PopulatedNote } from "@/types/model";
 import OnboardingCard from "@/components/OnboardingCard";
 import WritingTipsCard from "@/components/WritingTipsCard";
 import { ArticleCard } from "@/components/article-card";
+import HomePageStatic from "./HomePageStatic";
 
 type Props = {
   initialData?: any;
@@ -20,6 +21,10 @@ const HomePageClient = ({ initialData }: Props) => {
     useNoteStore();
   const { authUser } = useAuthStore();
   const isGuest = !authUser;
+
+  // After hydration, swap static → interactive
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const articles = useMemo(
     () => notes.map((note) => noteToArticle(note as PopulatedNote)),
@@ -69,7 +74,13 @@ const HomePageClient = ({ initialData }: Props) => {
     }
   }, []);
 
-  // ── Shared feed ──────────────────────────────────────────────────────────────
+  // ── Before hydration — show static layer (SSR'd, visible to crawlers) ──
+  if (!mounted) {
+    return <HomePageStatic notes={initialData?.notes ?? []} />;
+  }
+
+  // ── After hydration — full interactive feed ──────────────────────────────
+
   const feed = (
     <div className="flex-1 space-y-3 sm:space-y-4 max-w-5xl">
       {articles.map((note, index) => (
@@ -103,7 +114,6 @@ const HomePageClient = ({ initialData }: Props) => {
     </div>
   );
 
-  // ── Sidebar card differs by auth state ───────────────────────────────────────
   const sidebarCard = isGuest ? <OnboardingCard /> : <WritingTipsCard />;
   const mobileCard = isGuest
     ? <OnboardingCard />
@@ -113,12 +123,10 @@ const HomePageClient = ({ initialData }: Props) => {
     <div className="p-2">
       <h1 className="sr-only">NoteHub — Explore Public Notes</h1>
 
-      {/* Mobile sidebar card */}
       <div className="flex flex-col gap-4 mb-6 w-full lg:hidden">
         {mobileCard}
       </div>
 
-      {/* Feed + desktop sidebar */}
       <div className="flex gap-6 max-w-6xl mx-auto">
         {feed}
         <aside className="hidden lg:flex flex-col gap-4 w-full max-w-sm shrink-0 sticky top-18 self-start">

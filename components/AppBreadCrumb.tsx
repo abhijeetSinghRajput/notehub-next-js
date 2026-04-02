@@ -36,10 +36,14 @@ export default function AppBreadcrumbs() {
     return 1; // sm
   };
 
-  const [visibleBreadcrumbs, setVisibleBreadcrumbs] = useState(getVisibleCount);
+  // always start at 3 (matches server), update after mount
+  const [visibleBreadcrumbs, setVisibleBreadcrumbs] = useState(3);
 
   // --- Calculate visibleBreadcrumbs based on viewport width ---
   useEffect(() => {
+    // Now safe to read window — this runs only on client after hydration
+    setVisibleBreadcrumbs(getVisibleCount());
+    
     const onResize = () => setVisibleBreadcrumbs(getVisibleCount());
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);

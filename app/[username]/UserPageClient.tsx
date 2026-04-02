@@ -14,7 +14,6 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { axiosInstance } from "@/lib/axios";
 import {
   CollectionSkeleton,
   ProfilePageSkeleton,
@@ -30,8 +29,15 @@ import AddNoteDialog from "@/components/AddNoteDialog";
 import SharePopoverWrapper from "@/components/ShareNotePopover.client";
 import ImageLightbox from "@/components/ImageLightbox";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
+import UserPageStatic from "./UserPageStatic";
 
-const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
+const UserPageClient = ({
+  initialUser,
+  initialCollections = [],
+}: {
+  initialUser: IUser;
+  initialCollections?: any[];
+}) => {
   const { username } = useParams();
   const { authUser } = useAuthStore();
   const {
@@ -48,6 +54,10 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [profileShareLink, setProfileShareLink] = useState("");
 
+  // After hydration, swap static → interactive
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
@@ -60,11 +70,10 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
         setIsLoading(true);
 
         if (isOwner) {
-          // Use store data for owner
           setUser(authUser);
           setCollections(ownerCollections || []);
         } else {
-          // Fetch data for other users
+          const { axiosInstance } = await import("@/lib/axios");
           const response = await axiosInstance.get(`/user/${username}`);
           setUser(response.data);
 
@@ -88,11 +97,9 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     const profilePath =
       typeof username === "string" ? username : user?.userName;
     if (!profilePath) return;
-
     setProfileShareLink(`${window.location.origin}/${profilePath}`);
   }, [username, user?.userName]);
 
@@ -103,34 +110,35 @@ const UserPageClient = ({ initialUser }: { initialUser: IUser }) => {
 
   const sortedCollections = React.useMemo(() => {
     if (!collections?.length) return [];
-
     const dir = sortDirection === "asc" ? 1 : -1;
-
     return [...collections].sort((a, b) => {
-      // 1️⃣ Pinned first
       const ap = pinnedSet.has(a._id);
       const bp = pinnedSet.has(b._id);
       if (ap !== bp) return ap ? -1 : 1;
-
-      // 2️⃣ Sorting
       switch (sortBy) {
         case "name":
           return dir * a.name.localeCompare(b.name);
         case "created":
-          return (
-            dir *
-            (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-          );
+          return dir * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         case "updated":
-          return (
-            dir *
-            (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime())
-          );
+          return dir * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
         default:
           return 0;
       }
     });
   }, [collections, pinnedSet, sortBy, sortDirection]);
+
+  // ── Before hydration — static layer (SSR'd, visible to crawlers) ──
+  if (!mounted) {
+    return (
+      <UserPageStatic
+        user={initialUser}
+        collections={initialCollections}
+      />
+    );
+  }
+
+  // ── After hydration — full interactive profile ────────────────────
 
   if (isLoading) return <ProfilePageSkeleton />;
 

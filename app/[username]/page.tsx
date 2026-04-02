@@ -14,7 +14,7 @@ type Props = {
 const getUser = cache(async (username: string) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`,
-    { next: { revalidate: 3600 } }
+    { next: { revalidate: 3600 } },
   );
   if (!response.ok) return null;
   return response.json();
@@ -155,6 +155,8 @@ export default async function UserPage({ params }: Props) {
           __html: JSON.stringify([personSchema, profilePageSchema]),
         }}
       />
+      
+      {/* Full interactive profile — auth controls, edit, contributions graph */}
       <UserPageClient initialUser={user} />
     </>
   );

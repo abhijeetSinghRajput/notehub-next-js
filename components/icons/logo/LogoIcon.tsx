@@ -4,9 +4,10 @@ import React from "react";
 
 const LogoIcon = React.forwardRef<SVGSVGElement, IconProps>(
   (
-    { size = 24, color = "currentColor", ...props  },
+    { size = 24, color = "currentColor", ...props  },ref
   ) => (
     <svg
+      ref={ref}
       width={size}
       height={size}
       viewBox="0 0 128 128"

@@ -1,17 +1,4 @@
-/* app/layout.tsx
- * Fix #4 — Unused JavaScript / heavy providers on the critical path.
- *
- * Changes:
- *  - CollaboratorManagerProvider + CollaboratorsDialog are only needed when
- *    the user is authenticated and on specific pages. Lazy-load them in
- *    AppShell (or a dedicated ClientProviders component) so they're never
- *    part of the root HTML payload for public note pages.
- *  - Moved katex-overrides import here so the font-display:swap @font-face
- *    rules ship in the initial CSS bundle.
- *  - Added <link rel="preload"> for KaTeX_Main (the most common variant)
- *    so the browser fetches it in parallel with parsing, not after it.
- *  - SpeedInsights is already async — no change needed there.
- */
+/* app/layout.tsx */
 
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
@@ -165,16 +152,9 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider defaultTheme="system" storageKey="theme">
             <ThemeShortcut />
-            {/*
-              Fix #4 — CollaboratorManagerProvider + CollaboratorsDialog
-              moved into AppShell so they're lazy-loaded and only mounted
-              when the user is authenticated. Public note pages (the most
-              common SSR path) never pay for this bundle.
-            */}
             <TooltipProvider>
               <AppShell>{children}</AppShell>
             </TooltipProvider>
-
             <Toaster />
             <SpeedInsights />
           </ThemeProvider>
