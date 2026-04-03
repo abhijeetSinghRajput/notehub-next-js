@@ -18,6 +18,9 @@ export interface IUser extends IBase {
   avatar: string;
   cover: string;
 
+  bio: string;
+  socials: { url: string }[];
+
   hasGoogleAuth: boolean;
   role: "user" | "admin";
 }

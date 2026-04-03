@@ -31,6 +31,7 @@ export interface AuthStore {
   isLoggingOut: boolean;
   isVerifyingEmail: boolean;
   emailStatus: string;
+  isUpdatingProfile: boolean;
   isUploadingAvatar: boolean;
   isUploadingCover: boolean;
   isRemovingAvatar: boolean;
@@ -76,6 +77,7 @@ export interface AuthStore {
   }) => Promise<boolean | null>;
   logout: () => Promise<void>;
   resendEmailOTP: () => Promise<{ success: boolean }>;
+  updateProfile: (data: UpdateUserProfileData) => Promise<IUser | null>;
   updateUserField: (
     apiEndPoint: string,
     data: UpdateUserProfileData,
@@ -95,6 +97,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isLoggingOut: false,
   isVerifyingEmail: false,
   emailStatus: "",
+  isUpdatingProfile: false,
   isUploadingAvatar: false,
   isUploadingCover: false,
   isRemovingAvatar: false,
@@ -385,6 +388,22 @@ export const useAuthStore = create<AuthStore>((set) => ({
       console.error(error);
       toast.error(getApiErrorMessage(error, "Failed to resend OTP"));
       return { success: false };
+    }
+  },
+
+  updateProfile: async (data) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const res = await axiosInstance.patch("/user/profile", data);
+      set({ authUser: res.data.user });
+      toast.success(res.data.message);
+      return res.data.user;  
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to update profile"));
+      console.error(error);
+      return null;
+    } finally{
+      set({ isUpdatingProfile: false });
     }
   },
 

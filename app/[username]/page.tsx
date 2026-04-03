@@ -107,13 +107,17 @@ export default async function UserPage({ params }: Props) {
     "@type": "Person",
     name: user.fullName,
     url: profileUrl,
+    identifier: user.userName,
     image: {
       "@type": "ImageObject",
       url: user.avatar,
       width: 400,
       height: 400,
     },
-    identifier: user.userName,
+    ...(user.bio && { description: user.bio }),
+    ...(user.socials?.length && {
+      sameAs: user.socials.map((s: { url: string }) => s.url),
+    }),
   };
 
   const profilePageSchema = {
@@ -155,7 +159,7 @@ export default async function UserPage({ params }: Props) {
           __html: JSON.stringify([personSchema, profilePageSchema]),
         }}
       />
-      
+
       {/* Full interactive profile — auth controls, edit, contributions graph */}
       <UserPageClient initialUser={user} />
     </>

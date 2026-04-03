@@ -21,4 +21,6 @@ export interface UpdateUserProfileData {
   userName?: string;
   avatar?: string;
   cover?: string;
+  bio?: string;
+  socials?: { url: string }[];
 }
