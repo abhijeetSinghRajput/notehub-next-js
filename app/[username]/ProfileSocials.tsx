@@ -4,16 +4,18 @@ import {
   GetPlatformName,
   getUsernameFromUrl,
 } from "@/lib/platform";
+import { cn } from "@/lib/utils";
 
 interface ProfileSocialsProps {
   socials: { url: string; _id?: string }[];
+  className?: string;
 }
 
-const ProfileSocials = ({ socials }: ProfileSocialsProps) => {
+const ProfileSocials = ({ socials, className }: ProfileSocialsProps) => {
   if (!socials?.length) return null;
 
   return (
-    <div className="grid gap-x-4 gap-y-2.5 sm:grid-cols-2">
+    <div className={cn("grid gap-x-4 gap-y-2.5 sm:grid-cols-2", className)}>
       {socials.map((social, i) => {
         const platformName = GetPlatformName(social.url);
         const PlatformIcon = getPlatformIcon(social.url);

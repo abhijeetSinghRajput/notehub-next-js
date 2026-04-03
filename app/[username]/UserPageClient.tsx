@@ -33,6 +33,7 @@ const UserPageClient = ({
   useEffect(() => { setMounted(true); }, []);
 
   const isOwner = authUser?.userName === username;
+  const isAdmin = authUser?.role === "admin";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,6 +100,7 @@ const UserPageClient = ({
       <ProfileCard
         user={user}
         isOwner={isOwner}
+        isAdmin={isAdmin && !isOwner}
         profileShareLink={profileShareLink}
         onImageClick={setSelectedImage}
       />
