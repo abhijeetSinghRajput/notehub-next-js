@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useNoteStore } from "@/app/stores/useNoteStore";
@@ -20,75 +20,70 @@ const UserPageClient = ({
   initialCollections?: any[];
 }) => {
   const { username } = useParams();
-  const { authUser } = useAuthStore();
+  const { authUser, isCheckingAuth } = useAuthStore();
   const { getAllCollections, collections: ownerCollections, status } = useNoteStore();
 
-  const [user, setUser] = useState<IUser | null>(initialUser);
-  const [collections, setCollections] = useState<ICollection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<IUser>(initialUser);
+  const [collections, setCollections] = useState<ICollection[]>(initialCollections);
+  const [isLoadingCollections, setIsLoadingCollections] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [profileShareLink, setProfileShareLink] = useState("");
   const [mounted, setMounted] = useState(false);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => { setMounted(true); }, []);
 
-  const isOwner = authUser?.userName === username;
+  // Wait for auth to resolve before determining ownership
+  const isOwner = !isCheckingAuth && authUser?.userName === username;
   const isAdmin = authUser?.role === "admin";
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Wait until auth check is done
+    if (isCheckingAuth) return;
+    // Only fetch once
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
+    const fetchCollections = async () => {
+      setIsLoadingCollections(true);
       try {
-        setIsLoading(true);
         if (isOwner) {
-          setUser(authUser);
+          // Owner — use store data, no extra fetch needed
+          setUser(authUser!);
           setCollections(ownerCollections || []);
         } else {
-          const { axiosInstance } = await import("@/lib/axios");
-          const response = await axiosInstance.get(`/user/${username}`);
-          setUser(response.data);
+          // Guest — user data already from SSR (initialUser), only fetch collections
           const collectionsData = await getAllCollections({
-            userId: response.data?._id,
+            userId: initialUser._id,
             guest: true,
           });
           setCollections(collectionsData || []);
         }
       } catch (error) {
-        console.error("Error fetching profile data:", error);
-        setUser(null);
+        console.error("Error fetching collections:", error);
         setCollections([]);
       } finally {
-        setIsLoading(false);
+        setIsLoadingCollections(false);
       }
     };
 
-    fetchData();
-  }, [username, authUser, ownerCollections, isOwner, getAllCollections]);
+    fetchCollections();
+  }, [isCheckingAuth, isOwner]);   // only re-run when auth resolves
 
+  // Sync owner data if it updates in store
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const profilePath = typeof username === "string" ? username : user?.userName;
-    if (!profilePath) return;
-    setProfileShareLink(`${window.location.origin}/${profilePath}`);
-  }, [username, user?.userName]);
+    if (isOwner && authUser) {
+      setUser(authUser);
+      setCollections(ownerCollections || []);
+    }
+  }, [isOwner, authUser, ownerCollections]);
+
+  const profileShareLink =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/${typeof username === "string" ? username : user.userName}`
+      : "";
 
   if (!mounted) {
     return <UserPageStatic user={initialUser} collections={initialCollections} />;
-  }
-
-  if (isLoading) return <ProfilePageSkeleton />;
-
-  if (!user) {
-    return (
-      <div className="p-4 overflow-auto flex items-center justify-center h-full">
-        <Card className="max-w-3xl w-full mx-auto p-8 text-center">
-          <h2 className="text-xl font-semibold">User not found</h2>
-          <p className="text-muted-foreground mt-2">
-            The user @{username} doesn&apos;t exist or you don&apos;t have permission to
-            view this profile.
-          </p>
-        </Card>
-      </div>
-    );
   }
 
   return (
@@ -105,13 +100,13 @@ const UserPageClient = ({
         onImageClick={setSelectedImage}
       />
 
-      {isOwner && authUser?.role === "admin" && <AdminDashboardCard />}
+      {isOwner && isAdmin && <AdminDashboardCard />}
 
       <div className="max-w-3xl mx-auto mt-8">
         <CollectionsSection
           collections={collections}
           isOwner={isOwner}
-          isLoading={status.collection.state === "loading"}
+          isLoading={isLoadingCollections}
         />
       </div>
     </div>
