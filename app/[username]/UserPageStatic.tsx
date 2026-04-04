@@ -21,7 +21,7 @@ export default function UserPageStatic({
         {/* Cover photo */}
         <div className="relative w-full overflow-hidden" style={{ aspectRatio: "3/1" }}>
           <img
-            src={user.cover || "/profile-cover.svg"}
+            src={user.cover || "/placeholder.svg"}
             alt="Cover photo"
             className="w-full h-full object-cover"
           />
