@@ -66,10 +66,8 @@ export default function UserPageStatic({
         <div className="relative rounded-none max-h-48 h-full w-full overflow-hidden" style={{ aspectRatio: "3/1" }}>
           <img
             src={user.cover || "/placeholder.svg"}
-            alt="User cover photo"
-            className={`w-full h-full object-cover${!user.cover ? " opacity-30" : ""}`}
-            fetchPriority="high"
-            decoding="async"
+            alt="Cover photo"
+            className="w-full h-full object-cover"
           />
         </div>
 
