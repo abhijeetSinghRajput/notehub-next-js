@@ -45,6 +45,7 @@ export const ColorPicker = ({
           <Button
             key={color}
             onClick={() => onColorSelect(color)}
+            aria-label={`Select color ${color}`}
             className={`relative w-8 h-8 ${
               isActive(color) ? "bg-primary" : "bg-primary/20"
             } hover:bg-accent rounded-md cursor-pointer`}
@@ -59,6 +60,7 @@ export const ColorPicker = ({
           variant="ghost"
           onClick={onUnsetColor}
           data-testid={`unset${tooltipMessage.replace(/\s+/g, "")}`}
+          aria-label={tooltipMessage}
         >
           <Eraser />
         </Button>

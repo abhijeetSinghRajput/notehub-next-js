@@ -8,10 +8,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   compiler: {
-    removeConsole:
-      process.env.NODE_ENV === "production"
-        ? { exclude: ["error", "warn"] }   // keep error/warn in prod logs
-        : false,
+    removeConsole: process.env.NODE_ENV === "production",
   },
 
   experimental: {

@@ -148,36 +148,33 @@ export function SearchButton() {
   const notesAbortRef = React.useRef<AbortController | null>(null);
   const usersAbortRef = React.useRef<AbortController | null>(null);
 
-  const fetchNotes = React.useCallback(
-    async (query: string, page = 1) => {
-      notesAbortRef.current?.abort();
-      notesAbortRef.current = new AbortController();
+  const fetchNotes = React.useCallback(async (query: string, page = 1) => {
+    notesAbortRef.current?.abort();
+    notesAbortRef.current = new AbortController();
 
-      const trimmed = query.trim();
-      if (!trimmed) {
-        setSearchResults((s) => ({ ...s, notes: [] }));
-        setPagination((s) => ({ ...s, notes: DEFAULT_PAGINATION }));
-        return;
-      }
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setSearchResults((s) => ({ ...s, notes: [] }));
+      setPagination((s) => ({ ...s, notes: DEFAULT_PAGINATION }));
+      return;
+    }
 
-      try {
-        setIsSearching(true);
-        const res = await axiosInstance.get<NotesSearchResponse>(
-          `/note/search?q=${encodeURIComponent(trimmed)}&page=${page}&limit=10`,
-          { signal: notesAbortRef.current.signal },
-        );
-        setSearchResults((s) => ({ ...s, notes: res.data.notes || [] }));
-        setPagination((s) => ({ ...s, notes: res.data.pagination }));
-      } catch (err: any) {
-        if (err?.code === "ERR_CANCELED") return;
-        console.error("Notes search failed:", err);
-        setSearchResults((s) => ({ ...s, notes: [] }));
-      } finally {
-        setIsSearching(false);
-      }
-    },
-    [],
-  );
+    try {
+      setIsSearching(true);
+      const res = await axiosInstance.get<NotesSearchResponse>(
+        `/note/search?q=${encodeURIComponent(trimmed)}&page=${page}&limit=10`,
+        { signal: notesAbortRef.current.signal },
+      );
+      setSearchResults((s) => ({ ...s, notes: res.data.notes || [] }));
+      setPagination((s) => ({ ...s, notes: res.data.pagination }));
+    } catch (err: any) {
+      if (err?.code === "ERR_CANCELED") return;
+      console.error("Notes search failed:", err);
+      setSearchResults((s) => ({ ...s, notes: [] }));
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
 
   const fetchUsers = React.useCallback(
     async (query: string, page = 1) => {
@@ -193,12 +190,12 @@ export function SearchButton() {
 
       try {
         setIsSearching(true);
-        const res = await getAllUsers({
+        const res = (await getAllUsers({
           page,
           limit: 10,
           filter: "all",
           search: trimmed,
-        }) as UsersSearchResponse;
+        })) as UsersSearchResponse;
         setSearchResults((s) => ({ ...s, users: res.users || [] }));
         setPagination((s) => ({ ...s, users: res.pagination }));
       } catch (err: any) {
@@ -307,7 +304,11 @@ export function SearchButton() {
           <DialogHeader>
             <div className="relative flex items-center border-b">
               <DialogClose asChild>
-                <Button variant="ghost" className="h-full rounded-none">
+                <Button
+                  variant="ghost"
+                  className="h-full rounded-none"
+                  aria-label="Go back"
+                >
                   <ArrowLeft className="size-6!" />
                 </Button>
               </DialogClose>
@@ -338,8 +339,12 @@ export function SearchButton() {
                   <div className="absolute left-0 w-1/2 h-full bg-primary/30 animate-slide" />
                   <style jsx>{`
                     @keyframes slide {
-                      0% { left: -50%; }
-                      100% { left: 100%; }
+                      0% {
+                        left: -50%;
+                      }
+                      100% {
+                        left: 100%;
+                      }
                     }
                     .animate-slide {
                       animation: slide 1.5s infinite linear;
@@ -362,7 +367,9 @@ export function SearchButton() {
               >
                 Notes
                 {pagination.notes.totalItems > 0 && (
-                  <Badge className="px-1.5">{pagination.notes.totalItems}</Badge>
+                  <Badge className="px-1.5">
+                    {pagination.notes.totalItems}
+                  </Badge>
                 )}
               </TabsTrigger>
               <TabsTrigger
@@ -371,7 +378,9 @@ export function SearchButton() {
               >
                 Users
                 {pagination.users.totalItems > 0 && (
-                  <Badge className="px-1.5">{pagination.users.totalItems}</Badge>
+                  <Badge className="px-1.5">
+                    {pagination.users.totalItems}
+                  </Badge>
                 )}
               </TabsTrigger>
             </TabsList>
@@ -435,8 +444,14 @@ export function SearchButton() {
                                   <div className="flex items-center gap-1">
                                     <div className="relative size-4 shrink-0 rounded-full overflow-hidden bg-muted">
                                       <Image
-                                        src={(note.userId as IUser)?.avatar || "/avatar.svg"}
-                                        alt={(note.userId as IUser)?.fullName || "Author Profile Photo"}
+                                        src={
+                                          (note.userId as IUser)?.avatar ||
+                                          "/avatar.svg"
+                                        }
+                                        alt={
+                                          (note.userId as IUser)?.fullName ||
+                                          "Author Profile Photo"
+                                        }
                                         fill
                                         sizes="16px"
                                         className="object-cover"
@@ -444,7 +459,9 @@ export function SearchButton() {
                                         fetchPriority="low"
                                       />
                                     </div>
-                                    <span>{(note.userId as IUser)?.fullName}</span>
+                                    <span>
+                                      {(note.userId as IUser)?.fullName}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -496,7 +513,7 @@ export function SearchButton() {
                             key={user._id || index}
                             onClick={() => {
                               addSearchHistory(user as any);
-                              NProgress.start()
+                              NProgress.start();
                               router.push(`/${user.userName}`);
                               setOpen(false);
                             }}
@@ -640,9 +657,22 @@ function CustomPagination({
       if (currentPage <= 3) {
         pages.push(2, 3, 4, "ellipsis", totalPages);
       } else if (currentPage >= totalPages - 2) {
-        pages.push("ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        pages.push(
+          "ellipsis",
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        );
       } else {
-        pages.push("ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages);
+        pages.push(
+          "ellipsis",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "ellipsis",
+          totalPages,
+        );
       }
     }
     return pages;
@@ -654,7 +684,11 @@ function CustomPagination({
         <PaginationItem>
           <PaginationPrevious
             onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+            className={
+              currentPage === 1
+                ? "pointer-events-none opacity-50"
+                : "cursor-pointer"
+            }
           />
         </PaginationItem>
         {getPageNumbers().map((page, index) => (
@@ -674,8 +708,14 @@ function CustomPagination({
         ))}
         <PaginationItem>
           <PaginationNext
-            onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
-            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+            onClick={() =>
+              currentPage < totalPages && onPageChange(currentPage + 1)
+            }
+            className={
+              currentPage === totalPages
+                ? "pointer-events-none opacity-50"
+                : "cursor-pointer"
+            }
           />
         </PaginationItem>
       </PaginationContent>
@@ -683,7 +723,13 @@ function CustomPagination({
   );
 }
 
-export function Searching({ searchQuery = "", type = "users" }: { searchQuery?: string; type?: string }) {
+export function Searching({
+  searchQuery = "",
+  type = "users",
+}: {
+  searchQuery?: string;
+  type?: string;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-4 gap-6 animate-pulse">
       <div className="bg-primary/20 rounded-full p-5">
@@ -700,7 +746,13 @@ export function Searching({ searchQuery = "", type = "users" }: { searchQuery?: 
   );
 }
 
-export function NotFound({ searchQuery = "", type = "users" }: { searchQuery?: string; type?: string }) {
+export function NotFound({
+  searchQuery = "",
+  type = "users",
+}: {
+  searchQuery?: string;
+  type?: string;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-4 gap-6">
       <div className="bg-primary/20 rounded-full p-5 animate-pulse">
