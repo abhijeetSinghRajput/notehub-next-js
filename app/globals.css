@@ -63,7 +63,7 @@
 
   footer {
     a {
-      color: var(--primary) !important;
+      color: var(--muted-foreground);
       text-decoration: underline;
     }
   }

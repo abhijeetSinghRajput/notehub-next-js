@@ -151,10 +151,10 @@ const Footer = ({ className }: { className: string }) => {
           {/* Link columns */}
           {footerColumns.map((col) => (
             <div key={col.heading} className="flex flex-col gap-3">
-              <p className="text-sm font-semibold text-foreground">
+              <p className="text-sm font-semibold">
                 {col.heading}
               </p>
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-1.5">
                 {col.links.map((link) => (
                   <li key={link.href}>
                     {link.external ? (
@@ -162,14 +162,14 @@ const Footer = ({ className }: { className: string }) => {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-muted-foreground transition-colors underline-offset-4 hover:text-foreground hover:underline"
+                        className="text-xs font-medium transition-colors underline-offset-4 hover:text-foreground hover:underline"
                       >
                         {link.label}
                       </a>
                     ) : (
                       <Link
                         href={link.href}
-                        className="text-sm text-muted-foreground transition-colors underline-offset-4 hover:text-foreground hover:underline"
+                        className="text-xs font-medium transition-colors underline-offset-4 hover:text-foreground hover:underline"
                       >
                         {link.label}
                       </Link>
@@ -204,7 +204,7 @@ const Footer = ({ className }: { className: string }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   href="https://mrcodium.netlify.app"
-                  className="font-semibold text-foreground transition-colors hover:text-primary hover:underline underline-offset-4"
+                  className="font-semibold text-muted-foreground transition-colors hover:text-primary hover:underline underline-offset-4"
                 >
                   Abhijeet Singh Rajput
                 </a>

@@ -229,6 +229,27 @@ function rehypeOptimizeImages() {
   };
 }
 
+// ── Plugin 7: Shift headings ─────────────────────────────────
+// - shift all headings down by one level (h1 → h2, h2 → h3, etc.) to reserve h1 for the note title in the client.
+
+function rehypeShiftHeadings() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      const map: Record<string, string> = {
+        h1: "h2",
+        h2: "h3",
+        h3: "h4",
+        h4: "h5",
+        h5: "h6",
+      };
+
+      if (map[node.tagName]) {
+        node.tagName = map[node.tagName];
+      }
+    });
+  };
+}
+
 // ── Main export ──────────────────────────────────────────────────────────────
 export async function processNoteContent(html: string): Promise<string> {
   if (!html?.trim()) return html;
@@ -237,6 +258,7 @@ export async function processNoteContent(html: string): Promise<string> {
     .use(rehypeParse, { fragment: true }) // parse as fragment — no wrapping <html><body>
     .use(rehypeHighlight)
     .use(rehypeKatex)
+    .use(rehypeShiftHeadings)
     .use(rehypeCodeHeaders)
     .use(rehypeHeadingButtons)
     .use(rehypeTableButtons)

@@ -209,35 +209,31 @@ div:has(> .tiptap.ProseMirror) {
   margin: 0;
 }
 
-.tiptap h1 {
+.tiptap h2 {
   font-size: 2em;
   @apply font-semibold mb-8 leading-snug;
 }
 
-.tiptap h2 {
+.tiptap h3 {
   font-size: 1.6em;
   @apply font-semibold mt-8 mb-4 leading-snug;
 }
 
-.tiptap h3 {
+.tiptap h4 {
   font-size: 1.35em;
   @apply font-semibold mt-6 mb-2 leading-snug;
 }
 
-.tiptap h4 {
+.tiptap h5 {
   font-size: 1.1em;
   @apply font-semibold mt-4 mb-2;
 }
 
-.tiptap h5 {
+.tiptap h6 {
   font-size: 1em;
   @apply font-semibold m-0;
 }
 
-.tiptap h6 {
-  font-size: 0.9em;
-  @apply font-semibold m-0;
-}
 
 .tiptap p {
   margin-bottom: 0.5rem;

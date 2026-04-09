@@ -3,8 +3,23 @@ import Image, { type ImageLoader, type ImageProps } from "next/image";
 
 type CloudinaryImageProps = Omit<ImageProps, "loader" | "unoptimized">;
 
-const isCloudinaryUrl = (src: string) =>
-  src.includes("res.cloudinary.com");
+
+const allowedImageDomains = [
+  "res.cloudinary.com",
+  "lh3.googleusercontent.com",
+  // Add more allowed domains here if needed
+];
+
+const isAllowedDomain = (src: string) => {
+  try {
+    const { hostname } = new URL(src);
+    return allowedImageDomains.includes(hostname);
+  } catch {
+    return false;
+  }
+};
+
+const isCloudinaryUrl = (src: string) => src.includes("res.cloudinary.com");
 
 // Strip any existing Cloudinary transformation params from the URL
 // so we don't double-apply them
@@ -39,6 +54,12 @@ export default function CloudinaryImage({ src, ...props }: CloudinaryImageProps)
     );
   }
 
-  // Google avatars, local files — Next.js default optimizer
-  return <Image src={src} {...props} />;
+  if (isAllowedDomain(src)) {
+    // Use Next.js default optimizer for allowed domains
+    return <Image src={src} {...props} />;
+  }
+
+  // Fallback for unknown domains: use plain <img>
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} {...props} />;
 }
