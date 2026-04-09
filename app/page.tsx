@@ -1,3 +1,4 @@
+import { PopulatedNote } from "@/types/model";
 import HomePageClient from "./HomePageClient";
 import { Metadata } from "next";
 import { cache } from "react";
@@ -22,13 +23,13 @@ const getInitialNotes = cache(async () => {
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getInitialNotes();
   const notes = data?.notes ?? [];
-  
+
   // Get unique topics/categories from notes
-  const topics = [...new Set(notes.map((note: any) => note.collectionId?.name).filter((t: any): t is string => typeof t === 'string'))];
-  const authors = [...new Set(notes.map((note: any) => note.userId?.fullName).filter((a: any): a is string => typeof a === 'string'))];
-  
+  const topics = [...new Set(notes.map((note: PopulatedNote) => note.collectionId?.name))];
+  const authors = [...new Set(notes.map((note: PopulatedNote) => note.userId?.fullName))];
+
   // Create a dynamic description based on the notes
-  const topNotes = notes.slice(0, 3).map((note: any) => note.name).join(', ');
+  const topNotes = notes.slice(0, 3).map((note: PopulatedNote) => note.name).join(', ');
   const description = `Discover ${data?.pagination?.totalNotes || 'hundreds of'} public notes on ${topics.slice(0, 3).join(', ')}${topics.length > 3 ? ' and more' : ''}. Featured notes: ${topNotes}${notes.length > 3 ? '...' : ''}`;
 
   return {
@@ -97,8 +98,8 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: "NoteHub — Explore Public Notes",
-    description: data?.notes ? 
-      `Discover ${data.pagination.totalNotes} public notes shared by ${data.notes.length} authors` : 
+    description: data?.notes ?
+      `Discover ${data.pagination.totalNotes} public notes shared by ${data.notes.length} authors` :
       "Discover and explore public notes shared by developers and students on NoteHub.",
     url: baseUrl,
     isPartOf: {
@@ -117,18 +118,19 @@ export default async function HomePage() {
     itemListElement: notes.map((note: any, index: number) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `${baseUrl}/${note.userId.userName}/${note.collectionId.slug}/${note.slug}`,
-      name: note.name,
-      author: {
-        "@type": "Person",
-        name: note.userId.fullName
+      item: {
+        "@type": "TechArticle",
+        name: note.name,
+        url: `${baseUrl}/${note.userId.userName}/${note.collectionId.slug}/${note.slug}`,
+        author: {
+          "@type": "Person",
+          name: note.userId.fullName,
+        },
+        datePublished: note.createdAt,
+        dateModified: note.contentUpdatedAt || note.updatedAt,
       },
-      datePublished: note.createdAt,
-      dateModified: note.contentUpdatedAt,
     })),
   };
-
-  
 
   return (
     <>
@@ -138,11 +140,11 @@ export default async function HomePage() {
           __html: JSON.stringify([webPageSchema, itemListSchema]),
         }}
       />
-      
+
       {/* Add meta tags for crawlers */}
       <meta name="total-notes" content={data?.pagination?.totalNotes?.toString()} />
-      <meta name="authors-count" content={[...new Set(notes.map((n: any) => n.userId.userName))].length.toString()} />
-      
+      <meta name="authors-count" content={[...new Set(notes.map((n: PopulatedNote) => n.userId.userName))].length.toString()} />
+
       <HomePageClient initialData={data} />
     </>
   );
