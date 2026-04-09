@@ -187,21 +187,21 @@ const Photos = () => {
                 className="relative w-full h-48 rounded-xl overflow-hidden cursor-pointer"
                 onClick={() =>
                   setSelectedImage(
-                    previewCover || authUser?.cover || "/profile-cover.svg",
+                    previewCover || authUser?.cover || "/placeholder.svg",
                   )
                 }
                 role="button"
                 aria-label="Open cover photo"
               >
                 <Image
-                  src={previewCover || authUser?.cover || "/profile-cover.svg"}
+                  src={previewCover || authUser?.cover || "/placeholder.svg"}
                   alt="background-cover-image"
                   fill
                   className="object-cover bg-background"
                   sizes="100vw"
                   onError={(e) => {
                     const target = e.currentTarget as HTMLImageElement;
-                    target.src = "/profile-cover.svg";
+                    target.src = "/placeholder.svg";
                   }}
                   priority
                 />
