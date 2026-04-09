@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/table";
 import BadgeIcon from "@/components/icons/BadgeIcon";
 import Image from "next/image";
+import Link from "next/link";
 
 const PAGE_SIZE = 10;
 
@@ -121,7 +122,7 @@ export default function UserManagementPage() {
                 {users.map((user) => (
                   <TableRow key={user._id}>
                     <TableCell>
-                      <div className="flex items-center gap-3">
+                      <Link href={`/${user.userName}`} className="flex items-center gap-3">
                         <div className="relative size-8 shrink-0 rounded-full overflow-hidden bg-muted">
                           <Image
                             src={user.avatar || "/avatar.svg"}
@@ -135,7 +136,7 @@ export default function UserManagementPage() {
                         <p className="max-w-44 truncate font-medium">
                           {user.userName}
                         </p>
-                      </div>
+                      </Link>
                     </TableCell>
                     <TableCell className="max-w-56 truncate">
                       {user.fullName}
@@ -177,7 +178,8 @@ export default function UserManagementPage() {
           {/* ── MOBILE LIST (below sm) ── */}
           <div className="flex flex-col sm:hidden">
             {users.map((user, index) => (
-              <div
+              <Link
+                href={`/${user.userName}`}
                 key={user._id}
                 className={`flex items-center gap-3 px-1 py-3 ${
                   index !== users.length - 1 ? "border-b" : ""
@@ -211,7 +213,7 @@ export default function UserManagementPage() {
                     {user.email}
                   </p>
                 </div>
-              </div>
+              </Link>
             ))}
 
             {!isLoadingUsers && users.length === 0 && (

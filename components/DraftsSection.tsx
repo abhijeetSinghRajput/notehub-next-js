@@ -46,6 +46,7 @@ const DraftsSection = () => {
               size="icon"
               className="size-6 bg-primary/10 text-muted-foreground hover:text-primary hover:bg-primary/20"
               variant="secondary"
+              aria-label="Delete all unsaved drafts"
             >
               <Trash2 />
             </Button>

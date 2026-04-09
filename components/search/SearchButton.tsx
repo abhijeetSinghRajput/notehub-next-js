@@ -4,10 +4,10 @@
 import * as React from "react";
 import { Search, X, ArrowLeft } from "lucide-react";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogHeader,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,9 +23,10 @@ import { NotesTab } from "./NotesTab";
 import { UsersTab } from "./UsersTab";
 import { getFirstMatchSnippets } from "./utils";
 import {
-    DEFAULT_PAGINATION, type SearchResults,
-    type NotesSearchResponse,
-    type UsersSearchResponse
+  DEFAULT_PAGINATION,
+  type SearchResults,
+  type NotesSearchResponse,
+  type UsersSearchResponse,
 } from "./types";
 
 export function SearchButton() {
@@ -211,7 +212,11 @@ export function SearchButton() {
           <DialogHeader>
             <div className="relative flex items-center border-b">
               <DialogClose asChild>
-                <Button variant="ghost" className="h-full rounded-none">
+                <Button
+                  variant="ghost"
+                  className="h-full rounded-none"
+                  aria-label="Go Back"
+                >
                   <ArrowLeft className="size-6!" />
                 </Button>
               </DialogClose>
@@ -246,8 +251,12 @@ export function SearchButton() {
                   <div className="absolute left-0 w-1/2 h-full bg-primary/30 animate-slide" />
                   <style jsx>{`
                     @keyframes slide {
-                      0% { left: -50%; }
-                      100% { left: 100%; }
+                      0% {
+                        left: -50%;
+                      }
+                      100% {
+                        left: 100%;
+                      }
                     }
                     .animate-slide {
                       animation: slide 1.5s infinite linear;
@@ -259,7 +268,11 @@ export function SearchButton() {
           </DialogHeader>
 
           {/* ── Tabs ── */}
-          <Tabs defaultValue="notes" className="gap-0" onValueChange={handleTabChange}>
+          <Tabs
+            defaultValue="notes"
+            className="gap-0"
+            onValueChange={handleTabChange}
+          >
             <TabsList className="h-auto! grid grid-cols-2 w-full">
               <TabsTrigger
                 value="notes"
@@ -267,7 +280,9 @@ export function SearchButton() {
               >
                 Notes
                 {pagination.notes.totalItems > 0 && (
-                  <Badge className="px-1.5">{pagination.notes.totalItems}</Badge>
+                  <Badge className="px-1.5">
+                    {pagination.notes.totalItems}
+                  </Badge>
                 )}
               </TabsTrigger>
               <TabsTrigger
@@ -276,7 +291,9 @@ export function SearchButton() {
               >
                 Users
                 {pagination.users.totalItems > 0 && (
-                  <Badge className="px-1.5">{pagination.users.totalItems}</Badge>
+                  <Badge className="px-1.5">
+                    {pagination.users.totalItems}
+                  </Badge>
                 )}
               </TabsTrigger>
             </TabsList>

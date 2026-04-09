@@ -86,6 +86,8 @@ export default function ThemeSelector({className}: {className?: string}) {
         return (
           <div key={theme.id} className="flex flex-col items-center gap-2">
             <button
+              type="button"
+              aria-label={`Select ${theme.label} theme`}
               onClick={() => handleSelect(theme)}
               className={cn(
                 "relative rounded-xl overflow-hidden border-2 border-transparent transition-all cursor-pointer",
