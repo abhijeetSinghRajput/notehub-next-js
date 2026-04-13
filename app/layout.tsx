@@ -27,7 +27,7 @@ const baseUrl =
 
 const roboto = Roboto({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],   
+  weight: ["400", "500", "700"],
   variable: "--font-roboto",       //  Next.js was synthesising it (wasted bytes)
   display: "swap",
 });
@@ -126,6 +126,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* ✅ MUST be first — runs before browser paints anything */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=document.documentElement;if(t==='dark'||((!t||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches)){d.classList.add('dark');d.classList.remove('light');}else{d.classList.add('light');d.classList.remove('dark');}}catch(e){}})();`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
