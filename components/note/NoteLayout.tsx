@@ -31,6 +31,7 @@ import SideNavToc from "./SideNavToc";
 import type { INote } from "@/types/model";
 import { useNoteInteractions } from "@/hooks/useNoteInteractions";
 
+
 // Fix #3 / #4 — lazy load non-critical UI
 const ImageLightbox = dynamic(() => import("@/components/ImageLightbox"), {
   ssr: false,
@@ -38,13 +39,11 @@ const ImageLightbox = dynamic(() => import("@/components/ImageLightbox"), {
 const ScrollTopButton = dynamic(() => import("@/components/ScrollTopButton"), {
   ssr: false,
 });
-const Footer = dynamic(() => import("@/components/Footer"), {
-  ssr: false,
-});
+// ✅ Best for Footer — SSR'd but not blocking LCP
+const Footer = dynamic(() => import("@/components/Footer"));
 
 // Memo wrappers (kept for parity, dynamic already wraps in a new component)
 const MemoScrollTopButton = memo(ScrollTopButton);
-const MemoFooter = memo(Footer);
 
 export type NoteLayoutProps = {
   note: INote;
@@ -138,7 +137,7 @@ export default function NoteLayout({
 
         {/* Fix #3 — Footer + ScrollTopButton deferred, not in LCP path */}
         <MemoScrollTopButton />
-        <MemoFooter className="pb-20" />
+        <Footer className="pb-20" />
       </div>
     </>
   );

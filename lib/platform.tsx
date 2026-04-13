@@ -110,11 +110,12 @@ export const getPlatformIcon = (url: string) => {
 
 export const getUsernameFromUrl = (url: string, platform: Platform): string | null => {
   try {
-    if(platform === "website") return url;
     const { pathname } = new URL(url);
     const parts = pathname.split("/").filter(Boolean);
 
     switch (platform) {
+      case "website": 
+        return url.replace(/^https?:\/\/(www\.)?/, "");
       case "github":
       case "twitter":
       case "instagram":

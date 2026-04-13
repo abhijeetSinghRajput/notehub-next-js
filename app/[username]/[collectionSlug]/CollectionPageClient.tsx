@@ -132,7 +132,7 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
   if (errorStatus === 404 || !collection) return <NotFound />;
 
   return (
-    <div className="px-4 py-8 min-h-svh">
+    <div className="px-4 py-8">
       <div className="max-w-7xl mx-auto flex flex-col gap-8">
         <div className="flex justify-between items-end">
           <CollectionHeader

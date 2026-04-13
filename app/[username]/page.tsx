@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import UserPageClient from "./UserPageClient";
 import { getDefaultMetadata } from "@/lib/metadata";
 import { cache } from "react";
+import Footer from "@/components/Footer";
 
 type Props = {
   params: Promise<{
@@ -162,6 +163,7 @@ export default async function UserPage({ params }: Props) {
 
       {/* Full interactive profile — auth controls, edit, contributions graph */}
       <UserPageClient initialUser={user} />
+      <Footer className="py-20" />
     </>
   );
 }

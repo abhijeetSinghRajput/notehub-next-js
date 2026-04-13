@@ -1,14 +1,6 @@
-"use client";
+"use client";;
 import { cn } from "@/lib/utils";
-import {
-  ChevronRight,
-  Globe,
-  LinkIcon,
-  Pencil,
-  Plus,
-  Quote,
-  Sparkles,
-} from "lucide-react";
+import { ChevronRight, LinkIcon, Pencil, Quote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import TooltipWrapper from "@/components/TooltipWrapper";
@@ -17,7 +9,6 @@ import SharePopoverWrapper from "@/components/ShareNotePopover.client";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { IUser } from "@/types/model";
 import ProfileSocials from "./ProfileSocials";
-import { Button } from "@/components/ui/button";
 
 interface ProfileCardProps {
   user: IUser;

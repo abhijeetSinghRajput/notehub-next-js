@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CollectionPageClient from "./CollectionPageClient";
 import { cache } from "react";
+import Footer from "@/components/Footer";
 
 type Props = {
   params: Promise<{
@@ -220,10 +221,16 @@ export default async function CollectionPage({ params }: Props) {
           }}
         />
         <CollectionPageClient initialData={data} />
+        <Footer className="py-20" />
       </>
     );
   } catch (error) {
     console.error("Error loading collection page:", error);
-    return <CollectionPageClient />;
+    return (
+      <>
+        <CollectionPageClient />;
+        <Footer className="py-20" />
+      </>
+    )
   }
 }
