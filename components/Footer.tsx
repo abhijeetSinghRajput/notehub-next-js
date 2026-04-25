@@ -116,10 +116,10 @@ const Footer = ({ className }: { className: string }) => {
         <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           {/* Brand block */}
           <div className="flex flex-col gap-4 col-span-2 sm:col-span-3 md:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <LogoIcon />
               <LogoText />
-            </div>
+            </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               A free platform for students to share and discover notes on DSA,
               AI/ML, web development, and more.
