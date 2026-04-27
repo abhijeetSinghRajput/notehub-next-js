@@ -18,9 +18,9 @@ import {
 export const SelectHeading = ({ editor }: { editor: Editor }) => {
   const headers: { icon: React.ReactNode; level: 1 | 2 | 3; label: string }[] =
     [
-      { icon: <Heading1 />, level: 1, label: "Heading 1" },
-      { icon: <Heading2 />, level: 2, label: "Heading 2" },
-      { icon: <Heading3 />, level: 3, label: "Heading 3" },
+      { icon: <Heading1 />, level: 2, label: "Heading 1" },
+      { icon: <Heading2 />, level: 3, label: "Heading 2" },
+      { icon: <Heading3 />, level: 4, label: "Heading 3" },
     ];
 
   const handleHeadingSelection = (level: 1 | 2 | 3) => {
