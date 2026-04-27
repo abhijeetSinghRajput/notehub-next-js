@@ -23,7 +23,7 @@ export const SelectHeading = ({ editor }: { editor: Editor }) => {
       { icon: <Heading3 />, level: 4, label: "Heading 3" },
     ];
 
-  const handleHeadingSelection = (level: 1 | 2 | 3) => {
+  const handleHeadingSelection = (level: 2 | 3 | 4) => {
     editor.chain().focus().toggleHeading({ level }).run();
   };
 
