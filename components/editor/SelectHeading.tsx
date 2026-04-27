@@ -30,9 +30,9 @@ export const SelectHeading = ({ editor }: { editor: Editor }) => {
   const getIcon = () => {
     let Icon = <Heading />;
 
-    if (editor.isActive("heading", { level: 1 })) Icon = <Heading1 className="size-5"/>;
-    if (editor.isActive("heading", { level: 2 })) Icon = <Heading2 className="size-5"/>;
-    if (editor.isActive("heading", { level: 3 })) Icon = <Heading3 className="size-5"/>;
+    if (editor.isActive("heading", { level: 2 })) Icon = <Heading1 className="size-5"/>;
+    if (editor.isActive("heading", { level: 3 })) Icon = <Heading2 className="size-5"/>;
+    if (editor.isActive("heading", { level: 4 })) Icon = <Heading3 className="size-5"/>;
     if (editor.isActive("paragraph")) Icon = <Pilcrow />;
 
     return Icon;
