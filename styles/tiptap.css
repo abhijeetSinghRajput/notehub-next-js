@@ -584,7 +584,7 @@ div:has(> .tiptap.ProseMirror) {
 }
 
 .tiptap .tiptap-mathematics-render[data-type="inline-math"] {
-  display: inline-block;
+  /* display: inline-block; */
 }
 
 .tiptap .tiptap-mathematics-render[data-type="block-math"] {
