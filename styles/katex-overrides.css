@@ -172,7 +172,7 @@
 span[data-type="inline-math"] {
   -ms-overflow-style: none;
   scrollbar-width: none;
-  display: inline-block;
+  /* display: inline-block; */
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
