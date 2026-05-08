@@ -14,8 +14,7 @@ type Props = {
 
 const getUser = cache(async (username: string) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`,
-    { next: { revalidate: 3600 } },
+    `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`
   );
   if (!response.ok) return null;
   return response.json();

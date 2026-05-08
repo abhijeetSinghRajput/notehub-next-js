@@ -15,8 +15,7 @@ type Props = {
 const getCollection = cache(
   async (username: string, collectionSlug: string) => {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/collection/${username}/${collectionSlug}`,
-      { next: { revalidate: 3600 } },
+      `${process.env.NEXT_PUBLIC_API_URL}/collection/${username}/${collectionSlug}`
     );
     if (!response.ok) return null;
     return response.json();

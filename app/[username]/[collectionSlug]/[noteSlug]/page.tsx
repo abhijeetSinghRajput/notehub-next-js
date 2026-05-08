@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     const noteApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/note/${username}/${collectionSlug}/${noteSlug}`;
-    const response = await fetch(noteApiUrl, { next: { revalidate: 3600 } });
+    const response = await fetch(noteApiUrl);
 
     if (!response.ok) {
       return getDefaultMetadata({
@@ -121,7 +121,7 @@ export default async function NotePage({ params }: Props) {
 
   try {
     const noteApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/note/${username}/${collectionSlug}/${noteSlug}`;
-    const response = await fetch(noteApiUrl, { next: { revalidate: 3600 } });
+    const response = await fetch(noteApiUrl);
 
     if (!response.ok) {
       return <NotePageClient initialNote={null} initialAuthor={null} />;
