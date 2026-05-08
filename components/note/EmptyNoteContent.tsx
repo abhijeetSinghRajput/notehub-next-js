@@ -10,7 +10,7 @@ export type EmptyNoteContentProps = {
 
 export default function EmptyNoteContent({ onEdit }: EmptyNoteContentProps) {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
+    <div className="mt-28 w-full h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
       {onEdit && (
         <Button
           onClick={onEdit}

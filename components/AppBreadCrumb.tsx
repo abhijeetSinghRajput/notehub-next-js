@@ -43,7 +43,7 @@ export default function AppBreadcrumbs() {
   useEffect(() => {
     // Now safe to read window — this runs only on client after hydration
     setVisibleBreadcrumbs(getVisibleCount());
-    
+
     const onResize = () => setVisibleBreadcrumbs(getVisibleCount());
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -58,7 +58,7 @@ export default function AppBreadcrumbs() {
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i];
       path += `${segment}/`;
-      
+
       if (segment === "note") {
         const noteId = segments[++i];
         if (noteId) {
@@ -162,7 +162,7 @@ export default function AppBreadcrumbs() {
                 )}
               >
                 {route.path === "/" && (
-                  <LogoIcon aria-hidden="true"/>
+                  <LogoIcon aria-hidden="true" />
                 )}
                 <span
                   className={cn(

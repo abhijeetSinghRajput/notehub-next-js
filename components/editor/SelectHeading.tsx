@@ -16,23 +16,23 @@ import {
 } from "lucide-react";
 
 export const SelectHeading = ({ editor }: { editor: Editor }) => {
-  const headers: { icon: React.ReactNode; level: 2 | 3 | 4; label: string }[] =
+  const headers: { icon: React.ReactNode; level: 1 | 2 | 3; label: string }[] =
     [
-      { icon: <Heading1 />, level: 2, label: "Heading 1" },
-      { icon: <Heading2 />, level: 3, label: "Heading 2" },
-      { icon: <Heading3 />, level: 4, label: "Heading 3" },
+      { icon: <Heading1 />, level: 1, label: "Heading 1" },
+      { icon: <Heading2 />, level: 2, label: "Heading 2" },
+      { icon: <Heading3 />, level: 3, label: "Heading 3" },
     ];
 
-  const handleHeadingSelection = (level: 2 | 3 | 4) => {
+  const handleHeadingSelection = (level: 1 | 2 | 3) => {
     editor.chain().focus().toggleHeading({ level }).run();
   };
 
   const getIcon = () => {
     let Icon = <Heading />;
 
-    if (editor.isActive("heading", { level: 2 })) Icon = <Heading1 className="size-5"/>;
-    if (editor.isActive("heading", { level: 3 })) Icon = <Heading2 className="size-5"/>;
-    if (editor.isActive("heading", { level: 4 })) Icon = <Heading3 className="size-5"/>;
+    if (editor.isActive("heading", { level: 1 })) Icon = <Heading1 className="size-5"/>;
+    if (editor.isActive("heading", { level: 2 })) Icon = <Heading2 className="size-5"/>;
+    if (editor.isActive("heading", { level: 3 })) Icon = <Heading3 className="size-5"/>;
     if (editor.isActive("paragraph")) Icon = <Pilcrow />;
 
     return Icon;
@@ -73,53 +73,3 @@ export const SelectHeading = ({ editor }: { editor: Editor }) => {
     </DropdownMenu>
   );
 };
-
-// export const SelectHeading = ({ editor }: { editor: Editor }) => {
-//   const headers: (1 | 2 | 3)[] = [1, 2, 3];
-
-//   return (
-//     <Select>
-//       <SelectTrigger className="w-20">
-//         <SelectValue
-//           placeholder={
-//             editor.isActive("heading", { level: 1 }) ? (
-//               <Heading1 className="size-5" />
-//             ) : editor.isActive("heading", { level: 2 }) ? (
-//               <Heading2 className="size-5" />
-//             ) : editor.isActive("heading", { level: 3 }) ? (
-//               <Heading3 className="size-5" />
-//             ) : editor.isActive("paragraph") ? (
-//               <Pilcrow className="size-4" />
-//             ) : (
-//               <Heading className="size-4" />
-//             )
-//           }
-//         />
-//       </SelectTrigger>
-//       <SelectContent className="flex-col">
-//         {headers.map((level, index) => (
-//           <Button
-//             key={index}
-//             tooltip={`Heading ${level}`}
-//             aria-label={`Insert Heading ${level}`}
-//             disabled={editor.isActive("heading", { level })}
-//             onClick={() =>
-//               editor.chain().focus().toggleHeading({ level }).run()
-//             }
-//             variant={
-//               editor.isActive("heading", { level }) ? "secondary" : "ghost"
-//             }
-//           >
-//             H{level}
-//           </Button>
-//         ))}
-//         <Button
-//           onClick={() => editor.chain().focus().setParagraph().run()}
-//           variant={editor.isActive("paragraph") ? "secondary" : "ghost"}
-//         >
-//           <Pilcrow />
-//         </Button>
-//       </SelectContent>
-//     </Select>
-//   );
-// };

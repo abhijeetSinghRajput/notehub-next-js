@@ -2,7 +2,6 @@ import { PopulatedNote } from "@/types/model";
 import HomePageClient from "./HomePageClient";
 import { Metadata } from "next";
 import { cache } from "react";
-import Footer from "@/components/Footer";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "");
 
@@ -147,7 +146,6 @@ export default async function HomePage() {
       <meta name="authors-count" content={[...new Set(notes.map((n: PopulatedNote) => n.userId.userName))].length.toString()} />
         
       <HomePageClient initialData={data} />
-      <Footer className="py-20"/>
     </>
   );
 }

@@ -209,6 +209,16 @@ div:has(> .tiptap.ProseMirror) {
   margin: 0;
 }
 
+/* 
+level up on 
+h2 -> h1
+h3 -> h2
+h4 -> h3
+h5 -> h4
+h6 -> h5
+to reserver the h1 for page title 
+*/
+
 .tiptap h2 {
   font-size: 2em;
   @apply font-semibold mb-8 leading-snug;
@@ -230,6 +240,33 @@ div:has(> .tiptap.ProseMirror) {
 }
 
 .tiptap h6 {
+  font-size: 1em;
+  @apply font-semibold m-0;
+}
+
+/* in the editor show the actual heading  */
+.tiptap.ProseMirror  h1 {
+  font-size: 2em;
+  @apply font-semibold mb-8 leading-snug;
+}
+
+.tiptap.ProseMirror  h2 {
+  font-size: 1.6em;
+  @apply font-semibold mt-8 mb-4 leading-snug;
+}
+
+.tiptap.ProseMirror  h3 {
+  font-size: 1.35em;
+  @apply font-semibold mt-6 mb-2 leading-snug;
+}
+
+.tiptap.ProseMirror  h4 {
+  font-size: 1.1em;
+  @apply font-semibold mt-4 mb-2;
+}
+
+.tiptap.ProseMirror  h5,
+.tiptap.ProseMirror  h6 {
   font-size: 1em;
   @apply font-semibold m-0;
 }

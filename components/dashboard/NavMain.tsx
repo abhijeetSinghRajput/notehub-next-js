@@ -118,7 +118,7 @@ const NoteItem = ({ note }: NoteItemProps) => {
           ) : (
             <Link
               href={`/note/${note._id}`}
-              onClick={() => isMobile && setOpenMobile(false)} 
+              onClick={() => isMobile && setOpenMobile(false)}
               className="truncate px-2.5 py-2 flex-1 text-sidebar-foreground/70"
             >
               {note.name}
@@ -254,11 +254,11 @@ const NavMain = ({ collections, searchQuery }: NavMainProps) => {
     .map((collection) => {
       const processedNotes = searchQuery
         ? collection.notes?.filter((note) =>
-            note.name.toLowerCase().includes(searchQuery.toLowerCase())
-          ).map((note) => ({
-            ...note,
-            name: HighlightMatch(note.name, searchQuery),
-          }))
+          note.name.toLowerCase().includes(searchQuery.toLowerCase())
+        ).map((note) => ({
+          ...note,
+          name: HighlightMatch(note.name, searchQuery),
+        }))
         : collection.notes ?? [];
 
       return { ...collection, notes: processedNotes };

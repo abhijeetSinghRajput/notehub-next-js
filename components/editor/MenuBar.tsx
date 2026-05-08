@@ -116,7 +116,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
     return true;
   };
 
-  
+
   const handleContentSave = async () => {
     if (!noteId) return;
 
@@ -207,7 +207,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             onClick={handleContentSave}
           >
             {status.noteContent.state === "saving" ||
-            status.note.state === "creating" ? (
+              status.note.state === "creating" ? (
               <Loader2 className="animate-spin" />
             ) : (
               <UploadCloudIcon />
@@ -267,15 +267,15 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
               <MathDialog editor={editor} />
             </Suspense>
           </div>
-          
-            <TablePopover
-              editor={editor}
-              triggerTooltip={"table option"}
-              controllers={TABLE_BUTTONS}
-              triggerIcon={<TableIcon />}
-            />
-          
-          <span className="h-10 bg-border w-px"/>
+
+          <TablePopover
+            editor={editor}
+            triggerTooltip={"table option"}
+            controllers={TABLE_BUTTONS}
+            triggerIcon={<TableIcon />}
+          />
+
+          <span className="h-10 bg-border w-px" />
 
           {CONTROL_BUTTONS.map(({ icon, command, tooltip }, index) => (
             <Button

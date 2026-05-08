@@ -99,27 +99,25 @@ export const ArticleCard = memo<ArticleCardProps>(function ArticleCard({
               headings={note.tableOfContent}
             />
 
-            <p className="text-muted-foreground text-sm line-clamp-3">
-              {description}
-            </p>
+            <Link
+              href={noteHref}
+              aria-label={`Read more about ${note.name} group`}
+            >
+              <p className="text-muted-foreground text-sm line-clamp-3">
+                {description}
+              </p>
 
-            <div className="mt-2 flex items-center gap-2">
-              <Button
-                asChild
-                size="sm"
-                variant="secondary"
-                className="bg-primary/10"
-              >
-                <Link
-                  href={noteHref}
-                  aria-label={`Read more about ${note.name}`}
+              <div className="mt-2 flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
                 >
                   <span className="sr-only">{`Read more about ${note.name}`}</span>
                   <span aria-hidden="true">Read More</span>
                   <ChevronRight />
-                </Link>
-              </Button>
-            </div>
+                </Button>
+              </div>
+            </Link>
           </div>
 
           {/* Right: image carousel */}

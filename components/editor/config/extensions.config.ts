@@ -296,11 +296,17 @@ function computeDecorations(
     let from = block.pos + 1;
     const language = block.node.attrs.language || defaultLanguage;
     const languages: string[] = lowlight.listLanguages();
-    const result =
-      language &&
-      (languages.includes(language) || lowlight.registered?.(language))
-        ? lowlight.highlight(language, block.node.textContent)
-        : lowlight.highlightAuto(block.node.textContent);
+    let result;
+    try {
+      result =
+        language &&
+        (languages.includes(language) || (lowlight as any).registered?.(language))
+          ? lowlight.highlight(language, block.node.textContent)
+          : lowlight.highlightAuto(block.node.textContent);
+    } catch (error) {
+      console.error("Highlighting error:", error);
+      result = lowlight.highlight("plaintext", block.node.textContent);
+    }
 
     const nodes = result.children || result.value || [];
 
