@@ -5,6 +5,8 @@ import CollectionPageClient from "./CollectionPageClient";
 import { cache } from "react";
 import Footer from "@/components/Footer";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{
     username: string;
@@ -15,7 +17,8 @@ type Props = {
 const getCollection = cache(
   async (username: string, collectionSlug: string) => {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/collection/${username}/${collectionSlug}`
+      `${process.env.NEXT_PUBLIC_API_URL}/collection/${username}/${collectionSlug}`,
+      { cache: "no-store" }
     );
     if (!response.ok) return null;
     return response.json();

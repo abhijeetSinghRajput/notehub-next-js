@@ -6,6 +6,8 @@ import { getDefaultMetadata } from "@/lib/metadata";
 import { cache } from "react";
 import Footer from "@/components/Footer";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{
     username: string;
@@ -14,7 +16,8 @@ type Props = {
 
 const getUser = cache(async (username: string) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`
+    `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`,
+    { cache: "no-store" }
   );
   if (!response.ok) return null;
   return response.json();

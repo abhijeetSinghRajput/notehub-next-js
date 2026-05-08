@@ -12,6 +12,8 @@ import NotePageClient from "./NotePageClient";
 import { getDefaultMetadata } from "@/lib/metadata";
 import { processNoteContent } from "@/lib/note/processNoteContent";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{
     username: string;
@@ -56,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     const noteApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/note/${username}/${collectionSlug}/${noteSlug}`;
-    const response = await fetch(noteApiUrl);
+    const response = await fetch(noteApiUrl, { cache: "no-store" });
 
     if (!response.ok) {
       return getDefaultMetadata({
@@ -121,7 +123,7 @@ export default async function NotePage({ params }: Props) {
 
   try {
     const noteApiUrl = `${process.env.NEXT_PUBLIC_API_URL}/note/${username}/${collectionSlug}/${noteSlug}`;
-    const response = await fetch(noteApiUrl);
+    const response = await fetch(noteApiUrl, { cache: "no-store" });
 
     if (!response.ok) {
       return <NotePageClient initialNote={null} initialAuthor={null} />;
