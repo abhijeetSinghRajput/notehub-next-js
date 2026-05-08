@@ -25,7 +25,8 @@ type SetImages = React.Dispatch<
 type SetIndex = React.Dispatch<React.SetStateAction<number | null>>;
 
 // Pure regex-based extraction — never touches the DOM.
-function extractImagesFromHtml(
+// Exported so the CSR processing path in NotePageClient can reuse it.
+export function extractImagesFromHtml(
   html: string,
 ): { src: string; alt: string }[] {
   const images: { src: string; alt: string }[] = [];

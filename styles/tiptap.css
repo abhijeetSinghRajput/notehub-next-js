@@ -277,6 +277,14 @@ to reserver the h1 for page title
   line-height: 1.75;
 }
 
+/* Empty paragraphs (blank lines typed by the author) must stay as tall as a
+   normal text line. TipTap serialises blank lines as either <p></p> or
+   <p><br></p> — both are handled here. */
+.tiptap p:empty,
+.tiptap p:has(> br:only-child) {
+  min-height: 1.75em;
+}
+
 .tiptap p:not(:first-child) {
   @apply mt-2;
 }

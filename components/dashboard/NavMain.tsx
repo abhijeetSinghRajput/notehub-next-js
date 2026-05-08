@@ -26,6 +26,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useNoteStore } from "@/app/stores/useNoteStore";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -47,6 +48,10 @@ interface NavMainProps {
 
 interface NoteItemProps {
   note: INote;
+  /** Canonical collection slug — from the parent ICollection */
+  collectionSlug: string;
+  /** Authenticated user's userName — for building the canonical URL */
+  username: string;
 }
 
 interface FolderCollapsibleProps {
@@ -57,7 +62,7 @@ interface FolderCollapsibleProps {
 
 // --- Components ---
 
-const NoteItem = ({ note }: NoteItemProps) => {
+const NoteItem = ({ note, collectionSlug, username }: NoteItemProps) => {
   const { setOpenMobile, isMobile } = useSidebar();
   const [isNoteRenaming, setIsNoteRenaming] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -117,7 +122,7 @@ const NoteItem = ({ note }: NoteItemProps) => {
             />
           ) : (
             <Link
-              href={`/note/${note._id}`}
+              href={`/${username}/${collectionSlug}/${note.slug}`}
               onClick={() => isMobile && setOpenMobile(false)}
               className="truncate px-2.5 py-2 flex-1 text-sidebar-foreground/70"
             >
@@ -146,6 +151,8 @@ const FolderCollapsible = ({
   pinnedCollections,
   searchQuery,
 }: FolderCollapsibleProps) => {
+  const { authUser } = useAuthStore();
+  const username = authUser?.userName ?? "";
   const [isCollectionRenaming, setIsCollectionRenaming] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { renameCollection } = useNoteStore();
@@ -237,7 +244,12 @@ const FolderCollapsible = ({
         <CollapsibleContent>
           <SidebarMenuSub className="mr-0 pr-0">
             {collection.notes?.map((note) => (
-              <NoteItem key={note._id} note={note} />
+              <NoteItem
+                key={note._id}
+                note={note}
+                collectionSlug={collection.slug}
+                username={username}
+              />
             ))}
           </SidebarMenuSub>
         </CollapsibleContent>

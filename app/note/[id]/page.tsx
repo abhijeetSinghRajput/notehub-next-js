@@ -1,141 +1,85 @@
+/**
+ * app/note/[id]/page.tsx — DEPRECATED viewer, now a redirect shim.
+ *
+ * /note/:id is no longer the canonical note URL.
+ * The single source of truth is /:username/:collectionSlug/:noteSlug.
+ *
+ * This page resolves the note ID → canonical URL and redirects.
+ * The editor at /note/:id/editor is NOT affected by this file.
+ */
 "use client";
 
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { FONT_SIZE, useEditorStore } from "@/app/stores/useEditorStore";
-import { useEffect, useMemo, useCallback, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { INote } from "@/types/model";
-
 import NoteSkeleton from "@/components/sekeletons/NoteSkeleton";
 import NoteNotFound from "@/components/note/NoteNotFound";
-import EmptyNoteContent from "@/components/note/EmptyNoteContent";
-import NoteLayout from "@/components/note/NoteLayout";
 
-import { useNoteContentProcessing } from "@/hooks/useNoteContentProcessing";
-import { useScrollProgress } from "@/hooks/useScrollProgress";
-import { useTocTracking } from "@/hooks/useTocTracking";
-import NProgress from "nprogress";
-
-// ─── Main component ────────────────────────────────────────────────────────────
-const NotePage = () => {
+const NoteRedirectPage = () => {
   const params = useParams();
   const noteId = Array.isArray(params.id) ? params.id[0] : params.id;
   const router = useRouter();
 
+  const { collections, getNoteContent, noteNotFound } = useNoteStore();
   const { authUser } = useAuthStore();
-  const { getNoteContent, status, noteNotFound, collections } = useNoteStore();
-  const [note, setNote] = useState<INote | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
-    null,
-  );
-  const [noteImages, setNoteImages] = useState<{ src: string; alt: string }[]>(
-    [],
-  );
 
-  const [tocOpen, setTocOpen] = useState(false);
-  const { editorFontFamily, editorFontSizeIndex } = useEditorStore();
-  const fontSize = FONT_SIZE[editorFontSizeIndex] ?? FONT_SIZE[1];
-
-  // ── Shared hooks ─────────────────────────────────────────────────────────────
-  const toc = note?.tableOfContent ?? [];
-  const progress = useScrollProgress();
-  const activeId = useTocTracking(toc);
-
-  useNoteContentProcessing(note?.content, setNoteImages, setSelectedImageIndex);
-
-  // ── Callbacks ────────────────────────────────────────────────────────────────
-  const handleTocItemClick = useCallback((itemId: string) => {
-    const el = document.getElementById(itemId);
-    if (el) el.scrollIntoView({ behavior: "instant", block: "start" });
-    history.replaceState(null, "", `#${itemId}`);
-    setTocOpen(false);
-  }, []);
-
-  const handleNavigateToEditor = useCallback(() => {
-    if (noteId) {
-      NProgress.start();
-      router.push(`/note/${noteId}/editor`);
-    }
-  }, [noteId, router]);
-
-  const handleCloseLightbox = useCallback(
-    () => setSelectedImageIndex(null),
-    [],
-  );
-
-  const shareLink = useMemo(() => {
-    if (!note) return "";
-    const collection = collections.find((c) => c._id === note.collectionId);
-    return `${process.env.NEXT_PUBLIC_BASE_URL}/${authUser?.userName}/${collection?.slug}/${note?.slug}`;
-  }, [note, collections, authUser?.userName]);
-
-  // ── Fetch ────────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const fetchData = async () => {
-      if (noteId) {
-        const fetchedNote = await getNoteContent(noteId);
-        setNote(fetchedNote ?? null);
+    if (!noteId) return;
+
+    const resolve = async () => {
+      // ── Step 1: Resolve from the already-loaded sidebar collections ──────
+      // The collections store is already populated for authenticated users.
+      // The note's parent collection has the correct slug; the owner username
+      // comes from authUser (these are always the current user's collections).
+      if (authUser?.userName && collections.length > 0) {
+        for (const collection of collections) {
+          const found = collection.notes?.find((n) => String(n._id) === noteId);
+          if (found) {
+            router.replace(
+              `/${authUser.userName}/${collection.slug}/${found.slug}`
+            );
+            return;
+          }
+        }
       }
+
+      // ── Step 2: Fetch from the server ─────────────────────────────────────
+      // The API populates note.userId (→ IUser) and note.collectionId (→ ICollection),
+      // so we can extract both userName and collectionSlug from the response.
+      const note = await getNoteContent(noteId);
+      if (!note) return; // noteNotFound is set inside getNoteContent on failure
+
+      const userName =
+        typeof note.userId === "object" && note.userId !== null
+          ? (note.userId as { userName: string }).userName
+          : authUser?.userName ?? null;
+
+      const collectionSlug =
+        typeof note.collectionId === "object" && note.collectionId !== null
+          ? (note.collectionId as { slug: string }).slug
+          : collections.find((c) => String(c._id) === String(note.collectionId))
+              ?.slug ?? null;
+
+      if (!userName || !collectionSlug) {
+        // Cannot resolve the canonical URL — surface the not-found UI
+        useNoteStore.setState({ noteNotFound: true });
+        return;
+      }
+
+      router.replace(`/${userName}/${collectionSlug}/${note.slug}`);
     };
-    fetchData();
-  }, [noteId, getNoteContent]);
 
-  // ADD after the fetch useEffect:
-  useEffect(() => {
-    if (!note) return;
-    const hash = window.location.hash.slice(1);
-    if (!hash) return;
+    resolve();
+    // noteId is the only external dependency; collections/authUser are read
+    // synchronously inside the effect, no need to re-run on their changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noteId]);
 
-    const ric = window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 50));
-    const handle = ric(() => {
-      document.getElementById(hash)?.scrollIntoView({ behavior: "instant", block: "start" });
-    });
-    return () => {
-      if (window.cancelIdleCallback)
-        window.cancelIdleCallback(handle as number);
-    };
-  }, [note]);
-
-  // ── Render guards ────────────────────────────────────────────────────────────
-  if (status.noteContent.state === "loading") return <NoteSkeleton />;
   if (noteNotFound) return <NoteNotFound />;
-  if (!note) return null;
-  if (!note.content?.trim())
-    return <EmptyNoteContent onEdit={handleNavigateToEditor} />;
 
-  return (
-    <NoteLayout
-      note={note}
-      headerProps={{
-        note,
-        author: {
-          userName: authUser?.userName,
-          fullName: authUser?.fullName,
-          avatar: authUser?.avatar,
-          role: authUser?.role,
-        },
-        showVisibility: true,
-        showEdit: true,
-        onEdit: handleNavigateToEditor,
-      }}
-      fabProps={{
-        toc,
-        tocOpen,
-        setTocOpen,
-        progress,
-        activeId,
-        handleTocItemClick,
-        shareLink,
-        onEdit: handleNavigateToEditor,
-      }}
-      fontSize={fontSize}
-      fontFamily={editorFontFamily}
-      selectedImageIndex={selectedImageIndex}
-      noteImages={noteImages}
-      onCloseLightbox={handleCloseLightbox}
-    />
-  );
+  // Show skeleton while resolving / redirecting
+  return <NoteSkeleton />;
 };
 
-export default NotePage;
+export default NoteRedirectPage;

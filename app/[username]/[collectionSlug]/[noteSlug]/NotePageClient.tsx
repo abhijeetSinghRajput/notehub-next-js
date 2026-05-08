@@ -36,9 +36,10 @@ import PrivateNote from "@/components/note/PrivateNote";
 import EmptyNoteContent from "@/components/note/EmptyNoteContent";
 import NoteLayout from "@/components/note/NoteLayout";
 
-import { useNoteContentProcessing } from "@/hooks/useNoteContentProcessing";
+import { useNoteContentProcessing, extractImagesFromHtml } from "@/hooks/useNoteContentProcessing";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { useTocTracking } from "@/hooks/useTocTracking";
+import { processNoteContentClient } from "@/lib/note/processNoteContentClient";
 import NProgress from "nprogress";
 
 import type { FC } from "react";
@@ -79,6 +80,9 @@ const NotePageClient: FC<NotePageClientProps> = ({
     useState<{ src: string; alt: string }[]>(initialImages);
   const [note, setNote] = useState<INote | null>(initialNote ?? null);
   const [author, setAuthor] = useState<IUser | null>(initialAuthor ?? null);
+  // Track whether the client processed the content itself (CSR path).
+  // When true, useNoteContentProcessing becomes a no-op (images already set).
+  const [clientProcessed, setClientProcessed] = useState(false);
   const [tocOpen, setTocOpen] = useState(false);
 
   const fontSize = FONT_SIZE[editorFontSizeIndex] ?? FONT_SIZE[1];
@@ -87,10 +91,11 @@ const NotePageClient: FC<NotePageClientProps> = ({
   const progress = useScrollProgress();
   const activeId = useTocTracking(toc);
 
-  // Fix #5 — Only run client-side image processing if the server didn't
-  // supply initialImages (i.e. fallback CSR path).
+  // Only run client-side image extraction when:
+  //  • The server didn't supply initialImages (SSR fallback), AND
+  //  • The CSR path didn't already process the content itself.
   useNoteContentProcessing(
-    initialImages.length === 0 ? note?.content : undefined,
+    initialImages.length === 0 && !clientProcessed ? note?.content : undefined,
     setNoteImages,
     setSelectedImageIndex,
   );
@@ -170,10 +175,24 @@ const NotePageClient: FC<NotePageClientProps> = ({
           { signal: controller.signal },
         );
 
+        // ── Process content client-side ──────────────────────────────────
+        // The server-side processNoteContent runs on SSR pages, but private
+        // notes always arrive here via this CSR fetch with raw HTML.
+        // We run the same pipeline (hljs, KaTeX, code headers, buttons) so
+        // the rendered note looks identical to an SSR-rendered one.
+        const rawNote = response.data.note;
+        const processedContent = await processNoteContentClient(rawNote.content ?? "");
+        const processedNote = { ...rawNote, content: processedContent };
+
+        // Extract images from the now-processed HTML so the lightbox works.
+        const extractedImages = extractImagesFromHtml(processedContent);
+
         if (!isMounted || controller.signal.aborted) return;
 
-        setNote(response.data.note);
+        setNote(processedNote);
         setAuthor(response.data.author);
+        setNoteImages(extractedImages);
+        setClientProcessed(true);
       } catch (error: any) {
         if (
           controller.signal.aborted ||
