@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import CollectionPageClient from "./CollectionPageClient";
 import { cache } from "react";
 import Footer from "@/components/Footer";
+import type { INote } from "@/types/model";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     // Extract first few notes for keywords
     const noteNames =
-      collection.notes?.slice(0, 5).map((note: any) => note.name) || [];
+      collection.notes?.slice(0, 5).map((note: INote) => note.name) || [];
     const keywords = [
       collection.name,
       ...noteNames,
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Get first note preview for description
     const firstNotes = collection.notes
       ?.slice(0, 3)
-      .map((note: any) => note.name)
+      .map((note: INote) => note.name)
       .join(", ");
     const description = `Explore ${collection.name} collection by ${author.fullName}. Contains ${collection.noteCount} notes on ${firstNotes || "various topics"}. Perfect for learning and revision.`;
 
@@ -176,7 +177,7 @@ export default async function CollectionPage({ params }: Props) {
       name: `Notes in ${collection.name}`,
       numberOfItems: collection.notes?.length ?? 0,
       itemListElement: (collection.notes ?? []).map(
-        (note: any, index: number) => ({
+        (note: INote, index: number) => ({
           "@type": "ListItem",
           position: index + 1,
           name: note.name,

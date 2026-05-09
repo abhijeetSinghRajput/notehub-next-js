@@ -96,17 +96,8 @@ export default function NoteLayout({
       />
 
       <div className={cn("h-full flex flex-col justify-between")}>
-        <div className="max-w-3xl w-full mx-auto relative">
+        <div className="w-full mx-auto relative px-4 max-w-3xl">
           <NoteHeader {...headerProps} />
-
-          {/*
-            Fix #5 — LCP: make the title real text, not sr-only.
-            Screen readers get it AND the browser can paint it as the LCP
-            candidate. Use the same visual treatment as your design requires.
-            If you truly want it invisible, at minimum remove `display:none`
-            equivalent — sr-only uses clip/overflow which still suppresses LCP.
-          */}
-          <h1 className="sr-only">{note?.name || "Untitled Note"}</h1>
 
           {/*
             Fix #3 + #6 — content-visibility:auto tells the browser it may
@@ -119,11 +110,11 @@ export default function NoteLayout({
             in the viewport on first paint.
           */}
           <div
-            className="tiptap note-view"
+            className="tiptap note-view pb-20"
             ref={containerRef}
             style={{
               fontSize: fontSize.size,
-              fontFamily,
+              fontFamily: fontFamily,
               lineHeight: "1.7",
               // Fix #6 — defer off-screen layout work
               contentVisibility: "auto",
@@ -137,7 +128,7 @@ export default function NoteLayout({
 
         {/* Fix #3 — Footer + ScrollTopButton deferred, not in LCP path */}
         <MemoScrollTopButton />
-        <Footer className="pb-20" />
+        <Footer className="pb-20 mt-32" />
       </div>
     </>
   );

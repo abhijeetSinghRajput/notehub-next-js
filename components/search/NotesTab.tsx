@@ -7,7 +7,7 @@ import BadgeIcon from "@/components/icons/BadgeIcon";
 import { SearchPagination } from "./SearchPagination";
 import { Searching, NotFound } from "./SearchStates";
 import type { PaginationState } from "./types";
-import type { IUser, PopulatedNote } from "@/types/model";
+import type { PopulatedNote } from "@/types/model";
 import NProgress from "nprogress";
 
 interface NoteWithSnippets extends PopulatedNote {
@@ -61,8 +61,8 @@ export function NotesTab({
 
       <div>
         {notes.map((note, index) => {
-          const author = note.userId as IUser;
-          const collection = note.collectionId as any;
+          const author = note.userId;
+          const collection = note.collectionId;
 
           return (
             <div

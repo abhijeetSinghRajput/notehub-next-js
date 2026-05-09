@@ -36,10 +36,12 @@ const cloudinaryLoader: ImageLoader = ({ src, width, quality }) => {
   );
 };
 
-export default function CloudinaryImage({ src, ...props }: CloudinaryImageProps) {
+export default function CloudinaryImage({ src, alt, ...props }: CloudinaryImageProps) {
+  const altText = alt ?? "";
+
   if (typeof src !== "string") {
     // StaticImport — Next.js handles natively
-    return <Image src={src} {...props} />;
+    return <Image src={src} alt={altText} {...props} />;
   }
 
   if (isCloudinaryUrl(src)) {
@@ -48,6 +50,7 @@ export default function CloudinaryImage({ src, ...props }: CloudinaryImageProps)
     return (
       <Image
         src={src}
+        alt={altText}
         loader={cloudinaryLoader}
         {...props}
       />
@@ -56,10 +59,10 @@ export default function CloudinaryImage({ src, ...props }: CloudinaryImageProps)
 
   if (isAllowedDomain(src)) {
     // Use Next.js default optimizer for allowed domains
-    return <Image src={src} {...props} />;
+    return <Image src={src} alt={altText} {...props} />;
   }
 
   // Fallback for unknown domains: use plain <img>
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} {...props} />;
+  return <img src={src} alt={altText} {...props} />;
 }

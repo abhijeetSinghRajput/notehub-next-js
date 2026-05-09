@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { useLocalStorage } from "@/app/stores/useLocalStorage";
+import { useLocalStorage, type SearchHistoryUser } from "@/app/stores/useLocalStorage";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import { axiosInstance } from "@/lib/axios";
 import type { IUser, PopulatedNote } from "@/types/model";
@@ -78,7 +78,7 @@ export function SearchButton() {
       setSearchResults((s) => ({ ...s, notes: res.data.notes || [] }));
       setPagination((s) => ({ ...s, notes: res.data.pagination }));
     } catch (err) {
-      if ((err as any)?.code === "ERR_CANCELED") return;
+      if ((err as { code?: string })?.code === "ERR_CANCELED") return;
       setSearchResults((s) => ({ ...s, notes: [] }));
     } finally {
       setIsSearching(false);
@@ -109,7 +109,7 @@ export function SearchButton() {
         setSearchResults((s) => ({ ...s, users: res.users || [] }));
         setPagination((s) => ({ ...s, users: res.pagination }));
       } catch (err) {
-        if ((err as any)?.code === "ERR_CANCELED") return;
+        if ((err as { code?: string })?.code === "ERR_CANCELED") return;
         setSearchResults((s) => ({ ...s, users: [] }));
       } finally {
         setIsSearching(false);
@@ -134,7 +134,7 @@ export function SearchButton() {
       debouncedFetchNotes.cancel();
       debouncedFetchUsers.cancel();
     };
-  }, [searchQuery, activeTab]);
+  }, [searchQuery, activeTab, debouncedFetchNotes, debouncedFetchUsers]);
 
   // Keyboard shortcut Ctrl+K / Cmd+K
   React.useEffect(() => {

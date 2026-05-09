@@ -117,7 +117,7 @@ const CopyButton = memo(({ codeRef }: { codeRef: React.RefObject<HTMLPreElement 
       size="icon"
       onClick={handleCopy}
       className="size-7"
-      title={copied ? "Copied!" : "Copy code"}
+      tooltip={copied ? "Copied!" : "Copy code"}
     >
       {copied ? <CopyCheck className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
     </Button>

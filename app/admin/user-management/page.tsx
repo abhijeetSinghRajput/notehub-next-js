@@ -19,7 +19,6 @@ import { Trash, Ban, CheckCircle, Shield, User as UserIcon } from "lucide-react"
 const PAGE_SIZE = 50;
 
 export default function UserManagementPage() {
-  const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);

@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ArrowLeft, Ban, Trash, User as UserIcon, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Ban, Trash, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import BadgeIcon from "@/components/icons/BadgeIcon";
+import type { IUser } from "@/types/model";
 import { getPlatformIcon } from "@/lib/platform";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,7 +24,7 @@ export default function AdminUserEditPage() {
   const router = useRouter();
   const { updateUser, batchUpdateUsers } = useAdminStore();
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
@@ -53,12 +54,13 @@ export default function AdminUserEditPage() {
             fullName: res.data.fullName || "",
             userName: res.data.userName || "",
             bio: res.data.bio || "",
-            socials: res.data.socials ? res.data.socials.map((s: any) => ({ url: s.url })) : [],
+            socials: res.data.socials ? res.data.socials.map((s: { url: string }) => ({ url: s.url })) : [],
             role: res.data.role || "user",
             isBanned: res.data.isBanned || false,
           });
         }
       } catch (error) {
+        console.error("Failed to fetch user", error);
         toast.error("User not found");
         router.push("/admin/user-management");
       } finally {

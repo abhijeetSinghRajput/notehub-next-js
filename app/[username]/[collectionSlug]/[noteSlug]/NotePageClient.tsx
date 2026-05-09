@@ -80,6 +80,16 @@ const NotePageClient: FC<NotePageClientProps> = ({
     useState<{ src: string; alt: string }[]>(initialImages);
   const [note, setNote] = useState<INote | null>(initialNote ?? null);
   const [author, setAuthor] = useState<IUser | null>(initialAuthor ?? null);
+
+  // Sync state with props when they change (e.g. after router.refresh())
+  useEffect(() => {
+    if (initialNote) {
+      setNote(initialNote);
+      setAuthor(initialAuthor);
+      setNoteImages(initialImages);
+    }
+  }, [initialNote, initialAuthor, initialImages]);
+
   // Track whether the client processed the content itself (CSR path).
   // When true, useNoteContentProcessing becomes a no-op (images already set).
   const [clientProcessed, setClientProcessed] = useState(false);

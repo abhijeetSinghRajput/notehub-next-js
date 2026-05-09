@@ -79,7 +79,7 @@ interface BaseCollaboratorsDialogProps {
   isSaving: boolean;
 }
 
-const BaseCollaboratorsDialog = ({
+export const BaseCollaboratorsDialog = ({
   open,
   onOpenChange,
   currentCollaborators,
@@ -90,8 +90,8 @@ const BaseCollaboratorsDialog = ({
   updateCollectionCollaborators,
   isSaving,
 }: BaseCollaboratorsDialogProps) => {
-  const [workingCollaborators, setWorkingCollaborators] = useState(() => [
-    ...currentCollaborators,
+  const [workingCollaborators, setWorkingCollaborators] = useState<IUser[]>(() => [
+    ...(currentCollaborators || []),
   ]);
   const [removedIds, setRemovedIds] = useState(() => new Set());
 
@@ -155,7 +155,7 @@ const BaseCollaboratorsDialog = ({
 
   const hasChanges =
     removedIds.size > 0 ||
-    workingCollaborators.length !== currentCollaborators.length;
+    workingCollaborators.length !== (currentCollaborators?.length || 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -183,7 +183,10 @@ const BaseCollaboratorsDialog = ({
           />
         </div>
 
-        <CardFooter className="flex justify-end p-0 pt-4">
+        <CardFooter className="flex items-center justify-between p-0 pt-4">
+          <div className="text-xs font-medium text-muted-foreground">
+            {workingCollaborators.length - removedIds.size} Collaborator{(workingCollaborators.length - removedIds.size) !== 1 ? 's' : ''}
+          </div>
           <Button onClick={onSave} disabled={!hasChanges || isSaving}>
             {isSaving ? <Loader2 className="animate-spin mr-2" /> : null}
             Save Changes

@@ -78,6 +78,7 @@ export interface NoteStore {
   moveTo: (data: { noteId: string; collectionId: string }) => Promise<void>;
   updateNoteCollaborators: (data: { noteId: string; collaborators: IUser[] }) => Promise<void>;
   updateNoteVisibility: (data: { noteId: string; visibility: "public" | "private" }) => Promise<"public" | "private" | undefined>;
+  updateNote: (noteId: string, data: Partial<INote>) => Promise<void>;
 
   // ── Cache helpers ──
   invalidateNoteCache: (noteId: string) => void;
@@ -498,6 +499,24 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
           toast.error("Failed to update note visibility");
           return undefined;
         });
+    },
+    updateNote: async (noteId, data) => {
+      // Optimistic
+      const prevState = { collections: get().collections, notes: get().notes, noteCache: get().noteCache };
+      set((s) => ({ ...patchNote(s, noteId, data) }));
+
+      await withStatus("note", "saving", async () => {
+        const res = await axiosInstance.patch(`note/${noteId}`, data);
+        const { note } = res.data as { note: INote };
+        set((s) => ({
+          ...patchNote(s, noteId, note),
+          noteCache: { ...s.noteCache, [noteId]: { data: note, fetchedAt: Date.now() } },
+        }));
+        toast.success(res.data.message || "Note updated");
+      }).catch(() => {
+        set(prevState); // Rollback
+        toast.error("Failed to update note");
+      });
     },
   };
 };
