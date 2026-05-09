@@ -23,6 +23,10 @@ export interface IUser extends IBase {
 
   hasGoogleAuth: boolean;
   role: "user" | "admin";
+  isBanned: boolean;
+  isDeleted: boolean;
+  notesCount?: number;
+  collectionsCount?: number;
 }
 
 // 📁 ICollection

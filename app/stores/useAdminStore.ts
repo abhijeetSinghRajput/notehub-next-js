@@ -76,6 +76,17 @@ interface AdminStore {
 
   invalidateUsersCache: (query?: UsersQuery) => void;
   clearUsersCache: () => void;
+
+  batchUpdateUsers: (
+    userIds: string[],
+    action: "delete" | "ban" | "unban" | "assignRole",
+    role?: "user" | "admin"
+  ) => Promise<{ success: boolean; message?: string }>;
+
+  updateUser: (
+    userId: string,
+    data: { fullName?: string; userName?: string; bio?: string; role?: string; isBanned?: boolean }
+  ) => Promise<{ success: boolean; message?: string; user?: any }>;
 }
 
 export const useAdminStore = create<AdminStore>((set, get) => ({
@@ -119,7 +130,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
     }
 
     const request = axiosInstance
-      .get<IGetAllUsersResponse>("/user", {
+      .get<IGetAllUsersResponse>("/admin/users", {
         params: {
           page: normalizedQuery.page,
           limit: normalizedQuery.limit,
@@ -190,5 +201,37 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
 
   clearUsersCache: () => {
     set({ usersCache: {} });
+  },
+
+  batchUpdateUsers: async (userIds, action, role) => {
+    try {
+      const response = await axiosInstance.post("/admin/users/batch", {
+        userIds,
+        action,
+        role,
+      });
+      get().clearUsersCache(); // invalidate cache after mutation
+      return response.data;
+    } catch (error: any) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      return {
+        success: false,
+        message: err?.response?.data?.message || err?.message || "Batch update failed.",
+      };
+    }
+  },
+
+  updateUser: async (userId, data) => {
+    try {
+      const response = await axiosInstance.patch(`/admin/users/${userId}`, data);
+      get().clearUsersCache(); // invalidate cache
+      return response.data;
+    } catch (error: any) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      return {
+        success: false,
+        message: err?.response?.data?.message || err?.message || "User update failed.",
+      };
+    }
   },
 }));
