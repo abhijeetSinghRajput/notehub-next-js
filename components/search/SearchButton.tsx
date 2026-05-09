@@ -77,8 +77,8 @@ export function SearchButton() {
       );
       setSearchResults((s) => ({ ...s, notes: res.data.notes || [] }));
       setPagination((s) => ({ ...s, notes: res.data.pagination }));
-    } catch (err: any) {
-      if (err?.code === "ERR_CANCELED") return;
+    } catch (err) {
+      if ((err as any)?.code === "ERR_CANCELED") return;
       setSearchResults((s) => ({ ...s, notes: [] }));
     } finally {
       setIsSearching(false);
@@ -108,8 +108,8 @@ export function SearchButton() {
         })) as UsersSearchResponse;
         setSearchResults((s) => ({ ...s, users: res.users || [] }));
         setPagination((s) => ({ ...s, users: res.pagination }));
-      } catch (err: any) {
-        if (err?.code === "ERR_CANCELED") return;
+      } catch (err) {
+        if ((err as any)?.code === "ERR_CANCELED") return;
         setSearchResults((s) => ({ ...s, users: [] }));
       } finally {
         setIsSearching(false);
@@ -323,7 +323,7 @@ export function SearchButton() {
                   searchHistory={searchHistory as unknown as IUser[]}
                   onPageChange={(page) => fetchUsers(searchQuery, page)}
                   onClose={handleClose}
-                  onAddHistory={(user) => addSearchHistory(user as any)}
+                  onAddHistory={(user) => addSearchHistory(user as unknown as SearchHistoryUser)}
                   onRemoveHistory={removeSearchHistory}
                   onClearHistory={clearSearchHistory}
                 />
