@@ -66,7 +66,7 @@ export interface NoteStore {
   getAllCollections: (params: { userId: string; guest?: boolean; force?: boolean }) => Promise<ICollection[] | null>;
 
   // ── Writes (all optimistic) ──
-  updateContent: (data: { noteId: string; content: string }) => Promise<void>;
+  updateContent: (data: { noteId: string; content: string }) => Promise<INote | null>;
   createCollection: (data: Partial<ICollection>) => Promise<ICollection | null>;
   deleteCollection: (collectionId: string) => Promise<void>;
   renameCollection: (data: { _id: string; newName: string }) => Promise<void>;
@@ -78,7 +78,7 @@ export interface NoteStore {
   moveTo: (data: { noteId: string; collectionId: string }) => Promise<void>;
   updateNoteCollaborators: (data: { noteId: string; collaborators: IUser[] }) => Promise<void>;
   updateNoteVisibility: (data: { noteId: string; visibility: "public" | "private" }) => Promise<"public" | "private" | undefined>;
-  updateNote: (noteId: string, data: Partial<INote>) => Promise<void>;
+  updateNote: (noteId: string, data: Partial<INote>) => Promise<INote | null>;
 
   // ── Cache helpers ──
   invalidateNoteCache: (noteId: string) => void;
@@ -292,7 +292,7 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
       const prev = get().noteCache[noteId]?.data;
       set((s) => ({ ...patchNote(s, noteId, { content }) }));
 
-      await withStatus("noteContent", "saving", async () => {
+      return await withStatus("noteContent", "saving", async () => {
         const res = await axiosInstance.put("/note/", { noteId, content });
         const { note } = res.data as { note: INote; message?: string };
         // Sync with server truth
@@ -301,10 +301,12 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
           noteCache: { ...s.noteCache, [noteId]: { data: note, fetchedAt: Date.now() } },
         }));
         toast.success(res.data.message || "Note updated");
+        return note;
       }).catch(() => {
         // Rollback
         if (prev) set((s) => ({ ...patchNote(s, noteId, { content: prev.content }) }));
         toast.error("Failed to update content");
+        return null;
       });
     },
 
@@ -505,7 +507,7 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
       const prevState = { collections: get().collections, notes: get().notes, noteCache: get().noteCache };
       set((s) => ({ ...patchNote(s, noteId, data) }));
 
-      await withStatus("note", "saving", async () => {
+      return await withStatus("note", "saving", async () => {
         const res = await axiosInstance.patch(`note/${noteId}`, data);
         const { note } = res.data as { note: INote };
         set((s) => ({
@@ -513,9 +515,11 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
           noteCache: { ...s.noteCache, [noteId]: { data: note, fetchedAt: Date.now() } },
         }));
         toast.success(res.data.message || "Note updated");
+        return note;
       }).catch(() => {
         set(prevState); // Rollback
         toast.error("Failed to update note");
+        return null;
       });
     },
   };

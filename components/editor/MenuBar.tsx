@@ -29,6 +29,8 @@ import TextColorDropdown from "./TextColorDropdown";
 import ListDropdown from "./ListDropdown";
 import TextAlignDropdown from "./TextAlignDropdown";
 import AddNodeDropdown from "./AddNodeDropdown";
+import { revalidateNotePath } from "@/app/actions/revalidate";
+import { PopulatedNote } from "@/types/model";
 
 export const MenuBar = ({ noteId }: { noteId: string }) => {
   const { editor } = useCurrentEditor();
@@ -165,9 +167,26 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
       return;
     }
 
-    await updateContent({ content, noteId });
+    const updatedNote = (await updateContent({
+      content,
+      noteId,
+    })) as PopulatedNote;
     clearDraft(noteId);
-    router.back();
+
+    if (
+      updatedNote &&
+      updatedNote.userId?.userName &&
+      updatedNote.collectionId?.slug &&
+      updatedNote.slug
+    ) {
+      const path = `/${updatedNote.userId.userName}/${updatedNote.collectionId.slug}/${updatedNote.slug}`;
+      await revalidateNotePath(path);
+      router.push(path);
+      router.refresh();
+    } else {
+      router.back();
+      router.refresh();
+    }
   };
 
   const handleRevert = async () => {
