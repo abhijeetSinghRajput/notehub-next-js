@@ -210,18 +210,6 @@ export default function NoteHeader({
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-
-            {showEdit && onEdit && (
-              <Button
-                onClick={onEdit}
-                variant="default"
-                size="lg"
-                className="rounded-full px-6 shadow-lg shadow-primary/20"
-              >
-                <Pencil className="size-4 mr-2" />
-                <span>Edit</span>
-              </Button>
-            )}
           </div>
         </div>
 
