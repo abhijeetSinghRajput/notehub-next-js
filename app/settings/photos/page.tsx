@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,10 +11,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { Loader2, Trash2, User, Image as ImageIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import ImageLightbox from "@/components/ImageLightbox";
+import ImageCropperModal from "@/components/ImageCropperModal";
+
+const COVER_ASPECT = 767 / 192;
 
 const Photos = () => {
   const {
@@ -28,55 +32,71 @@ const Photos = () => {
     removeUserCover,
   } = useAuthStore();
 
-  const [previewavatar, setPreviewavatar] = useState<string | null>(null);
-  const [previewCover, setPreviewCover] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [cropperSrc, setCropperSrc] = useState<string | null>(null);
+  const [cropperMode, setCropperMode] = useState<"avatar" | "cover" | null>(null);
 
-  const handleUploadImage = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
-    onUpload: (file: File) => Promise<unknown>,
-  ) => {
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const openCropper = (file: File, mode: "avatar" | "cover") => {
+    const url = URL.createObjectURL(file);
+    setCropperSrc(url);
+    setCropperMode(mode);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, mode: "avatar" | "cover") => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file) openCropper(file, mode);
+    e.target.value = "";
+  };
 
+  const closeCropper = useCallback(() => {
+    if (cropperSrc) URL.revokeObjectURL(cropperSrc);
+    setCropperSrc(null);
+    setCropperMode(null);
+  }, [cropperSrc]);
+
+  const handleCropConfirmed = useCallback(async (blob: Blob) => {
+    const mode = cropperMode;
+    closeCropper();
     try {
-      // Set image preview (optional)
-      const previewURL = URL.createObjectURL(file);
-      setPreview(previewURL);
-
-      let finalFile = file;
-
-      // 🗜️ Compress only if size > 1MB
-      if (file.size > 1024 * 1024) {
-        const options = {
+      let file = new File([blob], mode === "avatar" ? "avatar.jpg" : "cover.jpg", {
+        type: "image/jpeg",
+      });
+      if (file.size > 800 * 1024) {
+        file = (await imageCompression(file, {
           maxSizeMB: 0.5,
-          maxWidthOrHeight: 1920,
+          maxWidthOrHeight: mode === "cover" ? 1534 : 1024,
           useWebWorker: true,
-        };
-        finalFile = await imageCompression(file, options);
+        })) as File;
       }
-      await onUpload(finalFile);
-    } catch (error) {
-      console.error("Error compressing or uploading:\n", error);
-    } finally {
-      e.target.value = ""; // Reset file input
+      if (mode === "avatar") {
+        await uploadUserAvatar(file);
+      } else {
+        await uploadUserCover(file);
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
     }
-  };
-
-  const handleRemoveImage = async (
-    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
-    onRemove: () => Promise<unknown>,
-  ) => {
-    const result = await onRemove();
-    if (result) {
-      setPreview(null);
-    }
-  };
+  }, [cropperMode, closeCropper, uploadUserAvatar, uploadUserCover]);
 
   return (
     <>
-      <h1 className="sr-only">Photos & Cover Settings</h1>
+      <h1 className="sr-only">Photos &amp; Cover Settings</h1>
+
+      {/* Image Cropper Modal */}
+      {cropperSrc && cropperMode && (
+        <ImageCropperModal
+          src={cropperSrc}
+          aspect={cropperMode === "avatar" ? 1 : COVER_ASPECT}
+          circular={cropperMode === "avatar"}
+          label={cropperMode === "avatar" ? "Crop Profile Photo" : "Crop Cover Photo"}
+          onConfirm={handleCropConfirmed}
+          onClose={closeCropper}
+        />
+      )}
+
       <Card>
         {selectedImage && (
           <ImageLightbox
@@ -85,203 +105,168 @@ const Photos = () => {
           />
         )}
         <CardHeader>
-          <CardTitle>Photos & Cover</CardTitle>
+          <CardTitle>Photos &amp; Cover</CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
             Update your profile and cover photos.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-10">
-          {/* AVATAR SECTION  */}
+
+          {/* ── AVATAR SECTION ── */}
           <div className="space-y-4">
             <div className="flex items-center gap-6 pb-4">
               <span className="border-b flex-1"></span>
               <div className="flex items-center gap-2">
                 <User className="size-4" />
-                <Label htmlFor="profile-photo">PROFILE PHOTO</Label>
+                <Label>PROFILE PHOTO</Label>
               </div>
               <span className="border-b flex-1"></span>
             </div>
+
             <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
-              <div
-                className="relative size-44 shrink-0 rounded-full overflow-hidden cursor-pointer"
-                onClick={() =>
-                  setSelectedImage(
-                    previewavatar || authUser?.avatar || "/avatar.svg",
-                  )
-                }
-                role="button"
-                aria-label="Open profile photo"
+              <button
+                type="button"
+                className="relative size-44 shrink-0 rounded-full overflow-hidden cursor-pointer ring-2 ring-border ring-offset-2 ring-offset-background hover:ring-primary transition-all focus-visible:outline-none focus-visible:ring-primary"
+                onClick={() => setSelectedImage(authUser?.avatar || "/avatar.svg")}
+                aria-label="View profile photo"
               >
                 <Image
-                  src={previewavatar || authUser?.avatar || "/avatar.svg"}
+                  src={authUser?.avatar || "/avatar.svg"}
                   alt="User Avatar"
                   fill
                   sizes="176px"
                   className="object-cover"
                 />
-              </div>
+              </button>
 
               <div className="space-y-6">
                 <div className="space-y-1">
                   <p className="font-semibold text-sm">
-                    File smaller than 10MB and at least 400px by 400px
+                    File smaller than 10 MB · at least 400 × 400 px
                   </p>
                   <p className="text-muted-foreground text-sm">
-                    This image will be shwon in your profile page if you choose
-                    to share it with other memeber it will also help us
-                    recognize you
+                    Your photo will be cropped to a square before uploading.
+                    It&apos;s shown on your profile and helps others recognise you.
                   </p>
                 </div>
 
                 <div className="flex gap-2">
-                  <label htmlFor="profile-photo">
-                    <input
-                      type="file"
-                      id="profile-photo"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={isUploadingAvatar}
-                      onChange={(e) =>
-                        handleUploadImage(e, setPreviewavatar, uploadUserAvatar)
-                      }
-                    />
-
-                    <Button
-                      asChild
-                      variant="default"
-                      size="default"
-                      className="w-32"
-                      disabled={isUploadingAvatar}
-                    >
-                      <span>
-                        {isUploadingAvatar ? (
-                          <span className="flex items-center gap-1">
-                            Uploading...
-                            <Loader2 className="animate-spin size-4" />
-                          </span>
-                        ) : (
-                          "Upload Photo"
-                        )}
-                      </span>
-                    </Button>
-                  </label>
-
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={isUploadingAvatar}
+                    onChange={(e) => handleFileChange(e, "avatar")}
+                  />
                   <Button
-                    onClick={() =>
-                      handleRemoveImage(setPreviewavatar, removeUserAvatar)
-                    }
+                    variant="default"
+                    size="default"
+                    className="w-36"
+                    disabled={isUploadingAvatar}
+                    onClick={() => avatarInputRef.current?.click()}
+                  >
+                    {isUploadingAvatar ? (
+                      <span className="flex items-center gap-1.5">
+                        Uploading… <Loader2 className="animate-spin size-4" />
+                      </span>
+                    ) : (
+                      "Upload Photo"
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => removeUserAvatar()}
                     size="icon"
                     disabled={isRemovingAvatar || !authUser?.avatar}
                     variant="secondary"
-                    className="relative overflow-hidden"
                   >
-                    {isRemovingAvatar ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <Trash2 />
-                    )}
+                    {isRemovingAvatar ? <Loader2 className="animate-spin" /> : <Trash2 />}
                   </Button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* COVER SECTION  */}
+          {/* ── COVER SECTION ── */}
           <div className="space-y-4">
             <div className="flex items-center gap-6 pb-4">
               <span className="border-b flex-1"></span>
               <div className="flex items-center gap-2">
                 <ImageIcon className="size-4" />
-                <Label htmlFor="profile-cover">PROFILE COVER</Label>
+                <Label>PROFILE COVER</Label>
               </div>
               <span className="border-b flex-1"></span>
             </div>
-            <div className="flex flex-col sm:flex-col gap-8 items-start">
-              <div
-                className="relative w-full h-48 rounded-xl overflow-hidden cursor-pointer"
-                onClick={() =>
-                  setSelectedImage(
-                    previewCover || authUser?.cover || "/placeholder.svg",
-                  )
-                }
-                role="button"
-                aria-label="Open cover photo"
+
+            <div className="flex flex-col gap-6 items-start">
+              <button
+                type="button"
+                className="relative w-full rounded-xl overflow-hidden cursor-pointer ring-2 ring-border ring-offset-2 ring-offset-background hover:ring-primary transition-all focus-visible:outline-none focus-visible:ring-primary"
+                style={{ aspectRatio: `${767} / ${192}` }}
+                onClick={() => setSelectedImage(authUser?.cover || "/placeholder.svg")}
+                aria-label="View cover photo"
               >
                 <Image
-                  src={previewCover || authUser?.cover || "/placeholder.svg"}
-                  alt="background-cover-image"
+                  src={authUser?.cover || "/placeholder.svg"}
+                  alt="Cover Photo"
                   fill
                   className="object-cover bg-background"
                   sizes="100vw"
                   onError={(e) => {
-                    const target = e.currentTarget as HTMLImageElement;
-                    target.src = "/placeholder.svg";
+                    (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
                   }}
                   priority
                 />
-              </div>
+              </button>
+
               <div className="space-y-6">
                 <div className="space-y-1">
                   <p className="font-semibold text-sm">
-                    File smaller than 10MB and at least 1200px by 300px
+                    File smaller than 10 MB · recommended 767 × 192 px
                   </p>
                   <p className="text-muted-foreground text-sm">
-                    This image will be shown as background banner in your
-                    profile page if you choose to share it with other members.
+                    Your image will be cropped to 767 × 192 px before uploading.
+                    It&apos;s shown as a banner on your profile page.
                   </p>
                 </div>
 
                 <div className="flex gap-2">
-                  <label htmlFor="profile-cover">
-                    <input
-                      type="file"
-                      id="profile-cover"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={isUploadingCover}
-                      onChange={(e) =>
-                        handleUploadImage(e, setPreviewCover, uploadUserCover)
-                      }
-                    />
-                    <Button
-                      asChild
-                      variant="default"
-                      size="default"
-                      className="w-32 cursor-pointer"
-                      disabled={isUploadingCover}
-                    >
-                      <span>
-                        {isUploadingCover ? (
-                          <span className="flex items-center gap-1">
-                            Uploading...{" "}
-                            <Loader2 className="animate-spin size-4" />
-                          </span>
-                        ) : (
-                          "Upload Photo"
-                        )}
-                      </span>
-                    </Button>
-                  </label>
-
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={isUploadingCover}
+                    onChange={(e) => handleFileChange(e, "cover")}
+                  />
                   <Button
-                    onClick={() =>
-                      handleRemoveImage(setPreviewCover, removeUserCover)
-                    }
+                    variant="default"
+                    size="default"
+                    className="w-36"
+                    disabled={isUploadingCover}
+                    onClick={() => coverInputRef.current?.click()}
+                  >
+                    {isUploadingCover ? (
+                      <span className="flex items-center gap-1.5">
+                        Uploading… <Loader2 className="animate-spin size-4" />
+                      </span>
+                    ) : (
+                      "Upload Photo"
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => removeUserCover()}
                     size="icon"
                     disabled={isRemovingCover || !authUser?.cover}
                     variant="secondary"
-                    className="relative overflow-hidden"
                   >
-                    {isRemovingCover ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <Trash2 />
-                    )}
+                    {isRemovingCover ? <Loader2 className="animate-spin" /> : <Trash2 />}
                   </Button>
                 </div>
               </div>
             </div>
           </div>
+
         </CardContent>
       </Card>
     </>

@@ -25,6 +25,9 @@ import LogoIcon from "@/components/icons/logo/LogoIcon";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { authUser, isCheckingAuth } = useAuthStore();
+  // Issue 2C fixed: usePathname() must be called at the top level,
+  // before any conditional returns (Rules of Hooks).
+  const pathname = usePathname();
 
   // Show loading state while checking authentication
   if (isCheckingAuth) {
@@ -52,8 +55,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       </div>
     );
   }
-
-  const pathname = usePathname();
   const pathSegments = pathname.split("/").filter(Boolean);
 
   return (

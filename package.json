@@ -58,6 +58,7 @@
     "radix-ui": "^1.4.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-easy-crop": "^5.5.7",
     "react-file-drop": "^3.1.6",
     "react-hook-form": "^7.71.1",
     "rehype-parse": "^9.0.1",

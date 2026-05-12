@@ -7,7 +7,7 @@ import { ExpandedTabs } from "@/components/ui/expanded-tabs";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
-  const { authUser } = useAuthStore();
+  const { authUser, isCheckingAuth } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -24,15 +24,17 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     ? allTabs
     : allTabs.filter((tab) => tab.path === "/settings/appearance");
 
-  // Redirect if a protected route is accessed without auth
+  // Issue 3A fixed: guard with isCheckingAuth so we don't redirect a logged-in
+  // user before checkAuth has had a chance to resolve their session.
   useEffect(() => {
+    if (isCheckingAuth) return;
     if (!authUser) {
       const protectedPaths = ["/settings/profile", "/settings/photos", "/settings/security"];
       if (protectedPaths.includes(pathname)) {
         router.replace("/settings/appearance");
       }
     }
-  }, [authUser, pathname, router]);
+  }, [authUser, isCheckingAuth, pathname, router]);
 
   return (
     <div className="w-full">

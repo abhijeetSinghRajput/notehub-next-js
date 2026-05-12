@@ -103,6 +103,11 @@ interface AdminStore {
     userId: string,
     data: { fullName?: string; userName?: string; bio?: string; role?: string; isBanned?: boolean }
   ) => Promise<{ success: boolean; message?: string; user?: any }>;
+
+  uploadUserAvatar: (userId: string, file: File) => Promise<{ success: boolean; user?: any }>;
+  removeUserAvatar: (userId: string) => Promise<{ success: boolean; user?: any }>;
+  uploadUserCover: (userId: string, file: File) => Promise<{ success: boolean; user?: any }>;
+  removeUserCover: (userId: string) => Promise<{ success: boolean; user?: any }>;
 }
 
 export const useAdminStore = create<AdminStore>((set, get) => ({
@@ -328,6 +333,62 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
         success: false,
         message: err?.response?.data?.message || err?.message || "User update failed.",
       };
+    }
+  },
+
+  uploadUserAvatar: async (userId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await axiosInstance.post(`/admin/users/${userId}/avatar`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success(res.data.message || "Avatar updated");
+      return { success: true, user: res.data.user };
+    } catch (error: any) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      toast.error(err?.response?.data?.message || "Avatar upload failed.");
+      return { success: false };
+    }
+  },
+
+  removeUserAvatar: async (userId) => {
+    try {
+      const res = await axiosInstance.delete(`/admin/users/${userId}/avatar`);
+      toast.success(res.data.message || "Avatar removed");
+      return { success: true, user: res.data.user };
+    } catch (error: any) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      toast.error(err?.response?.data?.message || "Failed to remove avatar.");
+      return { success: false };
+    }
+  },
+
+  uploadUserCover: async (userId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await axiosInstance.post(`/admin/users/${userId}/cover`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success(res.data.message || "Cover updated");
+      return { success: true, user: res.data.user };
+    } catch (error: any) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      toast.error(err?.response?.data?.message || "Cover upload failed.");
+      return { success: false };
+    }
+  },
+
+  removeUserCover: async (userId) => {
+    try {
+      const res = await axiosInstance.delete(`/admin/users/${userId}/cover`);
+      toast.success(res.data.message || "Cover removed");
+      return { success: true, user: res.data.user };
+    } catch (error: any) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      toast.error(err?.response?.data?.message || "Failed to remove cover.");
+      return { success: false };
     }
   },
 }));

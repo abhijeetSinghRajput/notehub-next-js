@@ -3,6 +3,10 @@ import { toast } from "sonner";
 import { axiosInstance } from "@/lib/axios";
 import { AxiosError } from "axios";
 
+// Issue 8A: Module-level flag prevents concurrent checkAuth calls
+// (e.g., React Strict Mode double-invoke or multiple AuthProvider mounts).
+let checkAuthInflight = false;
+
 import type { IUser, INote, IGetAllUsersResponse } from "@/types/model";
 import {
   LoginFormData,
@@ -276,15 +280,24 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   checkAuth: async () => {
+    // Issue 8A fixed: guard against concurrent calls (React Strict Mode, etc.)
+    if (checkAuthInflight) return;
+    checkAuthInflight = true;
     set({ isCheckingAuth: true });
     try {
-      const res = await axiosInstance.get("/user/me");
+      // Issue 1E fixed: pass _skipRefresh so the axios interceptor doesn't
+      // attempt a token refresh on a 401 from this endpoint — guests on public
+      // pages would always trigger a wasteful two-round-trip refresh cycle.
+      const res = await axiosInstance.get("/user/me", {
+        _skipRefresh: true,
+      } as any);
       set({ authUser: res.data });
     } catch (error) {
       set({ authUser: null });
       console.error(error);
     } finally {
       set({ isCheckingAuth: false });
+      checkAuthInflight = false;
     }
   },
 
