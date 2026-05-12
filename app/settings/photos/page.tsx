@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, User, Image as ImageIcon } from "lucide-react";
 import { useState } from "react";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
@@ -93,7 +93,14 @@ const Photos = () => {
         <CardContent className="space-y-10">
           {/* AVATAR SECTION  */}
           <div className="space-y-4">
-            <Label>Your Photo</Label>
+            <div className="flex items-center gap-6 pb-4">
+              <span className="border-b flex-1"></span>
+              <div className="flex items-center gap-2">
+                <User className="size-4" />
+                <Label htmlFor="profile-photo">PROFILE PHOTO</Label>
+              </div>
+              <span className="border-b flex-1"></span>
+            </div>
             <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
               <div
                 className="relative size-44 shrink-0 rounded-full overflow-hidden cursor-pointer"
@@ -181,7 +188,14 @@ const Photos = () => {
 
           {/* COVER SECTION  */}
           <div className="space-y-4">
-            <Label>Profile Page Cover</Label>
+            <div className="flex items-center gap-6 pb-4">
+              <span className="border-b flex-1"></span>
+              <div className="flex items-center gap-2">
+                <ImageIcon className="size-4" />
+                <Label htmlFor="profile-cover">PROFILE COVER</Label>
+              </div>
+              <span className="border-b flex-1"></span>
+            </div>
             <div className="flex flex-col sm:flex-col gap-8 items-start">
               <div
                 className="relative w-full h-48 rounded-xl overflow-hidden cursor-pointer"

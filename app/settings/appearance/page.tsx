@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/card";
 import Radius from "@/components/Theme/Radius.client";
 import ThemeSelector from "@/components/Theme/ThemeSelector.client";
+import { Palette, CircleDot } from "lucide-react";
+import { Label as LabelComponent } from "@/components/ui/label";
 
 const Appearance = () => {
   return (
@@ -23,8 +25,29 @@ const Appearance = () => {
         </CardHeader>
 
         <CardContent className="space-y-8">
-          <ThemeSelector />
-          <Radius />
+          <div className="space-y-4">
+            <div className="flex items-center gap-6 pb-4">
+              <span className="border-b flex-1"></span>
+              <div className="flex items-center gap-2">
+                <Palette className="size-4" />
+                <LabelComponent>THEME</LabelComponent>
+              </div>
+              <span className="border-b flex-1"></span>
+            </div>
+            <ThemeSelector />
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-6 pb-4">
+              <span className="border-b flex-1"></span>
+              <div className="flex items-center gap-2">
+                <CircleDot className="size-4" />
+                <LabelComponent>RADIUS</LabelComponent>
+              </div>
+              <span className="border-b flex-1"></span>
+            </div>
+            <Radius />
+          </div>
         </CardContent>
       </Card>
     </>

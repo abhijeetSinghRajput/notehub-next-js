@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/input-otp";
 
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { cn } from "@/lib/utils";
@@ -144,7 +144,14 @@ const UpdateEmailCard = () => {
 
   return (
     <div className="space-y-2">
-      <Label>Update Email Address</Label>
+      <div className="flex items-center gap-6 pb-4">
+        <span className="border-b flex-1"></span>
+        <div className="flex items-center gap-2">
+          <Mail className="size-4" />
+          <Label htmlFor="new-email">UPDATE EMAIL ADDRESS</Label>
+        </div>
+        <span className="border-b flex-1"></span>
+      </div>
       <div className="space-y-4">
         <div className="flex gap-2 bg-accent/50 p-2 px-3 rounded-xl items-center">
           <div className="relative size-10 shrink-0 rounded-full overflow-hidden">

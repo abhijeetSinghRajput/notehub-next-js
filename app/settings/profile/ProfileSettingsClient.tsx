@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, UserRoundPen, LinkIcon } from "lucide-react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import UpdateEmailCard from "@/components/UpdateEmailCard";
 import { UpdateUserProfileData } from "@/types/auth";
@@ -265,6 +265,15 @@ const ProfileSettingsClient = () => {
           )}
 
           <div className="space-y-4">
+            <div className="flex items-center gap-6 pb-4">
+              <span className="border-b flex-1"></span>
+              <div className="flex items-center gap-2">
+                <UserRoundPen className="size-4" />
+                <Label htmlFor="fullName">BASIC INFO</Label>
+              </div>
+              <span className="border-b flex-1"></span>
+            </div>
+
             <LabeledInput
               id="fullName"
               label="Full Name"
@@ -312,7 +321,14 @@ const ProfileSettingsClient = () => {
           </div>
 
           <div className="space-y-3">
-            <Label>Social Links</Label>
+            <div className="flex items-center gap-6 pb-4">
+              <span className="border-b flex-1"></span>
+              <div className="flex items-center gap-2">
+                <LinkIcon className="size-4" />
+                <Label htmlFor="socials">SOCIAL LINKS</Label>
+              </div>
+              <span className="border-b flex-1"></span>
+            </div>
 
             {socials.map((social, index) => (
               <div key={index} className="flex items-center gap-2">
@@ -372,10 +388,10 @@ const ProfileSettingsClient = () => {
               </Button>
             </div>
           )}
+          {!isEditingOtherUser && <UpdateEmailCard />}
         </CardContent>
       </Card>
 
-      {!isEditingOtherUser && <UpdateEmailCard />}
     </div>
   );
 };

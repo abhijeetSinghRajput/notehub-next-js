@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 
 import { AdminSidebar } from "@/components/AdminSidebar";
@@ -9,8 +9,19 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { ShieldX, Loader2 } from "lucide-react";
+import { ShieldX, Loader2, Home } from "lucide-react";
 import { ModeToggleMini } from "@/components/mode-toggle";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import LogoIcon from "@/components/icons/logo/LogoIcon";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { authUser, isCheckingAuth } = useAuthStore();
@@ -42,6 +53,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  const pathname = usePathname();
+  const pathSegments = pathname.split("/").filter(Boolean);
+
   return (
     <SidebarProvider>
       <AdminSidebar />
@@ -49,12 +63,48 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <header className="sticky justify-between top-0 z-30 flex h-14 items-center border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/75">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
+            <span className="h-4 w-px bg-border mx-2" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link href="/">
+                    <LogoIcon/>
+                    </Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {pathSegments.map((segment, index) => {
+                  const href = `/${pathSegments.slice(0, index + 1).join("/")}`;
+                  const isLast = index === pathSegments.length - 1;
+                  const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
+
+                  return (
+                    <React.Fragment key={href}>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        {isLast ? (
+                          <BreadcrumbPage>{label}</BreadcrumbPage>
+                        ) : (
+                          <BreadcrumbLink asChild>
+                            <Link href={href}>{label}</Link>
+                          </BreadcrumbLink>
+                        )}
+                      </BreadcrumbItem>
+                    </React.Fragment>
+                  );
+                })}
+              </BreadcrumbList>
+            </Breadcrumb>
           </div>
           <div className="flex items-center gap-2">
             <ModeToggleMini />
           </div>
         </header>
-        <main className="p-6">{children}</main>
+        <main className="w-full">
+          <div className="p-4 max-w-3xl mx-auto space-y-6">
+            {children}
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

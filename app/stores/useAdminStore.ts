@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { AxiosError } from "axios";
-
+import { toast } from "sonner";
 import { axiosInstance } from "@/lib/axios";
-import type { IGetAllUsersResponse } from "@/types/model";
+import type { IUser, IGetAllUsersResponse } from "@/types/model";
 
 type UserFilter = "all" | "user" | "admin";
 
@@ -19,6 +19,11 @@ type ApiErrorResponse = {
 
 type CacheEntry = {
   data: IGetAllUsersResponse;
+  updatedAt: number;
+};
+
+type SingleUserCacheEntry = {
+  data: IUser;
   updatedAt: number;
 };
 
@@ -63,6 +68,17 @@ interface AdminStore {
   isLoadingUsers: boolean;
   usersError: string | null;
   usersCache: Record<string, CacheEntry>;
+  singleUserCache: Record<string, SingleUserCacheEntry>;
+
+  fetchUserByUsername: (
+    username: string,
+    options?: FetchUsersOptions
+  ) => Promise<IUser | null>;
+
+  fetchUserSessions: (userId: string) => Promise<any[]>;
+  terminateSession: (userId: string, sessionId: string) => Promise<boolean>;
+  terminateAllSessions: (userId: string) => Promise<boolean>;
+  updateUserPassword: (userId: string, password: string) => Promise<boolean>;
 
   fetchUsers: (
     query: UsersQuery,
@@ -93,6 +109,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
   isLoadingUsers: false,
   usersError: null,
   usersCache: {},
+  singleUserCache: {},
 
   getCachedUsers: (query, staleTime = DEFAULT_STALE_TIME) => {
     const normalizedQuery = normalizeQuery(query);
@@ -181,6 +198,85 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
     inFlightRequests.set(cacheKey, request);
 
     return request;
+  },
+
+  fetchUserByUsername: async (username, options = {}) => {
+    const { force = false, staleTime = DEFAULT_STALE_TIME } = options;
+    const entry = get().singleUserCache[username];
+
+    if (!force && entry && Date.now() - entry.updatedAt < staleTime) {
+      return entry.data;
+    }
+
+    set({ isLoadingUsers: true, usersError: null });
+
+    try {
+      const response = await axiosInstance.get(`/user/${username}`);
+      const userData = response.data;
+
+      set((state) => ({
+        isLoadingUsers: false,
+        singleUserCache: {
+          ...state.singleUserCache,
+          [username]: {
+            data: userData,
+            updatedAt: Date.now(),
+          },
+        },
+      }));
+
+      return userData;
+    } catch (error: any) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      set({
+        isLoadingUsers: false,
+        usersError: err?.response?.data?.message || err?.message || "Failed to fetch user.",
+      });
+      return null;
+    }
+  },
+
+  fetchUserSessions: async (userId) => {
+    try {
+      const res = await axiosInstance.get(`/admin/users/${userId}/sessions`);
+      return res.data.sessions;
+    } catch (error) {
+      console.error("Failed to fetch user sessions", error);
+      return [];
+    }
+  },
+
+  terminateSession: async (userId, sessionId) => {
+    try {
+      await axiosInstance.delete(`/admin/users/${userId}/sessions/${sessionId}`);
+      toast.success("Session terminated");
+      return true;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to terminate session");
+      return false;
+    }
+  },
+
+  terminateAllSessions: async (userId) => {
+    try {
+      await axiosInstance.delete(`/admin/users/${userId}/sessions`);
+      toast.success("All sessions terminated");
+      return true;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to terminate sessions");
+      return false;
+    }
+  },
+
+  updateUserPassword: async (userId, password) => {
+    try {
+      await axiosInstance.patch(`/admin/users/${userId}/password`, { password });
+      toast.success("Password updated successfully");
+      return true;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update password");
+      return false;
+    }
   },
 
   invalidateUsersCache: (query) => {
