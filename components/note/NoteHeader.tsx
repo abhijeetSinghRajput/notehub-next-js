@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Globe, Lock, Pencil, MoreHorizontal, Users, Check, Hash, TextCursor, Loader2, X, Settings } from "lucide-react";
+import { Calendar, Clock, Globe, Lock, Pencil, MoreHorizontal, Users, Check, Hash, TextCursor, Loader2, X, Settings, Trash2 } from "lucide-react";
 import { cn, format, formatTimeAgo } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
 import BadgeIcon from "@/components/icons/BadgeIcon";
@@ -60,10 +60,11 @@ export default function NoteHeader({
   onEdit,
 }: NoteHeaderProps) {
   const router = useRouter();
-  const { updateNote, updateNoteCollaborators, status } = useNoteStore();
+  const { updateNote, updateNoteCollaborators, status, deleteNote } = useNoteStore();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCollaboratorsOpen, setIsCollaboratorsOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -195,17 +196,25 @@ export default function NoteHeader({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem onClick={() => setIsSettingsOpen(true)} className="gap-2">
-                    <Settings className="size-4" />
+                    <Settings />
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setIsCollaboratorsOpen(true)} className="gap-2">
-                    <Users className="size-4" />
+                    <Users />
                     Manage Collaborators
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={onEdit} className="gap-2 text-primary focus:text-primary">
-                    <Pencil className="size-4" />
+                    <Pencil />
                     Edit Content
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    variant="destructive"
+                    onClick={() => setIsDeleteDialogOpen(true)} 
+                  >
+                    <Trash2 />
+                    Delete Note
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -395,6 +404,39 @@ export default function NoteHeader({
             <Button variant="ghost" onClick={() => setIsSettingsOpen(false)} disabled={isSaving}>Cancel</Button>
             <Button onClick={handleUpdateNote} disabled={isSaving}>
               {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader className="text-left">
+            <DialogTitle>Are you sure?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete the note.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row gap-2 ml-auto">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isSaving}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={async () => {
+              setIsSaving(true);
+              try {
+                await deleteNote(note._id);
+                setIsDeleteDialogOpen(false);
+                const currentUrl = window.location.pathname;
+                const urlParts = currentUrl.split("/");
+                urlParts.pop(); // remove noteSlug
+                router.push(urlParts.join("/"));
+              } catch (error) {
+                console.error("Delete failed", error);
+              } finally {
+                setIsSaving(false);
+              }
+            }} disabled={isSaving}>
+              {isSaving ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
