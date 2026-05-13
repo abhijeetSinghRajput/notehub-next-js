@@ -66,7 +66,8 @@ function AvatarImage(
     console.warn("Failed to optimize image:", error);
   }
 
-  return <AvatarPrimitive.Image {...nextOptimizedProps} />;
+  const { fill: _fill, ...finalProps } = nextOptimizedProps as any;
+  return <AvatarPrimitive.Image {...finalProps} />;
 }
 AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 

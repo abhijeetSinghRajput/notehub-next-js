@@ -147,18 +147,21 @@
 
 
 /* Hide scrollbar completely for specific containers */
-.hide-scrollbar::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  background: transparent;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
 }
 
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.scrollbar-hide {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   scroll-margin-top: 96px;
 }
 
@@ -194,6 +197,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 .yarl__thumbnails_thumbnail {
   border-color: transparent !important;
 }
+
 .yarl__thumbnails_thumbnail.yarl__thumbnails_thumbnail_active {
   outline: 3px solid #737373;
   outline-offset: 2px;

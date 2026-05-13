@@ -311,12 +311,12 @@ const ProfileSettingsClient = () => {
                 setBio(e.target.value);
                 setFormError("");
               }}
-              maxLength={300}
+              maxLength={250}
               rows={3}
               className="resize-none"
             />
             <p className="text-xs text-muted-foreground text-right">
-              {bio.length}/300
+              {bio.length}/250
             </p>
           </div>
 

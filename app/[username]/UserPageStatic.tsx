@@ -21,7 +21,7 @@ export default function UserPageStatic({
       <div className="max-w-3xl mx-auto overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
 
         {/* Cover — same aspect + overflow as dynamic */}
-        <div className="relative rounded-none max-h-48 h-full w-full overflow-hidden" style={{ aspectRatio: "3/1" }}>
+        <div className="relative rounded-none w-full aspect-4/1 overflow-hidden">
           <img
             src={user.cover || "/placeholder.svg"}
             alt="Cover photo"
@@ -34,7 +34,7 @@ export default function UserPageStatic({
           <div className="flex flex-col lg:flex-row items-start lg:items-center">
 
             {/* Avatar — identical sizing + border + negative margin */}
-            <div className="relative mr-8 shadow-md w-28 h-28 sm:w-36 sm:h-36 lg:w-48 lg:h-48 shrink-0 border-4 sm:border-6 lg:border-8 border-card -mt-14 sm:-mt-18 lg:-mt-24 rounded-full overflow-hidden">
+            <div className="relative mr-8 w-24 h-24 sm:w-36 sm:h-36 lg:w-48 lg:h-48 shrink-0 border-4 sm:border-6 lg:border-8 border-card -mt-14 sm:-mt-18 lg:-mt-24 rounded-full overflow-hidden">
               <img
                 src={user.avatar || "/avatar.svg"}
                 alt="User avatar"

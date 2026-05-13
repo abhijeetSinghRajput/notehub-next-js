@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -9,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Ban, Trash, Plus, Trash2, LinkIcon, User2Icon, UserPen, UserRoundPen, ShieldCheck, Monitor, Smartphone, MapPin, Clock, KeyRound, LogOut, Loader2, Image as ImageIcon, Camera } from "lucide-react";
+import { Ban, Trash, Plus, Trash2, LinkIcon, User2Icon, UserPen, UserRoundPen, ShieldCheck, Monitor, Smartphone, MapPin, Clock, KeyRound, LogOut, Loader2, Image as ImageIcon, Camera, ArrowUpRight, UserIcon, Mail } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import ImageCropperModal from "@/components/ImageCropperModal";
 import ImageLightbox from "@/components/ImageLightbox";
@@ -48,6 +49,23 @@ export default function AdminUserEditPage() {
   const [user, setUser] = useState<IUser | null>(cachedUser || null);
   const [sessions, setSessions] = useState<any[]>([]);
   const [newPassword, setNewPassword] = useState("");
+  const [activeTab, setActiveTab] = useState("profile");
+  const tabsListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Small delay to ensure the DOM is updated
+    const timer = setTimeout(() => {
+      const activeTabElement = tabsListRef.current?.querySelector('[data-state="active"]');
+      if (activeTabElement) {
+        activeTabElement.scrollIntoView({
+          behavior: "smooth",
+          inline: "center",
+          block: "nearest",
+        });
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [isTerminatingSession, setIsTerminatingSession] = useState<string | null>(null);
   const [isTerminatingAll, setIsTerminatingAll] = useState(false);
@@ -314,13 +332,14 @@ export default function AdminUserEditPage() {
         {/* COVER PHOTO */}
         <button
           onClick={() => user?.cover && setSelectedLightboxImage(user.cover)}
-          className="relative h-[192px] w-full bg-muted/30 overflow-hidden group/cover cursor-zoom-in"
+          className="relative w-full aspect-4/1 bg-muted/30 overflow-hidden group/cover cursor-zoom-in"
           aria-label="View cover photo"
         >
           <Image
             src={user?.cover || "/placeholder.svg"}
             alt="Cover"
             fill
+            sizes="100vw"
             className={cn("object-cover transition-transform duration-500 group-hover/cover:scale-105", !user?.cover && "opacity-20")}
             priority
           />
@@ -331,7 +350,7 @@ export default function AdminUserEditPage() {
           )}
         </button>
 
-        <Tabs defaultValue="profile" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <CardHeader className="relative border-b pb-0! pt-0">
             <div className="flex flex-col gap-6 px-1 pb-6">
               <div className="relative w-min -mt-12 sm:-mt-16">
@@ -354,13 +373,29 @@ export default function AdminUserEditPage() {
                 )}
               </div>
               <div className="flex-1 min-w-0 pb-1">
-                <CardTitle className="text-2xl font-bold truncate">
+                <CardTitle className="text-2xl font-bold truncate mb-3">
                   {user?.fullName}
                 </CardTitle>
-                <CardDescription className="text-base">
-                  @{user?.userName} • {user?.email}
+                <CardDescription className="text-base flex flex-col space-y-2">
+                  <Link
+                    href={`/${user?.userName}`}
+                    className="flex items-center gap-2 hover:underline underline-offset-4 group transition-colors text-muted-foreground hover:text-foreground"
+                  >
+                    <div className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-muted-foreground/15 bg-muted ring-1 ring-border ring-offset-1 ring-offset-background hover:text-foreground transition-colors [&_svg]:pointer-events-none [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-3">
+                      <User2Icon />
+                    </div>
+                    @{user?.userName}
+                    <ArrowUpRight className="size-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </Link>
+                  <div className="flex items-center gap-2">
+                    <div className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-muted-foreground/15 bg-muted ring-1 ring-border ring-offset-1 ring-offset-background hover:text-foreground transition-colors [&_svg]:pointer-events-none [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-3">
+                      <Mail />
+                    </div>
+                    {user?.email}
+                  </div>
                 </CardDescription>
-                <div className="flex flex-wrap gap-2 mt-3">
+
+                <div className="flex flex-wrap gap-2 mt-4">
                   <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${user?.isBanned ? "bg-red-100 text-red-700 border-red-200" : "bg-green-100 text-green-700 border-green-200"}`}>
                     {user?.isBanned ? "Banned" : "Active Account"}
                   </div>
@@ -371,7 +406,12 @@ export default function AdminUserEditPage() {
               </div>
             </div>
 
-            <TabsList variant="line" className="w-full justify-start h-12 -mb-px">
+            <TabsList
+              ref={tabsListRef}
+              variant="line"
+              className="w-full justify-start h-12 -mb-px overflow-x-auto flex-nowrap scrollbar-hide overflow-y-hidden"
+              style={{ willChange: "scroll-position" }}
+            >
               <TabsTrigger value="profile" className="px-6 py-3 data-[state=active]:bg-transparent">
                 <User2Icon className="size-4 mr-2" />
                 Profile Info
@@ -382,7 +422,7 @@ export default function AdminUserEditPage() {
               </TabsTrigger>
               <TabsTrigger value="security" className="px-6 py-3 data-[state=active]:bg-transparent">
                 <ShieldCheck className="size-4 mr-2" />
-                Security & Sessions
+                Security
               </TabsTrigger>
             </TabsList>
           </CardHeader>
@@ -428,11 +468,11 @@ export default function AdminUserEditPage() {
                     rows={3}
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    maxLength={300}
+                    maxLength={250}
                     className="resize-none bg-muted/30 focus:bg-background transition-colors"
                   />
                   <p className="text-[10px] text-muted-foreground text-right">
-                    {formData.bio.length}/300 characters
+                    {formData.bio.length}/250 characters
                   </p>
                 </div>
               </div>
@@ -602,8 +642,7 @@ export default function AdminUserEditPage() {
                 <div className="flex flex-col gap-5">
                   <button
                     onClick={() => user?.cover && setSelectedLightboxImage(user.cover)}
-                    className="relative w-full rounded-xl overflow-hidden bg-muted/30 group/covermain cursor-zoom-in"
-                    style={{ aspectRatio: `${767} / ${192}` }}
+                    className="relative w-full aspect-4/1 rounded-xl overflow-hidden bg-muted/30 group/covermain cursor-zoom-in"
                     aria-label="View cover photo"
                   >
                     <Image

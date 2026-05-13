@@ -1,4 +1,5 @@
-"use client";;
+"use client";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronRight, LinkIcon, Pencil, Quote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +26,7 @@ const ProfileCard = ({
   profileShareLink,
   onImageClick,
 }: ProfileCardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const canEdit = isOwner || isAdmin;
   const editHref = isOwner
     ? "/settings/profile"
@@ -37,8 +39,7 @@ const ProfileCard = ({
     <Card className="max-w-3xl mx-auto overflow-hidden shadow-sm">
       {/* Cover */}
       <div
-        className="relative rounded-none max-h-48 h-full w-full overflow-hidden cursor-pointer"
-        style={{ aspectRatio: "3/1" }}
+        className="relative rounded-none w-full aspect-4/1 overflow-hidden cursor-pointer"
         onClick={() => onImageClick(user.cover || "/placeholder.svg")}
       >
         <CloudinaryImage
@@ -57,7 +58,7 @@ const ProfileCard = ({
         <div className="flex flex-col lg:flex-row items-start lg:items-center">
           {/* Avatar */}
           <div
-            className="relative mr-8 shadow-md w-28 h-28 sm:w-36 sm:h-36 lg:w-48 lg:h-48 shrink-0 border-4 sm:border-6 lg:border-8 border-card -mt-14 sm:-mt-18 lg:-mt-24 rounded-full overflow-hidden cursor-pointer"
+            className="relative mr-8 w-24 h-24 sm:w-36 sm:h-36 lg:w-48 lg:h-48 shrink-0 border-4 sm:border-6 lg:border-8 border-card -mt-14 sm:-mt-18 lg:-mt-24 rounded-full overflow-hidden cursor-pointer"
             onClick={() => onImageClick(user.avatar || "/avatar.svg")}
             role="button"
             aria-label="View profile photo"
@@ -112,9 +113,22 @@ const ProfileCard = ({
 
               {/* Bio */}
               {hasBio && (
-                <p className="text-sm mt-2 leading-relaxed line-clamp-3">
-                  {user.bio}
-                </p>
+                <div
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="group relative cursor-pointer hover:bg-muted/20 p-2 -m-2 rounded-xl transition-all duration-200"
+                  role="button"
+                  aria-expanded={isExpanded}
+                  title={isExpanded ? "Click to collapse" : "Click to expand"}
+                >
+                  <p
+                    className={cn(
+                      "text-sm leading-relaxed transition-all duration-300",
+                      !isExpanded && "line-clamp-3"
+                    )}
+                  >
+                    {user.bio}
+                  </p>
+                </div>
               )}
             </div>
           </div>

@@ -64,5 +64,7 @@ export default function CloudinaryImage({ src, alt, ...props }: CloudinaryImageP
 
   // Fallback for unknown domains: use plain <img>
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={altText} {...props} />;
+  // Filter out Next.js-specific props that shouldn't go to <img>
+  const { fill: _fill, ...imgProps } = props;
+  return <img src={src} alt={altText} {...imgProps} />;
 }

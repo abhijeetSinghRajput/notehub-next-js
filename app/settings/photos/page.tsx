@@ -17,7 +17,7 @@ import Image from "next/image";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropperModal from "@/components/ImageCropperModal";
 
-const COVER_ASPECT = 767 / 192;
+const COVER_ASPECT = 4;
 
 const Photos = () => {
   const {
@@ -201,8 +201,7 @@ const Photos = () => {
             <div className="flex flex-col gap-6 items-start">
               <button
                 type="button"
-                className="relative w-full rounded-xl overflow-hidden cursor-pointer ring-2 ring-border ring-offset-2 ring-offset-background hover:ring-primary transition-all focus-visible:outline-none focus-visible:ring-primary"
-                style={{ aspectRatio: `${767} / ${192}` }}
+                className="relative w-full aspect-4/1 rounded-xl overflow-hidden cursor-pointer ring-2 ring-border ring-offset-2 ring-offset-background hover:ring-primary transition-all focus-visible:outline-none focus-visible:ring-primary"
                 onClick={() => setSelectedImage(authUser?.cover || "/placeholder.svg")}
                 aria-label="View cover photo"
               >
@@ -222,10 +221,10 @@ const Photos = () => {
               <div className="space-y-6">
                 <div className="space-y-1">
                   <p className="font-semibold text-sm">
-                    File smaller than 10 MB · recommended 767 × 192 px
+                    File smaller than 10 MB · recommended 768 × 192 px
                   </p>
                   <p className="text-muted-foreground text-sm">
-                    Your image will be cropped to 767 × 192 px before uploading.
+                    Your image will be cropped to 768 × 192 px before uploading.
                     It&apos;s shown as a banner on your profile page.
                   </p>
                 </div>

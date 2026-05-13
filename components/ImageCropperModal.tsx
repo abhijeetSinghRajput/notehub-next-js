@@ -100,7 +100,7 @@ export default function ImageCropperModal({
     try {
       // For cover, output exactly 767×192; avatar keeps natural crop size
       const isCover = aspect !== 1 && aspect > 1.5;
-      const outW = isCover ? 767 : undefined;
+      const outW = isCover ? 768 : undefined;
       const outH = isCover ? 192 : undefined;
       const blob = await getCroppedImageBlob(src, croppedAreaPixels, outW, outH);
       onConfirm(blob);
@@ -120,12 +120,12 @@ export default function ImageCropperModal({
   const prompt =
     aspect === 1
       ? "Drag to reposition · scroll or pinch to zoom · crops to a square"
-      : "Drag to reposition · scroll or pinch to zoom · cover displays at 767 × 192 px";
+      : "Drag to reposition · scroll or pinch to zoom · cover displays at 768 × 192 px";
 
   return (
     // Backdrop
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

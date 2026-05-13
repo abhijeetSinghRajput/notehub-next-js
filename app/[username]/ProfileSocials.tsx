@@ -22,6 +22,7 @@ const ProfileSocials = ({ socials, className }: ProfileSocialsProps) => {
 
         return (
           <a
+            key={social._id || i}
             href={social.url}
             target="_blank"
             rel="noopener noreferrer"
