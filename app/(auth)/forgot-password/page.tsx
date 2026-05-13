@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { Loader2 } from "lucide-react";
+import { validateUsername, isEmail } from "@/lib/validator";
+
 import {
   Card,
   CardContent,
@@ -54,12 +56,9 @@ const ForgotPasswordPage = () => {
 
   // Identifier validation (both username and email)
   const validateIdentifierFormat = (identifier: string): boolean => {
-    // Username pattern (alphanumeric with possible underscores/dots, 3-20 chars)
-    const usernamePattern = /^[a-zA-Z0-9_.]{3,20}$/;
-    // Email pattern
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    return usernamePattern.test(identifier) || emailPattern.test(identifier);
+    if (isEmail(identifier)) return true;
+    const { isValid } = validateUsername(identifier);
+    return isValid;
   };
 
   // Password validation

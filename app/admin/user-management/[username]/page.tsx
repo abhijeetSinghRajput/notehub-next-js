@@ -25,6 +25,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { validateUsername } from "@/lib/validator";
+
 
 export default function AdminUserEditPage() {
   const { username } = useParams();
@@ -80,6 +82,8 @@ export default function AdminUserEditPage() {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+
 
   // Photo state
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -167,7 +171,16 @@ export default function AdminUserEditPage() {
   const handleSave = async () => {
     const userId = user?._id;
     if (!userId) return;
+    
+    const { error } = validateUsername(formData.userName);
+    if (error) {
+      setUsernameError(error);
+      toast.error(error);
+      return;
+    }
+
     setIsSaving(true);
+
 
     const payload = {
       ...formData,
@@ -455,9 +468,23 @@ export default function AdminUserEditPage() {
                     <Input
                       id="userName"
                       value={formData.userName}
-                      onChange={(e) => setFormData({ ...formData, userName: e.target.value.toLowerCase().replace(/\s+/g, "-") })}
-                      className="bg-muted/30 focus:bg-background transition-colors"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData({ ...formData, userName: val });
+                        const { error } = validateUsername(val);
+                        setUsernameError(error);
+                      }}
+                      className={cn(
+                        "bg-muted/30 focus:bg-background transition-colors",
+                        usernameError && "border-destructive focus-visible:ring-destructive"
+                      )}
                     />
+                    {usernameError && (
+                      <p className="text-[10px] text-destructive animate-in fade-in slide-in-from-top-1">
+                        {usernameError}
+                      </p>
+                    )}
+
                   </div>
                 </div>
 

@@ -20,7 +20,9 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import UpdateEmailCard from "@/components/UpdateEmailCard";
 import { UpdateUserProfileData } from "@/types/auth";
 import { getPlatformIcon } from "@/lib/platform";
+import { validateUsername } from "@/lib/validator";
 import { axiosInstance } from "@/lib/axios";
+
 import axios from "axios";
 
 type EditableUser = {
@@ -105,18 +107,7 @@ const ProfileSettingsClient = () => {
     setFormError("");
   }, [currentProfile]);
 
-  const validateUsername = (val: string) => {
-    const v = val.trim();
-    if (!v) return "Username is required.";
-    if (/[A-Z]/.test(v)) return "Only lowercase letters are allowed.";
-    if (!/^[a-z0-9-]+$/.test(v))
-      return "Only letters, numbers, and hyphens are allowed.";
-    if (v.startsWith("-")) return "Username cannot start with a hyphen.";
-    if (v.endsWith("-")) return "Username cannot end with a hyphen.";
-    if (v.includes("--")) return "Consecutive hyphens are not allowed.";
-    if (v.length > 39) return "Username cannot be longer than 39 characters.";
-    return "";
-  };
+  // Local validateUsername wrapper removed in favor of utility
 
   const sanitizeSocials = (items: { url: string }[]) => {
     return items
@@ -155,7 +146,7 @@ const ProfileSettingsClient = () => {
   const handleSave = async () => {
     setFormError("");
 
-    const usernameErr = validateUsername(userName);
+    const { error: usernameErr } = validateUsername(userName);
     if (usernameErr) {
       setUserNameError(usernameErr);
       return;
@@ -293,8 +284,10 @@ const ProfileSettingsClient = () => {
               placeholder="Enter username"
               value={userName}
               onChange={(e) => {
-                setUserName(e.target.value);
-                setUserNameError(validateUsername(e.target.value));
+                const val = e.target.value;
+                setUserName(val);
+                const { error } = validateUsername(val);
+                setUserNameError(error);
                 setFormError("");
               }}
               error={userNameError}
