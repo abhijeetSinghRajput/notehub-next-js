@@ -15,11 +15,21 @@ type Props = {
   }>;
 };
 
+import { cookies } from "next/headers";
+
 const getCollection = cache(
   async (username: string, collectionSlug: string) => {
+    const cookieStore = await cookies();
+    const cookieString = cookieStore.toString();
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/collection/${username}/${collectionSlug}`,
-      { cache: "no-store" }
+      { 
+        cache: "no-store",
+        headers: {
+          Cookie: cookieString,
+        }
+      }
     );
     if (!response.ok) return null;
     return response.json();
@@ -231,7 +241,7 @@ export default async function CollectionPage({ params }: Props) {
     console.error("Error loading collection page:", error);
     return (
       <>
-        <CollectionPageClient />;
+        <CollectionPageClient />
         <Footer className="py-20" />
       </>
     )

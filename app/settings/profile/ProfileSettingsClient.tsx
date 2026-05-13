@@ -335,7 +335,7 @@ const ProfileSettingsClient = () => {
 
                   <Input
                     type="url"
-                    placeholder="https://github.com/username"
+                    placeholder="https://example.com/username"
                     value={social.url}
                     onChange={(e) => updateSocial(index, e.target.value)}
                     className="flex-1 pl-9"

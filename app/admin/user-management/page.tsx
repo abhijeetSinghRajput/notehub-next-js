@@ -17,6 +17,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Trash, Ban, CheckCircle, Shield, User as UserIcon, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CreateUserDialog } from "./CreateUserDialog";
 const PAGE_SIZE = 50;
 
 export default function UserManagementPage() {
@@ -112,9 +113,12 @@ export default function UserManagementPage() {
     <>
       <h1 className="sr-only">User Management</h1>
       <Card className="border-none shadow-none bg-background sm:bg-card sm:border sm:shadow-md relative">
-        <CardHeader className="p-0 pb-6 sm:p-6">
-          <CardTitle>User Management</CardTitle>
-          <CardDescription>Manage your platform users, assign roles, and handle bans.</CardDescription>
+        <CardHeader className="p-0 pb-6 sm:p-6 flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>User Management</CardTitle>
+            <CardDescription>Manage your platform users, assign roles, and handle bans.</CardDescription>
+          </div>
+          <CreateUserDialog />
         </CardHeader>
         <CardContent className="space-y-4 p-0 sm:p-6 sm:pt-0">
           <Input

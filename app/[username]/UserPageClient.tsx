@@ -106,6 +106,7 @@ const UserPageClient = ({
         <CollectionsSection
           collections={collections}
           isOwner={isOwner}
+          isAdmin={isAdmin}
           isLoading={isLoadingCollections}
         />
       </div>

@@ -69,7 +69,7 @@ export interface NoteStore {
   updateContent: (data: { noteId: string; content: string }) => Promise<INote | null>;
   createCollection: (data: Partial<ICollection>) => Promise<ICollection | null>;
   deleteCollection: (collectionId: string) => Promise<void>;
-  renameCollection: (data: { _id: string; newName: string }) => Promise<void>;
+  renameCollection: (data: { _id: string; newName: string; newSlug?: string }) => Promise<void>;
   updateCollectionVisibility: (data: { collectionId: string; visibility: "public" | "private" }) => Promise<void>;
   updateCollectionCollaborators: (data: { collectionId: string; collaborators: IUser[] }) => Promise<void>;
   createNote: (data: Partial<INote> & { collectionId: string }) => Promise<string | null>;
@@ -337,16 +337,16 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
       });
     },
 
-    renameCollection: async ({ _id, newName }) => {
+    renameCollection: async ({ _id, newName, newSlug }) => {
       // Optimistic
       const prevCollections = get().collections;
-      set((s) => ({ collections: patchCollection(s.collections, _id, { name: newName }) }));
+      set((s) => ({ collections: patchCollection(s.collections, _id, { name: newName, slug: newSlug || s.collections.find(c => String(c._id) === _id)?.slug }) }));
 
-      await axiosInstance.put("collection/", { _id, newName })
+      await axiosInstance.put("collection/", { _id, newName, newSlug })
         .then((res) => {
           const { collection } = res.data as { collection: ICollection };
           // Sync exact server values (slug etc.)
-          set((s) => ({ collections: patchCollection(s.collections, _id, { name: collection.name, updatedAt: collection.updatedAt }) }));
+          set((s) => ({ collections: patchCollection(s.collections, _id, { name: collection.name, slug: collection.slug, updatedAt: collection.updatedAt }) }));
           toast.success(res.data.message || "Collection renamed");
         })
         .catch(() => {

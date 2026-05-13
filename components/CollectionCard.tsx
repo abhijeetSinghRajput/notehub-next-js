@@ -18,10 +18,11 @@ import { ICollection, IUser } from "@/types/model";
 interface CollectionCardProps {
   collection: ICollection;
   isOwner: boolean;
+  isAdmin: boolean;
   pinnedCollections: string[];
 }
 
-function CollectionCard({ collection, isOwner, pinnedCollections }: CollectionCardProps) {
+function CollectionCard({ collection, isOwner, isAdmin, pinnedCollections }: CollectionCardProps) {
   const [isCollectionRenaming, setIsCollectionRenaming] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
@@ -148,7 +149,7 @@ function CollectionCard({ collection, isOwner, pinnedCollections }: CollectionCa
                     size="sm"
                   />
                 )}
-                {isOwner && collection.visibility === "private" && (
+                {(isOwner || isAdmin) && collection.visibility === "private" && (
                   <Badge
                     variant={"destructive"}
                     className="flex items-center gap-1 h-auto"

@@ -81,6 +81,10 @@ export function validateUsername(val: string): { isValid: boolean; error: string
     return { isValid: false, error: "Username is required." };
   }
 
+  if(v.length < 3) {
+    return { isValid: false, error: "Username must be at least 3 characters long." };
+  }
+
   if (/[A-Z]/.test(v)) {
     return { isValid: false, error: "Only lowercase letters are allowed." };
   }
@@ -103,6 +107,40 @@ export function validateUsername(val: string): { isValid: boolean; error: string
 
   if (v.length > 39) {
     return { isValid: false, error: "Username cannot be longer than 39 characters." };
+  }
+
+  return { isValid: true, error: "" };
+}
+
+export function validateSlug(val: string): { isValid: boolean; error: string } {
+  const v = val.trim();
+
+  if (!v) {
+    return { isValid: false, error: "Slug is required." };
+  }
+
+  if (/[A-Z]/.test(v)) {
+    return { isValid: false, error: "Only lowercase letters are allowed." };
+  }
+
+  if (!/^[a-z0-9-]+$/.test(v)) {
+    return { isValid: false, error: "Only letters, numbers, and hyphens are allowed." };
+  }
+
+  if (v.startsWith("-")) {
+    return { isValid: false, error: "Slug cannot start with a hyphen." };
+  }
+
+  if (v.endsWith("-")) {
+    return { isValid: false, error: "Slug cannot end with a hyphen." };
+  }
+
+  if (v.includes("--")) {
+    return { isValid: false, error: "Consecutive hyphens are not allowed." };
+  }
+
+  if (v.length > 100) {
+    return { isValid: false, error: "Slug cannot be longer than 100 characters." };
   }
 
   return { isValid: true, error: "" };

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Ban, Trash, Plus, Trash2, LinkIcon, User2Icon, UserPen, UserRoundPen, ShieldCheck, Monitor, Smartphone, MapPin, Clock, KeyRound, LogOut, Loader2, Image as ImageIcon, Camera, ArrowUpRight, UserIcon, Mail } from "lucide-react";
+import { Ban, Trash, Plus, Trash2, LinkIcon, User2Icon, UserPen, UserRoundPen, ShieldCheck, Monitor, Smartphone, MapPin, Clock, KeyRound, LogOut, Loader2, Image as ImageIcon, Camera, ArrowUpRight, UserIcon, Mail, Hash } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import ImageCropperModal from "@/components/ImageCropperModal";
 import ImageLightbox from "@/components/ImageLightbox";
@@ -171,7 +171,7 @@ export default function AdminUserEditPage() {
   const handleSave = async () => {
     const userId = user?._id;
     if (!userId) return;
-    
+
     const { error } = validateUsername(formData.userName);
     if (error) {
       setUsernameError(error);
@@ -406,6 +406,12 @@ export default function AdminUserEditPage() {
                     </div>
                     {user?.email}
                   </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-muted-foreground/15 bg-muted ring-1 ring-border ring-offset-1 ring-offset-background hover:text-foreground transition-colors [&_svg]:pointer-events-none [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-3">
+                      <Hash />
+                    </div>
+                    {user?._id}
+                  </div>
                 </CardDescription>
 
                 <div className="flex flex-wrap gap-2 mt-4">
@@ -527,7 +533,7 @@ export default function AdminUserEditPage() {
 
                       <Input
                         type="url"
-                        placeholder="https://github.com/username"
+                        placeholder="https://example.com/username"
                         value={social.url}
                         onChange={(e) => {
                           const newSocials = [...formData.socials];

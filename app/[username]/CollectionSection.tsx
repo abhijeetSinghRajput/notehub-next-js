@@ -14,12 +14,14 @@ import { useLocalStorage } from "@/app/stores/useLocalStorage";
 interface CollectionsSectionProps {
   collections: ICollection[];
   isOwner: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
 }
 
 const CollectionsSection = ({
   collections,
   isOwner,
+  isAdmin,
   isLoading,
 }: CollectionsSectionProps) => {
   const [sortBy, setSortBy] = React.useState("name");
@@ -114,6 +116,7 @@ const CollectionsSection = ({
             key={collection._id}
             collection={collection}
             isOwner={isOwner}
+            isAdmin={isAdmin}
             pinnedCollections={pinnedCollections}
           />
         ))}

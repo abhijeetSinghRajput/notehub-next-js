@@ -108,6 +108,7 @@ interface AdminStore {
   removeUserAvatar: (userId: string) => Promise<{ success: boolean; user?: any }>;
   uploadUserCover: (userId: string, file: File) => Promise<{ success: boolean; user?: any }>;
   removeUserCover: (userId: string) => Promise<{ success: boolean; user?: any }>;
+  createUser: (data: any) => Promise<{ success: boolean; message?: string; user?: IUser }>;
 }
 
 export const useAdminStore = create<AdminStore>((set, get) => ({
@@ -389,6 +390,20 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       const err = error as AxiosError<ApiErrorResponse>;
       toast.error(err?.response?.data?.message || "Failed to remove cover.");
       return { success: false };
+    }
+  },
+
+  createUser: async (data) => {
+    try {
+      const response = await axiosInstance.post("/admin/users", data);
+      get().clearUsersCache(); // invalidate cache
+      return response.data;
+    } catch (error: any) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      return {
+        success: false,
+        message: err?.response?.data?.message || err?.message || "User creation failed.",
+      };
     }
   },
 }));
