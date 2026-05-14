@@ -42,32 +42,32 @@ export function isValidUrl(url: string): boolean {
   try {
     // Try to construct a URL object
     const urlObj = new URL(url.startsWith("http") ? url : `https://${url}`);
-    
+
     // Check if protocol is http or https
     if (!urlObj.protocol.match(/^https?:$/)) return false;
-    
+
     // Check if hostname doesn't have spaces
     if (urlObj.hostname.includes(" ")) return false;
-    
+
     // Check hostname structure
     const hostname = urlObj.hostname;
-    
+
     // Must have at least one dot
     if (!hostname.includes(".")) return false;
-    
+
     // Split by dot to check domain parts
     const parts = hostname.split(".");
-    
+
     // Must have at least 2 parts (domain.tld)
     if (parts.length < 2) return false;
-    
+
     // Last part (TLD) must be at least 2 characters and not empty
     const tld = parts[parts.length - 1];
     if (!tld || tld.length < 2) return false;
-    
+
     // Each part should not be empty
     if (parts.some(part => !part)) return false;
-    
+
     return true;
   } catch {
     return false;
@@ -81,8 +81,13 @@ export function validateUsername(val: string): { isValid: boolean; error: string
     return { isValid: false, error: "Username is required." };
   }
 
-  if(v.length < 3) {
+  if (v.length < 3) {
     return { isValid: false, error: "Username must be at least 3 characters long." };
+  }
+  const reservedNames = ["admin", "root", "support", "notehub", "system", "api"];
+
+  if (reservedNames.includes(v)) {
+    return { isValid: false, error: "Username is reserved." };
   }
 
   if (/[A-Z]/.test(v)) {
