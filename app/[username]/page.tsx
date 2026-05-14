@@ -25,7 +25,7 @@ const getUser = cache(async (username: string) => {
 
 const getGitHubContributions = cache(async (username: string) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/github/contributions/${username}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/auth/github/contributions/${username}`,
     { next: { revalidate: 3600 } } // cache 1 hour
   );
   if (!response.ok) return null;

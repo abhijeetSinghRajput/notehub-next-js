@@ -514,7 +514,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   connectGithub: async () => {
     try {
-      const res = await axiosInstance.get("/github/connect");
+      const res = await axiosInstance.get("/auth/github/connect");
       if (res.data.url) {
         window.location.href = res.data.url;
       }
@@ -526,7 +526,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   disconnectGithub: async () => {
     try {
-      const res = await axiosInstance.post("/github/disconnect");
+      const res = await axiosInstance.post("/auth/github/disconnect");
       set({ authUser: { ...useAuthStore.getState().authUser!, github: undefined } });
       toast.success(res.data.message);
       return true;

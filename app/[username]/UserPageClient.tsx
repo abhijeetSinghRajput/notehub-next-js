@@ -161,7 +161,6 @@ const UserPageClient = ({
                     const { connectGithub } = useAuthStore.getState();
                     connectGithub();
                   }}
-                  className="bg-zinc-900 hover:bg-zinc-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-xl px-6"
                 >
                   Connect GitHub
                 </Button>
