@@ -12,12 +12,31 @@ const COLORS = {
   dark: ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"],
 };
 
+interface ContributionDay {
+  date: string;
+  contributionCount: number;
+}
+
+interface ContributionWeek {
+  contributionDays: ContributionDay[];
+}
+
+interface GitHubContributionProps {
+  weeks: ContributionWeek[];
+  totalContributions: number;
+  isDark?: boolean;
+}
+
 // Accepts contributions from GitHub GraphQL API response
 // shape: [{ date: "2024-05-14", contributionCount: 3 }]
-export default function GitHubContribution({ weeks, totalContributions, isDark = false }) {
+export default function GitHubContribution({ 
+  weeks, 
+  totalContributions, 
+  isDark = false 
+}: GitHubContributionProps) {
   const colors = isDark ? COLORS.dark : COLORS.light;
 
-  function getLevel(count) {
+  function getLevel(count: number) {
     if (count === 0) return 0;
     if (count <= 3) return 1;
     if (count <= 6) return 2;
@@ -25,8 +44,9 @@ export default function GitHubContribution({ weeks, totalContributions, isDark =
     return 4;
   }
 
+
   // Build month labels
-  const monthLabels = [];
+  const monthLabels: { x: number; label: string }[] = [];
   let lastMonth = -1;
   weeks.forEach((week, wi) => {
     const firstDay = week.contributionDays[0];
