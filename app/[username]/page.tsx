@@ -24,12 +24,22 @@ const getUser = cache(async (username: string) => {
 });
 
 const getGitHubContributions = cache(async (username: string) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/auth/github/contributions/${username}`,
-    { next: { revalidate: 3600 } } // cache 1 hour
-  );
-  if (!response.ok) return null;
-  return response.json();
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/github/contributions/${username}`,
+      { cache: "no-store" } 
+    );
+    if (!response.ok) {
+      console.error(`GitHub fetch failed: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    console.log("GitHub data fetched successfully for", username);
+    return data;
+  } catch (err) {
+    console.error("Error fetching GitHub contributions:", err);
+    return null;
+  }
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -108,6 +118,11 @@ export default async function UserPage({ params }: Props) {
       getUser(username),
       getGitHubContributions(username),
     ]);
+    console.log("User Page SSR:", { 
+      username, 
+      hasGithubInUser: !!user?.github, 
+      hasGithubData: !!githubData 
+    });
   } catch (error) {
     console.error("Error loading user page:", error);
     notFound();
