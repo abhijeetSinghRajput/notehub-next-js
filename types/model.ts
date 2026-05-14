@@ -25,7 +25,12 @@ export interface IUser extends IBase {
   role: "user" | "admin";
   isBanned: boolean;
   isDeleted: boolean;
+  github?: {
+    username: string;
+    connectedAt: string;
+  };
   notesCount?: number;
+
   collectionsCount?: number;
 }
 

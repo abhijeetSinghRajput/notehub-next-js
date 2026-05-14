@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAdminStore } from "@/app/stores/useAdminStore";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 import { axiosInstance } from "@/lib/axios";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -47,8 +48,11 @@ export default function AdminUserEditPage() {
     removeUserCover,
   } = useAdminStore();
 
+  const { authUser } = useAuthStore();
+
   const cachedUser = singleUserCache[username as string]?.data;
   const [user, setUser] = useState<IUser | null>(cachedUser || null);
+  const isSelf = authUser?._id === user?._id;
   const [sessions, setSessions] = useState<any[]>([]);
   const [newPassword, setNewPassword] = useState("");
   const [activeTab, setActiveTab] = useState("profile");
@@ -421,6 +425,11 @@ export default function AdminUserEditPage() {
                   <div className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-blue-50 text-blue-700 border-blue-100">
                     {user?.role === "admin" ? "Administrator" : "Standard User"}
                   </div>
+                  {isSelf && (
+                    <div className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-purple-50 text-purple-700 border-purple-100">
+                      Viewing Your Profile
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -584,7 +593,7 @@ export default function AdminUserEditPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <Label>Account Role</Label>
-                    <Select value={formData.role} onValueChange={(val: "user" | "admin") => setFormData({ ...formData, role: val })}>
+                    <Select disabled={isSelf} value={formData.role} onValueChange={(val: "user" | "admin") => setFormData({ ...formData, role: val })}>
                       <SelectTrigger className="bg-muted/30">
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
@@ -608,6 +617,7 @@ export default function AdminUserEditPage() {
                     >
                       <span className="text-sm font-medium">{formData.isBanned ? "Banned" : "Active"}</span>
                       <Switch
+                        disabled={isSelf}
                         checked={formData.isBanned}
                         onCheckedChange={(checked) => setFormData({ ...formData, isBanned: checked })}
                       />
@@ -844,6 +854,7 @@ export default function AdminUserEditPage() {
           <div className="flex flex-col sm:flex-row gap-2">
             <Button
               variant="destructive"
+              disabled={isSelf}
               onClick={() => { setConfirmDialog({ isOpen: true, action: "delete" }); setConfirmInput(""); }}
               className="w-full sm:w-auto shadow-sm"
             >
@@ -852,6 +863,7 @@ export default function AdminUserEditPage() {
             {!formData.isBanned ? (
               <Button
                 variant="outline"
+                disabled={isSelf}
                 className="w-full sm:w-auto border-orange-200 text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
                 onClick={() => { setConfirmDialog({ isOpen: true, action: "ban" }); setConfirmInput(""); }}
               >

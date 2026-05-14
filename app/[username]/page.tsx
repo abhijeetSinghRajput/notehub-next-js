@@ -23,7 +23,17 @@ const getUser = cache(async (username: string) => {
   return response.json();
 });
 
+const getGitHubContributions = cache(async (username: string) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/github/contributions/${username}`,
+    { next: { revalidate: 3600 } } // cache 1 hour
+  );
+  if (!response.ok) return null;
+  return response.json();
+});
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+
   const { username } = await params;
 
   try {
@@ -92,9 +102,12 @@ export default async function UserPage({ params }: Props) {
   const { username } = await params;
 
   let user;
-
+  let githubData;
   try {
-    user = await getUser(username);
+    [user, githubData] = await Promise.all([
+      getUser(username),
+      getGitHubContributions(username),
+    ]);
   } catch (error) {
     console.error("Error loading user page:", error);
     notFound();
@@ -164,8 +177,9 @@ export default async function UserPage({ params }: Props) {
       />
 
       {/* Full interactive profile — auth controls, edit, contributions graph */}
-      <UserPageClient initialUser={user} />
+      <UserPageClient initialUser={user} githubData={githubData} />
       <Footer className="py-20" />
+
     </>
   );
 }

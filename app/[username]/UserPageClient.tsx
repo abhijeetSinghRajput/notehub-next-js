@@ -11,17 +11,30 @@ import AdminDashboardCard from "./AdminDashboardCard";
 import { Card } from "@/components/ui/card";
 import { ICollection, IUser } from "@/types/model";
 import CollectionsSection from "./CollectionSection";
+import GitHubContribution from "@/components/GitHubContribution";
+import { Button } from "@/components/ui/button";
+import { Github } from "lucide-react";
+import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
+import { useTheme } from "next-themes";
+
+
 
 const UserPageClient = ({
   initialUser,
   initialCollections = [],
+  githubData,
 }: {
   initialUser: IUser;
   initialCollections?: any[];
+  githubData?: any;
 }) => {
   const { username } = useParams();
   const { authUser, isCheckingAuth } = useAuthStore();
   const { getAllCollections, collections: ownerCollections, status } = useNoteStore();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
 
   const [user, setUser] = useState<IUser>(initialUser);
   const [collections, setCollections] = useState<ICollection[]>(initialCollections);
@@ -29,6 +42,20 @@ const UserPageClient = ({
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const hasFetchedRef = useRef(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const githubStatus = searchParams.get("github");
+    if (githubStatus === "success") {
+      toast.success("GitHub connected successfully!");
+      // Clean up URL
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (githubStatus === "error") {
+      toast.error("Failed to connect GitHub.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [searchParams]);
+
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -102,6 +129,48 @@ const UserPageClient = ({
 
       {isOwner && isAdmin && <AdminDashboardCard />}
 
+      <div className="max-w-3xl mx-auto">
+        {user.github?.username && githubData ? (
+          <Card className="p-6 mt-8 bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
+            <GitHubContribution
+              weeks={githubData.weeks}
+              totalContributions={githubData.totalContributions}
+              isDark={isDark}
+            />
+          </Card>
+        ) : (
+
+          isOwner && (
+            <Card className="p-6 mt-8 bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 group">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 group-hover:bg-emerald-500/10 transition-colors">
+                    <Github className="w-6 h-6 text-zinc-600 dark:text-zinc-400 group-hover:text-emerald-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      Showcase your GitHub activity
+                    </h3>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      Connect your GitHub account to display your contribution graph on your profile.
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => {
+                    const { connectGithub } = useAuthStore.getState();
+                    connectGithub();
+                  }}
+                  className="bg-zinc-900 hover:bg-zinc-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-xl px-6"
+                >
+                  Connect GitHub
+                </Button>
+              </div>
+            </Card>
+          )
+        )}
+      </div>
+
       <div className="max-w-3xl mx-auto mt-8">
         <CollectionsSection
           collections={collections}
@@ -110,6 +179,7 @@ const UserPageClient = ({
           isLoading={isLoadingCollections}
         />
       </div>
+
     </div>
   );
 };

@@ -90,8 +90,11 @@ export interface AuthStore {
   removeUserAvatar: () => Promise<IUser | null>;
   uploadUserCover: (file: File) => Promise<IUser | null>;
   removeUserCover: () => Promise<IUser | null>;
+  disconnectGithub: () => Promise<boolean>;
+  connectGithub: () => Promise<void>;
   checkEmailStatus: () => Promise<void>;
 }
+
 
 export const useAuthStore = create<AuthStore>((set) => ({
   authUser: null,
@@ -509,7 +512,33 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
   },
 
+  connectGithub: async () => {
+    try {
+      const res = await axiosInstance.get("/github/connect");
+      if (res.data.url) {
+        window.location.href = res.data.url;
+      }
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to connect GitHub"));
+      console.error(error);
+    }
+  },
+
+  disconnectGithub: async () => {
+    try {
+      const res = await axiosInstance.post("/github/disconnect");
+      set({ authUser: { ...useAuthStore.getState().authUser!, github: undefined } });
+      toast.success(res.data.message);
+      return true;
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to disconnect GitHub"));
+      console.error(error);
+      return false;
+    }
+  },
+
   checkEmailStatus: async () => {
+
     try {
       const res = await axiosInstance.get("email/check-status");
       set({ emailStatus: res.data.status });
