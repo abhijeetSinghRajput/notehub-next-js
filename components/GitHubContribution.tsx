@@ -1,6 +1,8 @@
 "use client";
 import { useTheme } from "@/components/theme-provider";
 import { useEffect, useState } from "react";
+import { Button } from "./ui/button";
+import { Loader2, RefreshCcw, Trash2 } from "lucide-react";
 
 const CELL_SIZE = 10;
 const CELL_GAP = 3;
@@ -25,6 +27,9 @@ interface ContributionWeek {
 interface GitHubContributionProps {
   weeks: ContributionWeek[];
   totalContributions: number;
+  isOwner?: boolean;
+  onDisconnect?: () => Promise<void>;
+  onRefresh?: () => Promise<void>;
 }
 
 // Accepts contributions from GitHub GraphQL API response
@@ -32,9 +37,36 @@ interface GitHubContributionProps {
 export default function GitHubContribution({
   weeks,
   totalContributions,
+  isOwner = false,
+  onDisconnect,
+  onRefresh,
 }: GitHubContributionProps) {
   const { resolvedTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleDisconnect = async () => {
+    if (!onDisconnect) return;
+    const confirmed = window.confirm("Disconnect your GitHub account from NoteHub?");
+    if (!confirmed) return;
+    setIsDisconnecting(true);
+    try {
+      await onDisconnect();
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -73,12 +105,36 @@ export default function GitHubContribution({
 
   return (
     <>
-      <p className="text-xs text-muted-foreground mb-2">
-        <span className="font-medium text-foreground">
-          {totalContributions.toLocaleString()} contributions
-        </span>{" "}
-        in the last year
-      </p>
+      <div className="flex justify-between items-center gap-8 mb-2">
+        <p className="text-xs text-muted-foreground mb-2">
+          <span className="font-medium text-foreground">
+            {totalContributions.toLocaleString()} contributions
+          </span>{" "}
+          in the last year
+        </p>
+        {isOwner && (
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              tooltip="Disconnect GitHub"
+              onClick={handleDisconnect}
+              disabled={isDisconnecting || isRefreshing}
+            >
+              {isDisconnecting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              tooltip="Refresh contributions"
+              onClick={handleRefresh}
+              disabled={isRefreshing || isDisconnecting}
+            >
+              {isRefreshing ? <Loader2 className="animate-spin" /> : <RefreshCcw />}
+            </Button>
+          </div>
+        )}
+      </div>
       <div className="w-full overflow-x-auto">
 
         <svg

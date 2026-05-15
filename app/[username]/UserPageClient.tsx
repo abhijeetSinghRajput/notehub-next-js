@@ -43,16 +43,27 @@ const UserPageClient = ({
   const [isLoadingContributions, setIsLoadingContributions] = useState(false);
   const contributionsFetchedForRef = useRef<string | null>(null);
 
-  // Handle ?github=success / ?github=error redirects from OAuth callback
   useEffect(() => {
     const githubStatus = searchParams.get("github");
+    const reason = searchParams.get("reason");
+
+    const reasonMessages: Record<string, string> = {
+      no_code: "GitHub did not return an authorization code.",
+      state_mismatch: "Security check failed. Please try connecting again.",
+      oauth_failed: "GitHub OAuth failed. Please try again.",
+      user_fetch_failed: "Could not fetch your GitHub profile.",
+      user_not_found: "Your account could not be found.",
+      server_error: "A server error occurred. Please try again later.",
+    };
+
     if (githubStatus === "success") {
       const { checkAuth } = useAuthStore.getState();
       checkAuth();
       toast.success("GitHub connected successfully!");
       window.history.replaceState({}, "", window.location.pathname);
     } else if (githubStatus === "error") {
-      toast.error("Failed to connect GitHub.");
+      const detail = reason ? (reasonMessages[reason] ?? `Error: ${reason}`) : "Failed to connect GitHub.";
+      toast.error(detail);
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, [searchParams]);
@@ -137,6 +148,39 @@ const UserPageClient = ({
     fetchContributions();
   }, [user?.github?.username, user?.userName]);
 
+  // ── GitHub action handlers ──────────────────────────────────────────────────
+
+  /** Disconnect GitHub and wipe local contribution state */
+  const handleDisconnect = async () => {
+    const { disconnectGithub } = useAuthStore.getState();
+    const ok = await disconnectGithub();
+    if (ok) {
+      setContributions(null);
+      contributionsFetchedForRef.current = null;
+    }
+  };
+
+  /** Force-refetch contributions (resets the dedup guard) */
+  const handleRefetchContributions = async () => {
+    const githubUsername = user?.github?.username;
+    const profileUsername = user?.userName;
+    if (!githubUsername || !profileUsername) return;
+    contributionsFetchedForRef.current = null;
+    setIsLoadingContributions(true);
+    try {
+      const res = await axiosInstance.get(`/auth/github/contributions/${profileUsername}`);
+      setContributions(res.data);
+      contributionsFetchedForRef.current = githubUsername;
+    } catch (err: any) {
+      toast.error("Could not refresh contribution data.");
+      console.error("Failed to refresh GitHub contributions:", err?.response?.data || err?.message);
+    } finally {
+      setIsLoadingContributions(false);
+    }
+  };
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+
   const profileShareLink =
     typeof window !== "undefined"
       ? `${window.location.origin}/${typeof username === "string" ? username : user.userName}`
@@ -177,6 +221,9 @@ const UserPageClient = ({
               <GitHubContribution
                 weeks={contributions.weeks}
                 totalContributions={contributions.totalContributions ?? 0}
+                isOwner={isOwner}
+                onDisconnect={handleDisconnect}
+                onRefresh={handleRefetchContributions}
               />
             ) : (
               <p className="text-sm text-center text-muted-foreground py-4">
