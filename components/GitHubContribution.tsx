@@ -208,7 +208,7 @@ export default function GitHubContribution({
         {colors.map((c, i) => (
           <div
             key={i}
-            style={{ width: 13, height: 13, borderRadius: 2, backgroundColor: c }}
+            style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: c }}
           />
         ))}
         <span className="text-xs text-muted-foreground">More</span>
