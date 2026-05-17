@@ -2,6 +2,7 @@
 // NO "use client" — pure server HTML for crawlers and no-JS users
 
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 import { getPlatformIcon, GetPlatformName, getUsernameFromUrl } from "@/lib/platform";
 
@@ -76,6 +77,24 @@ export default function UserPageStatic({
                   <p className="text-sm mt-2 leading-relaxed line-clamp-3">
                     {user.bio}
                   </p>
+                )}
+
+                {/* Skills & Tools */}
+                {user.skills && user.skills.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {user.skills.map((skill: string) => (
+                      <Badge
+                        key={skill}
+                        variant="secondary"
+                        className="h-6 rounded-md transition-all duration-200 shrink-0 gap-1.5"
+                      >
+                        <img src={`/devicons/${skill}.svg`} alt={skill} width={14} height={14}
+                          className="shrink-0"
+                        />
+                        <span className="capitalize">{skill}</span>
+                      </Badge>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

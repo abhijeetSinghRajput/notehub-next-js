@@ -211,7 +211,7 @@ const UserPageClient = ({
       <div className="max-w-3xl mx-auto">
         {/* Case 1: GitHub is connected — show heatmap, spinner, or error */}
         {isGithubConnected && (
-          <Card className="p-6 mt-8 bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
+          <div className="mt-8">
             {isLoadingContributions ? (
               <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -230,7 +230,7 @@ const UserPageClient = ({
                 Could not load contribution data. Try refreshing.
               </p>
             )}
-          </Card>
+          </div>
         )}
 
         {/* Case 2: GitHub not connected AND this is the owner → show connect prompt */}

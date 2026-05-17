@@ -24,6 +24,7 @@ import { validateUsername } from "@/lib/validator";
 import { axiosInstance } from "@/lib/axios";
 
 import axios from "axios";
+import ProfileTag from "@/components/profile-tag";
 
 type EditableUser = {
   _id: string;
@@ -33,6 +34,7 @@ type EditableUser = {
   socials?: { url: string }[];
   email?: string;
   role?: string;
+  skills?: string[];
 };
 
 const ProfileSettingsClient = () => {
@@ -50,6 +52,7 @@ const ProfileSettingsClient = () => {
   const [userNameError, setUserNameError] = useState("");
   const [bio, setBio] = useState("");
   const [socials, setSocials] = useState<{ url: string }[]>([]);
+  const [skills, setSkills] = useState<string[]>([]);
   const [formError, setFormError] = useState("");
 
   const isAdmin = authUser?.role === "admin";
@@ -103,6 +106,7 @@ const ProfileSettingsClient = () => {
     setUserName(currentProfile.userName || "");
     setBio(currentProfile.bio || "");
     setSocials(currentProfile.socials || []);
+    setSkills(currentProfile.skills || []);
     setUserNameError("");
     setFormError("");
   }, [currentProfile]);
@@ -139,7 +143,8 @@ const ProfileSettingsClient = () => {
     fullName.trim() !== normalizedCurrentFullName ||
     userName.trim() !== normalizedCurrentUserName ||
     bio.trim() !== normalizedCurrentBio ||
-    JSON.stringify(cleanedSocials) !== JSON.stringify(cleanedOriginalSocials);
+    JSON.stringify(cleanedSocials) !== JSON.stringify(cleanedOriginalSocials) ||
+    JSON.stringify(skills) !== JSON.stringify(currentProfile.skills || []);
 
   const isSaving = isUpdatingProfile || isSavingAsAdmin;
 
@@ -170,6 +175,10 @@ const ProfileSettingsClient = () => {
       data.socials = cleanedSocials;
     }
 
+    if (JSON.stringify(skills) !== JSON.stringify(currentProfile.skills || [])) {
+      data.skills = skills;
+    }
+
     if (!Object.keys(data).length) return;
 
     try {
@@ -196,6 +205,7 @@ const ProfileSettingsClient = () => {
       }
 
       setSocials(cleanedSocials);
+      setSkills(skills);
       setFormError("");
     } catch (error) {
       let message = "Failed to update profile.";
@@ -216,6 +226,7 @@ const ProfileSettingsClient = () => {
     setUserName(normalizedCurrentUserName);
     setBio(normalizedCurrentBio);
     setSocials(originalSocials);
+    setSkills(currentProfile.skills || []);
     setUserNameError("");
     setFormError("");
   };
@@ -312,6 +323,8 @@ const ProfileSettingsClient = () => {
               {bio.length}/250
             </p>
           </div>
+
+          <ProfileTag value={skills} onChange={setSkills} />
 
           <div className="space-y-3">
             <div className="flex items-center gap-6 pb-4">

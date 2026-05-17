@@ -108,9 +108,9 @@ export default function GitHubContribution({
       <div className="flex justify-between items-center gap-8 mb-2">
         <p className="text-xs text-muted-foreground mb-2">
           <span className="font-medium text-foreground">
-            {totalContributions.toLocaleString()} contributions
+            {totalContributions.toLocaleString()}
           </span>{" "}
-          in the last year
+          contributions in the last year
         </p>
         {isOwner && (
           <div className="flex items-center gap-2">

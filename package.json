@@ -12,6 +12,7 @@
     "node": "20.x"
   },
   "dependencies": {
+    "@tanstack/react-virtual": "^3.13.24",
     "@tiptap/core": "^3.13.0",
     "@tiptap/extension-bubble-menu": "^3.18.0",
     "@tiptap/extension-code-block-lowlight": "^3.13.0",

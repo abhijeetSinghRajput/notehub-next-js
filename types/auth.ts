@@ -23,4 +23,5 @@ export interface UpdateUserProfileData {
   cover?: string;
   bio?: string;
   socials?: { url: string }[];
+  skills?: string[];
 }

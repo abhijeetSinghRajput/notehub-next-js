@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronRight, LinkIcon, Pencil, Quote } from "lucide-react";
+import { ChevronRight, LinkIcon, Pencil, Quote, Wrench } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 import Link from "next/link";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import BadgeIcon from "@/components/icons/BadgeIcon";
@@ -130,6 +132,24 @@ const ProfileCard = ({
                   </p>
                 </div>
               )}
+
+              {/* Skills & Tools */}
+              {user.skills && user.skills.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {user.skills.map((skill) => (
+                    <Badge
+                      key={skill}
+                      variant="secondary"
+                      className="h-6 rounded-md transition-all duration-200 shrink-0"
+                    >
+                      <img src={`/devicons/${skill}.svg`} alt={skill} width={14} height={14}
+                        className="shrink-0"
+                      />
+                      <span className="capitalize">{skill}</span>
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -147,6 +167,15 @@ const ProfileCard = ({
             icon={<Quote className="size-4" />}
             title="Add a short bio"
             description="Tell people what you do, what you’re learning, or what you like building."
+            href={editHref}
+            className="mt-4"
+          />
+        )}
+        {(!user.skills || user.skills.length === 0) && canEdit && (
+          <EmptyProfileBlock
+            icon={<Wrench className="size-4" />}
+            title="Add skills & tools"
+            description="Showcase your tech stack, programming languages, and tools you build with."
             href={editHref}
             className="mt-4"
           />
