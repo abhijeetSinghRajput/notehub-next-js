@@ -1,13 +1,20 @@
 import React from "react";
 
-const GithubIcon = () => {
+interface GithubIconProps {
+    size?: number;
+    className?: string;
+    props?: React.SVGProps<SVGSVGElement>;
+}
+const GithubIcon = ({size=24, className, ...props}: GithubIconProps) => {
   return (
     <svg
-      width="98"
-      height="96"
+      width={size}
+      height={size}
       viewBox="0 0 98 96"
       fill="currentColor"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      {...props}
     >
       <g clipPath="url(#clip0_23_2)">
         <path

@@ -42,7 +42,7 @@ const UserPageClient = ({
   const [contributions, setContributions] = useState<any | null>(githubData ?? null);
   const [isLoadingContributions, setIsLoadingContributions] = useState(false);
   const contributionsFetchedForRef = useRef<string | null>(null);
-
+  console.log(contributions);
   useEffect(() => {
     const githubStatus = searchParams.get("github");
     const reason = searchParams.get("reason");
@@ -221,6 +221,7 @@ const UserPageClient = ({
               <GitHubContribution
                 weeks={contributions.weeks}
                 totalContributions={contributions.totalContributions ?? 0}
+                gh_username={contributions.username || user?.github?.username}
                 isOwner={isOwner}
                 onDisconnect={handleDisconnect}
                 onRefresh={handleRefetchContributions}

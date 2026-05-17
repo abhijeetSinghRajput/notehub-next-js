@@ -101,7 +101,7 @@ interface AdminStore {
 
   updateUser: (
     userId: string,
-    data: { fullName?: string; userName?: string; bio?: string; role?: string; isBanned?: boolean }
+    data: { fullName?: string; userName?: string; bio?: string; role?: string; isBanned?: boolean; skills?: string[]; socials?: any[] }
   ) => Promise<{ success: boolean; message?: string; user?: any }>;
 
   uploadUserAvatar: (userId: string, file: File) => Promise<{ success: boolean; user?: any }>;

@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { validateUsername } from "@/lib/validator";
+import ProfileTag from "@/components/profile-tag";
 
 
 export default function AdminUserEditPage() {
@@ -83,6 +84,7 @@ export default function AdminUserEditPage() {
     socials: cachedUser?.socials ? cachedUser.socials.map((s: { url: string }) => ({ url: s.url })) : [],
     role: cachedUser?.role || "user",
     isBanned: cachedUser?.isBanned || false,
+    skills: cachedUser?.skills || [],
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -120,6 +122,7 @@ export default function AdminUserEditPage() {
           socials: data.socials ? data.socials.map((s: { url: string }) => ({ url: s.url })) : [],
           role: data.role || "user",
           isBanned: data.isBanned || false,
+          skills: data.skills || [],
         });
       } else if (!cachedUser) {
         toast.error("User not found");
@@ -194,6 +197,9 @@ export default function AdminUserEditPage() {
     const result = await updateUser(userId, payload);
     if (result.success) {
       toast.success("User updated successfully");
+      if (result.user) {
+        setUser(result.user);
+      }
       // Redirect if username changed
       if (formData.userName !== username) {
         router.replace(`/admin/user-management/${formData.userName}`);
@@ -431,6 +437,22 @@ export default function AdminUserEditPage() {
                     </div>
                   )}
                 </div>
+
+                {user?.skills && user.skills.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {user.skills.map((skill) => (
+                      <div
+                        key={skill}
+                        className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize border bg-muted/50 text-muted-foreground border-muted-foreground/10 shrink-0"
+                      >
+                        <img src={`/devicons/${skill}.svg`} alt={skill} width={12} height={12}
+                          className="shrink-0"
+                        />
+                        <span>{skill}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -516,6 +538,13 @@ export default function AdminUserEditPage() {
                   <p className="text-[10px] text-muted-foreground text-right">
                     {formData.bio.length}/250 characters
                   </p>
+                </div>
+
+                <div className="mt-4">
+                  <ProfileTag
+                    value={formData.skills}
+                    onChange={(skills) => setFormData({ ...formData, skills })}
+                  />
                 </div>
               </div>
 

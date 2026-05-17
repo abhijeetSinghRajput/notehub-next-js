@@ -20,6 +20,7 @@ import { useAdminStore } from "@/app/stores/useAdminStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { validateUsername, isEmail } from "@/lib/validator";
 import { GetPlatformName, getPlatformIcon, getUsernameFromUrl } from "@/lib/platform";
+import ProfileTag from "@/components/profile-tag";
 
 const RequiredAsterisk = () => <span className="text-destructive ml-1">*</span>;
 
@@ -35,6 +36,7 @@ export function CreateUserDialog() {
     password: "",
     bio: "",
   });
+  const [skills, setSkills] = useState<string[]>([]);
   const [socials, setSocials] = useState<{ url: string }[]>([]);
 
   // Photo state
@@ -59,6 +61,7 @@ export function CreateUserDialog() {
       password: "",
       bio: "",
     });
+    setSkills([]);
     setSocials([]);
     setAvatarFile(null);
     setAvatarPreview(null);
@@ -175,6 +178,7 @@ export function CreateUserDialog() {
       const result = await createUser({
         ...formData,
         socials,
+        skills,
       });
 
       if (result.success && result.user) {
@@ -339,6 +343,10 @@ export function CreateUserDialog() {
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-2">
+            <ProfileTag value={skills} onChange={setSkills} />
           </div>
 
           <div className="space-y-3">

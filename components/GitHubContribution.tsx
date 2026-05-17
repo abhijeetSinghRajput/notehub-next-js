@@ -2,7 +2,8 @@
 import { useTheme } from "@/components/theme-provider";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import { Loader2, RefreshCcw, Trash2 } from "lucide-react";
+import { ArrowUpRight, Loader2, RefreshCcw, Trash2 } from "lucide-react";
+import GithubIcon from "./icons/githubIcon";
 
 const CELL_SIZE = 10;
 const CELL_GAP = 3;
@@ -27,6 +28,7 @@ interface ContributionWeek {
 interface GitHubContributionProps {
   weeks: ContributionWeek[];
   totalContributions: number;
+  gh_username?: string;
   isOwner?: boolean;
   onDisconnect?: () => Promise<void>;
   onRefresh?: () => Promise<void>;
@@ -37,6 +39,7 @@ interface GitHubContributionProps {
 export default function GitHubContribution({
   weeks,
   totalContributions,
+  gh_username = "",
   isOwner = false,
   onDisconnect,
   onRefresh,
@@ -203,15 +206,31 @@ export default function GitHubContribution({
         </svg>
       </div>
       {/* Legend */}
-      <div className="flex items-center gap-1 mt-2 justify-end">
-        <span className="text-xs text-muted-foreground">Less</span>
-        {colors.map((c, i) => (
-          <div
-            key={i}
-            style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: c }}
-          />
-        ))}
-        <span className="text-xs text-muted-foreground">More</span>
+      <div className="flex items-center justify-between mt-4">
+        <div>
+          <div className="flex gap-2 items-center">
+          <GithubIcon className="size-4"/>
+          {gh_username && (
+            <a href={`https://github.com/${gh_username}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group text-xs text-muted-foreground inline-flex items-center gap-0.5 hover:text-foreground transition-colors">
+                {gh_username}
+                <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+          )}
+        </div>
+        </div>
+        <div className="flex items-center gap-1 ">
+          <span className="text-xs text-muted-foreground">Less</span>
+          {colors.map((c, i) => (
+            <div
+              key={i}
+              style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: c }}
+            />
+          ))}
+          <span className="text-xs text-muted-foreground">More</span>
+        </div>
       </div>
     </>
 

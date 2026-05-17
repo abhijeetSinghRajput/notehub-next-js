@@ -59,7 +59,7 @@ const ComboboxMultiple = ({
             <div className='flex justify-between items-center'>
 
                 <Label htmlFor={id}>Search skills, &amp; tools</Label>
-                <span className='text-muted-foreground text-xs'>Up to 10</span>
+                <span className='text-muted-foreground text-xs'>{selectedValues.length}/10</span>
             </div>
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
