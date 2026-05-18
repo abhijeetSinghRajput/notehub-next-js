@@ -86,7 +86,7 @@ const ChooseCollection: React.FC<ChooseCollectionProps> = ({
               key={collection._id}
               value={collection.name}
               onSelect={() => handleCollectionSelect(collection)}
-              className="group flex cursor-pointer items-center gap-4 border-b p-4 transition-all hover:bg-muted/50 hover:shadow-sm"
+              className="group flex cursor-pointer items-center gap-4 border-b rounded-none p-4 transition-all hover:bg-muted/50 hover:shadow-sm"
             >
               <FolderPlusIcon className="size-12 opacity-70" />
 

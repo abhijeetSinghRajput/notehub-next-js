@@ -86,12 +86,12 @@ const ComboboxMultiple = ({
                                             }}
                                         >
                                             <div className='flex items-center gap-1'>
-                                                <img 
-                                                    src={icon.icon} 
-                                                    alt={val} 
-                                                    width={14} 
-                                                    height={14} 
-                                                    className={icon.isInverted ? 'devicon-invertible dark:invert shrink-0' : 'shrink-0'} 
+                                                <img
+                                                    src={icon.icon}
+                                                    alt={val}
+                                                    width={14}
+                                                    height={14}
+                                                    className={icon.isInverted ? 'devicon-invertible dark:invert shrink-0' : 'shrink-0'}
                                                 />
                                                 <span className='truncate'>{val}</span>
                                                 <XIcon className='size-3' />
@@ -118,12 +118,12 @@ const ComboboxMultiple = ({
                                         value={name}
                                         onSelect={() => toggleSelection(name)}
                                     >
-                                        <img 
-                                            src={details.icon} 
-                                            alt={name} 
-                                            width={20} 
-                                            height={20} 
-                                            className={details.isInverted ? 'devicon-invertible dark:invert shrink-0' : 'shrink-0'} 
+                                        <img
+                                            src={details.icon}
+                                            alt={name}
+                                            width={20}
+                                            height={20}
+                                            className={details.isInverted ? 'devicon-invertible dark:invert shrink-0' : 'shrink-0'}
                                         />
                                         <span className='truncate'>{name}</span>
                                         {selectedValues.includes(name) && <CheckIcon size={16} className='ml-auto' />}

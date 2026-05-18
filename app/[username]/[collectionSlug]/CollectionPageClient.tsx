@@ -232,22 +232,6 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
     }
   };
 
-  const handleAddNote = async () => {
-    if (!collection) return;
-    try {
-      const noteId = await createNote({
-        name: "Untitled Note",
-        collectionId: collection._id,
-        visibility: "private"
-      });
-      if (noteId) {
-        router.push(`/${username}/${collection.slug}/${noteId}`);
-      }
-    } catch (error) {
-      console.error("Failed to create note", error);
-    }
-  };
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!username || !collectionSlug) return;
@@ -323,11 +307,6 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
 
           {hasManagementAccess && (
             <div className="ml-auto flex items-center gap-2">
-              <Button onClick={handleAddNote} className="gap-2 w-9 sm:w-auto">
-                <Plus className="size-4" />
-                <span className="hidden sm:inline">Add Note</span>
-              </Button>
-
               <div className="">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

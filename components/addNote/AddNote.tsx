@@ -74,7 +74,7 @@ const AddNote: React.FC<AddNoteProps> = ({
 
   return (
     <div>
-      <div className="sticky top-0 z-10 border-b bg-background px-6 py-4">
+      <div className="sticky top-0 z-10 border-b bg-muted/30 px-6 py-4">
         <div className="flex items-center gap-4">
           <Button
             tooltip="Back to Collection"

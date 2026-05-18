@@ -43,7 +43,7 @@ const AddNoteDialog = ({ trigger, defaultCollection }: AddNoteDialogProps) => {
       }}
     >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="h-[80vh] max-w-2xl gap-0 overflow-hidden p-0">
+      <DialogContent className="h-[70vh] bg-card max-w-2xl gap-0 overflow-hidden p-0">
         <DialogTitle className="sr-only">Add note to collection</DialogTitle>
         <DialogDescription className="sr-only">
           Choose or create a collection, then add a new note.
