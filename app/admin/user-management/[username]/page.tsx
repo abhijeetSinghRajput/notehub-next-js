@@ -28,6 +28,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { validateUsername } from "@/lib/validator";
 import ProfileTag from "@/components/profile-tag";
+import { devicons } from "@/data/dev-icons";
+import { Badge } from "@/components/ui/badge";
 
 
 export default function AdminUserEditPage() {
@@ -428,9 +430,6 @@ export default function AdminUserEditPage() {
                   <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${user?.isBanned ? "bg-red-100 text-red-700 border-red-200" : "bg-green-100 text-green-700 border-green-200"}`}>
                     {user?.isBanned ? "Banned" : "Active Account"}
                   </div>
-                  <div className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-blue-50 text-blue-700 border-blue-100">
-                    {user?.role === "admin" ? "Administrator" : "Standard User"}
-                  </div>
                   {isSelf && (
                     <div className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-purple-50 text-purple-700 border-purple-100">
                       Viewing Your Profile
@@ -440,17 +439,25 @@ export default function AdminUserEditPage() {
 
                 {user?.skills && user.skills.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-4">
-                    {user.skills.map((skill) => (
-                      <div
-                        key={skill}
-                        className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize border bg-muted/50 text-muted-foreground border-muted-foreground/10 shrink-0"
-                      >
-                        <img src={`/devicons/${skill}.svg`} alt={skill} width={12} height={12}
-                          className="shrink-0"
-                        />
-                        <span>{skill}</span>
-                      </div>
-                    ))}
+                    {user.skills.map((skill) => {
+                      const devicon = devicons[skill.toLowerCase() as keyof typeof devicons];
+                      return (
+                        <Badge
+                          key={skill}
+                          variant="secondary"
+                          className="h-6 rounded-md transition-all duration-200 shrink-0"
+                        >
+                          <img
+                            src={devicon?.icon || `/devicons/${skill}.svg`}
+                            alt={skill}
+                            width={12}
+                            height={12}
+                            className={cn("shrink-0", devicon?.isInverted && "devicon-invertible dark:invert")}
+                          />
+                          <span>{skill}</span>
+                        </Badge>
+                      );
+                    })}
                   </div>
                 )}
               </div>

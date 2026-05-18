@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { devicons } from "@/data/dev-icons";
 
 import { getPlatformIcon, GetPlatformName, getUsernameFromUrl } from "@/lib/platform";
 
@@ -82,18 +83,25 @@ export default function UserPageStatic({
                 {/* Skills & Tools */}
                 {user.skills && user.skills.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-4">
-                    {user.skills.map((skill: string) => (
-                      <Badge
-                        key={skill}
-                        variant="secondary"
-                        className="h-6 rounded-md transition-all duration-200 shrink-0 gap-1.5"
-                      >
-                        <img src={`/devicons/${skill}.svg`} alt={skill} width={14} height={14}
-                          className="shrink-0"
-                        />
-                        <span className="capitalize">{skill}</span>
-                      </Badge>
-                    ))}
+                    {user.skills.map((skill: string) => {
+                      const devicon = devicons[skill.toLowerCase() as keyof typeof devicons];
+                      return (
+                        <Badge
+                          key={skill}
+                          variant="secondary"
+                          className="h-6 rounded-md transition-all duration-200 shrink-0 gap-1.5"
+                        >
+                          <img 
+                            src={devicon?.icon || `/devicons/${skill}.svg`} 
+                            alt={skill} 
+                            width={14} 
+                            height={14}
+                            className={`shrink-0${devicon?.isInverted ? " devicon-invertible dark:invert" : ""}`}
+                          />
+                          <span className="capitalize">{skill}</span>
+                        </Badge>
+                      );
+                    })}
                   </div>
                 )}
               </div>

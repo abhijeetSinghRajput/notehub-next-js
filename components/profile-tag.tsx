@@ -73,7 +73,7 @@ const ComboboxMultiple = ({
                         <div className='flex flex-wrap items-center gap-1 pr-2.5'>
                             {selectedValues.length > 0 ? (
                                 selectedValues.map(val => {
-                                    const icon = devicons.find(c => c === val)
+                                    const icon = devicons[val.toLowerCase() as keyof typeof devicons]
 
                                     return icon ? (
                                         <Button
@@ -86,8 +86,14 @@ const ComboboxMultiple = ({
                                             }}
                                         >
                                             <div className='flex items-center gap-1'>
-                                                <img src={`/devicons/${icon}.svg`} alt={icon} width={14} height={14} />
-                                                <span className='truncate'>{icon}</span>
+                                                <img 
+                                                    src={icon.icon} 
+                                                    alt={val} 
+                                                    width={14} 
+                                                    height={14} 
+                                                    className={icon.isInverted ? 'devicon-invertible dark:invert shrink-0' : 'shrink-0'} 
+                                                />
+                                                <span className='truncate'>{val}</span>
                                                 <XIcon className='size-3' />
                                             </div>
                                         </Button>
@@ -106,15 +112,21 @@ const ComboboxMultiple = ({
                         <CommandList>
                             <CommandEmpty>No tools or skills found</CommandEmpty>
                             <CommandGroup>
-                                {devicons.map(icon => (
+                                {Object.entries(devicons).map(([name, details]) => (
                                     <CommandItem
-                                        key={icon}
-                                        value={icon}
-                                        onSelect={() => toggleSelection(icon)}
+                                        key={name}
+                                        value={name}
+                                        onSelect={() => toggleSelection(name)}
                                     >
-                                        <img src={`/devicons/${icon}.svg`} alt={icon} width={20} height={20} />
-                                        <span className='truncate'>{icon}</span>
-                                        {selectedValues.includes(icon) && <CheckIcon size={16} className='ml-auto' />}
+                                        <img 
+                                            src={details.icon} 
+                                            alt={name} 
+                                            width={20} 
+                                            height={20} 
+                                            className={details.isInverted ? 'devicon-invertible dark:invert shrink-0' : 'shrink-0'} 
+                                        />
+                                        <span className='truncate'>{name}</span>
+                                        {selectedValues.includes(name) && <CheckIcon size={16} className='ml-auto' />}
                                     </CommandItem>
                                 ))}
                             </CommandGroup>

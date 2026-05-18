@@ -12,6 +12,7 @@ import SharePopoverWrapper from "@/components/ShareNotePopover.client";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { IUser } from "@/types/model";
 import ProfileSocials from "./ProfileSocials";
+import { devicons } from "@/data/dev-icons";
 
 interface ProfileCardProps {
   user: IUser;
@@ -136,18 +137,25 @@ const ProfileCard = ({
               {/* Skills & Tools */}
               {user.skills && user.skills.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-4">
-                  {user.skills.map((skill) => (
-                    <Badge
-                      key={skill}
-                      variant="secondary"
-                      className="h-6 rounded-md transition-all duration-200 shrink-0"
-                    >
-                      <img src={`/devicons/${skill}.svg`} alt={skill} width={14} height={14}
-                        className="shrink-0"
-                      />
-                      <span className="capitalize">{skill}</span>
-                    </Badge>
-                  ))}
+                  {user.skills.map((skill) => {
+                    const devicon = devicons[skill.toLowerCase() as keyof typeof devicons];
+                    return (
+                      <Badge
+                        key={skill}
+                        variant="secondary"
+                        className="h-6 rounded-md transition-all duration-200 shrink-0"
+                      >
+                        <img 
+                          src={devicon?.icon || `/devicons/${skill}.svg`} 
+                          alt={skill} 
+                          width={14} 
+                          height={14}
+                          className={cn("shrink-0", devicon?.isInverted && "devicon-invertible dark:invert")}
+                        />
+                        <span className="capitalize">{skill}</span>
+                      </Badge>
+                    );
+                  })}
                 </div>
               )}
             </div>

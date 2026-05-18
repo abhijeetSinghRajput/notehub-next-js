@@ -241,3 +241,21 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 .tiptap h6:hover .heading-copy-btn {
   opacity: 1;
 }
+
+:root {
+  --devicon-invert: 0;
+}
+
+.dark {
+  --devicon-invert: 1;
+}
+
+/* Ensure dark:invert works reliably on all inverted developer icons in dark mode */
+.dark .dark\:invert {
+  filter: invert(1) !important;
+}
+
+/* Fallback class for devicon inverting using custom property */
+.devicon-invertible {
+  filter: invert(var(--devicon-invert, 0)) !important;
+}
