@@ -417,7 +417,7 @@ export const devicons: Record<string, { icon: string; isInverted?: boolean }> = 
     "rancher": { icon: "/devicons/rancher.svg", },
     "raspberrypi": { icon: "/devicons/raspberrypi.svg", },
     "reach": { icon: "/devicons/reach.svg", },
-    "react": { icon: "/devicons/react.svg", isInverted: true },
+    "react": { icon: "/devicons/react.svg", },
     "reactbootstrap": { icon: "/devicons/reactbootstrap.svg", },
     "reactnative": { icon: "/devicons/reactnative.svg", },
     "reactnavigation": { icon: "/devicons/reactnavigation.svg", },
