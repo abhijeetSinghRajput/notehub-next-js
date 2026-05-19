@@ -138,6 +138,12 @@ export default function RootLayout({
             __html: JSON.stringify([organizationSchema, websiteSchema]),
           }}
         />
+        {/* google ads */}
+        <script 
+async
+strategy="afterInteractive" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2658197801329906"
+     crossorigin="anonymous"></script>
+
         {/* Backend warm-up */}
         <link
           rel="preconnect"
