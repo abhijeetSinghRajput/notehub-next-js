@@ -77,9 +77,9 @@ const SideNavToc = memo<SideNavTocProps>(({ toc, activeId, onItemClick }) => {
               key={item.id}
               className={cn(
                 "h-0.5 min-h-0.5 rounded-full transition-all duration-150",
-                "bg-muted-foreground/50",
-                activeId === item.id &&
-                  "bg-primary! shadow-[0_0_6px_1.5px_var(--color-primary)] shadow-primary/30",
+                activeId === item.id
+                  ? "bg-primary shadow-[0_0_6px_1.5px_var(--color-primary)] shadow-primary/30"
+                  : "bg-muted-foreground/50",
                 TICK_WIDTH[level],
               )}
             />

@@ -126,25 +126,6 @@ const NotePageClient: FC<NotePageClientProps> = ({
     setTocOpen(false);
   }, []);
 
-  // hash scroll useEffect
-  useEffect(() => {
-    if (!note?.content) return;
-    const hash = window.location.hash.slice(1);
-    if (!hash) return;
-
-    const ric =
-      window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 50));
-    const handle = ric(() => {
-      document
-        .getElementById(hash)
-        ?.scrollIntoView({ behavior: "instant", block: "start" });
-    });
-    return () => {
-      if (window.cancelIdleCallback)
-        window.cancelIdleCallback(handle as number);
-    };
-  }, [note?.content]);
-
   const handleNavigateToEditor = useCallback(() => {
     if (note?._id) {
       NProgress.start();

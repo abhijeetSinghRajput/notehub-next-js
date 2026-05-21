@@ -12,76 +12,63 @@
  */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { TocItem } from "@/lib/note/types";
 
 /**
- * Returns the id of the TOC heading currently visible nearest the top of
- * the viewport. Uses IntersectionObserver — no forced reflows.
+ * Returns the id of the TOC heading currently active based on the scroll position.
+ * Throttled using requestAnimationFrame for optimal scroll performance.
  */
 export function useTocTracking(toc: TocItem[]): string {
   const [activeId, setActiveId] = useState<string>("");
-  // Keep a ref so the observer callback always sees the latest toc ids
-  // without needing to be recreated on every toc change.
-  const tocIdsRef = useRef<string[]>([]);
-
-  useEffect(() => {
-    tocIdsRef.current = toc.map((item) => item.id);
-  }, [toc]);
 
   useEffect(() => {
     if (toc.length === 0) return;
 
-    // Map of id → entry so we can find the topmost visible heading.
-    const visibleMap = new Map<string, IntersectionObserverEntry>();
+    let queued = false;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Update our visibility map
-        for (const entry of entries) {
-          visibleMap.set(entry.target.id, entry);
-        }
+    const handleScroll = () => {
+      if (queued) return;
+      queued = true;
 
-        // Find the heading that is intersecting AND closest to the top
-        // of the viewport (smallest positive boundingClientRect.top).
-        let bestId = "";
-        let bestTop = Infinity;
+      requestAnimationFrame(() => {
+        queued = false;
 
-        for (const [id, entry] of visibleMap) {
-          if (entry.isIntersecting) {
-            const top = entry.boundingClientRect.top;
-            if (top >= 0 && top < bestTop) {
-              bestTop = top;
-              bestId = id;
-            }
+        const threshold = 120; // 96px header + 24px buffer
+        let currentActiveId = toc[0]?.id || "";
+
+        for (let i = 0; i < toc.length; i++) {
+          const el = document.getElementById(toc[i].id);
+          if (!el) continue;
+
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= threshold) {
+            currentActiveId = toc[i].id;
+          } else {
+            // Since headings are in document order, once we find a heading
+            // below the threshold, all subsequent headings are also below it.
+            break;
           }
         }
 
-        // If nothing is intersecting (scrolled past all headings or between
-        // two headings), keep the last known active id.
-        if (bestId) setActiveId(bestId);
-      },
-      {
-        // rootMargin pushes the "visible" zone down from the top by 96px
-        // (matches the sticky header height) and uses the full bottom.
-        rootMargin: "-96px 0px -20% 0px",
-        threshold: 0,
-      },
-    );
+        setActiveId(currentActiveId);
+      });
+    };
 
-    // Observe all heading elements referenced in the TOC
-    const elements: Element[] = [];
-    for (const item of toc) {
-      const el = document.getElementById(item.id);
-      if (el) {
-        observer.observe(el);
-        elements.push(el);
-      }
-    }
+    // Run immediately to set initial active heading
+    handleScroll();
 
+    // Set timers to ensure correct active heading on mount / layout shifts / scroll restoration
+    const timers = [
+      setTimeout(handleScroll, 100),
+      setTimeout(handleScroll, 300),
+      setTimeout(handleScroll, 600),
+    ];
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
-      for (const el of elements) observer.unobserve(el);
-      observer.disconnect();
+      window.removeEventListener("scroll", handleScroll);
+      timers.forEach(clearTimeout);
     };
   }, [toc]);
 
