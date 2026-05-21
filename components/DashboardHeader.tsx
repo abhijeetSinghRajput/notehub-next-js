@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/tooltip";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import GithubIcon from "@/components/icons/githubIcon";
-import { useGithubStore } from "@/app/stores/useGithubStore";
 import Link from "next/link";
 import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "next/navigation";
@@ -26,7 +25,6 @@ import NProgress from "nprogress";
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
   const { open, isMobile, openMobile } = useSidebar();
-  const githubStarCount = useGithubStore((s) => s.starCount);
   const router = useRouter();
   const shouldShowTrigger = isMobile ? !openMobile : !open;
 
@@ -48,23 +46,6 @@ const DashboardHeader = () => {
 
         <div className="shrink-0 mr-4 flex items-center gap-2">
           <SearchButton />
-
-          {!isMobile && (
-            <TooltipWrapper message="Source Code">
-              <Button asChild size="sm" className="p-2" variant="ghost">
-                <a
-                  href="https://github.com/abhijeetSinghRajput/notehub"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`View NoteHub GitHub repository with ${githubStarCount || 0} stars`}
-                >
-                  <GithubIcon aria-hidden="true" />
-                  {githubStarCount || ""}
-                </a>
-              </Button>
-            </TooltipWrapper>
-          )}
-
           {!authUser ? (
             <div className="flex gap-2">
               <ModeToggleMini className={"size-9"} />

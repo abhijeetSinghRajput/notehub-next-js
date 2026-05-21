@@ -176,13 +176,18 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
     if (
       updatedNote &&
       updatedNote.userId?.userName &&
-      updatedNote.collectionId?.slug &&
-      updatedNote.slug
+      updatedNote.collectionId?.slug
     ) {
-      const path = `/${updatedNote.userId.userName}/${updatedNote.collectionId.slug}/${updatedNote.slug}`;
-      await revalidateNotePath(path);
-      router.push(path);
-      router.refresh();
+      const finalSlug = updatedNote.seo?.slug || updatedNote.slug;
+      if (finalSlug) {
+        const path = `/${updatedNote.userId.userName}/${updatedNote.collectionId.slug}/${finalSlug}`;
+        await revalidateNotePath(path);
+        router.push(path);
+        router.refresh();
+      } else {
+        router.back();
+        router.refresh();
+      }
     } else {
       router.back();
       router.refresh();

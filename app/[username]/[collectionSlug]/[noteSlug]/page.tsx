@@ -85,17 +85,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
 
     const ogImageUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/og-note?${ogImageParams.toString()}`;
-    const noteUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${noteSlug}`;
+    const noteUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${note.seo?.slug || noteSlug}`;
+
+    const seoTitle = note.seo?.title || note.name || "Untitled Note";
+    const seoDescription = note.seo?.description || plainText || "Read this note on NoteHub";
+    const seoKeywords = Array.isArray(note.seo?.keywords) && note.seo.keywords.length > 0
+      ? note.seo.keywords            // pass array directly — Next.js Metadata accepts string[]
+      : [];
+    const seoImage = note.seo?.image?.url || ogImageUrl;
+    const seoImageAlt = note.seo?.image?.alt || seoTitle;
 
     return {
-      title: note.name || "Untitled Note",
-      description: plainText || "Read this note on NoteHub",
+      title: seoTitle,
+      description: seoDescription,
+      keywords: seoKeywords,
       openGraph: {
-        title: note.name,
-        description: plainText,
+        title: seoTitle,
+        description: seoDescription,
         url: noteUrl,
         siteName: "NoteHub",
-        images: [{ url: ogImageUrl, width: 1200, height: 630, alt: note.name }],
+        images: [{ url: seoImage, width: 1200, height: 630, alt: seoImageAlt }],
         type: "article",
         publishedTime: note.createdAt,
         modifiedTime: note.contentUpdatedAt,
@@ -103,9 +112,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
       twitter: {
         card: "summary_large_image",
-        title: note.name,
-        description: plainText,
-        images: [ogImageUrl],
+        title: seoTitle,
+        description: seoDescription,
+        images: [seoImage],
         creator: `@${author.userName}`,
       },
       alternates: { canonical: noteUrl },
@@ -141,7 +150,7 @@ export default async function NotePage({ params }: Props) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const profileUrl = `${baseUrl}/${username}`;
     const collectionUrl = `${baseUrl}/${username}/${collectionSlug}`;
-    const noteUrl = `${baseUrl}/${username}/${collectionSlug}/${noteSlug}`;
+    const noteUrl = `${baseUrl}/${username}/${collectionSlug}/${note.seo?.slug || noteSlug}`;
 
     const plainText = note.content
       .replace(/<[^>]*>/g, "")
@@ -158,15 +167,19 @@ export default async function NotePage({ params }: Props) {
     });
     const ogImageUrl = `${baseUrl}/api/og-note?${ogImageParams.toString()}`;
 
+    const seoTitle = note.seo?.title || note.name || "Untitled Note";
+    const seoDescription = note.seo?.description || plainText || "Read this note on NoteHub";
+    const seoImage = note.seo?.image?.url || ogImageUrl;
+
     const techArticleSchema = {
       "@context": "https://schema.org",
       "@type": "TechArticle",
-      headline: note.name,
-      description: plainText,
+      headline: seoTitle,
+      description: seoDescription,
       url: noteUrl,
       datePublished: new Date(note.createdAt).toISOString(),
       dateModified: new Date(note.contentUpdatedAt || note.updatedAt).toISOString(),
-      image: { "@type": "ImageObject", url: ogImageUrl, width: 1200, height: 630 },
+      image: { "@type": "ImageObject", url: seoImage, width: 1200, height: 630 },
       author: {
         "@type": "Person",
         name: author.fullName,

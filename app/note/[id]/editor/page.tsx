@@ -19,6 +19,8 @@ import { Inbox } from "lucide-react";
 import { INote } from "@/types/model";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { SeoIndicator } from "@/components/editor/SeoIndicator";
+
 
 const Tiptap = () => {
   const params = useParams();
@@ -162,8 +164,6 @@ const Tiptap = () => {
   if (!note) return null;
 
   return (
-    <>
-    <h1 className="sr-only">Edit Note</h1>
     <EditorProvider
       immediatelyRender={false}
       slotBefore={<MenuBar noteId={noteId || ""} />}
@@ -178,8 +178,8 @@ const Tiptap = () => {
     >
       <EditorBubbleMenu />
       <TableHandles />
+      <SeoIndicator noteId={noteId || ""} />
     </EditorProvider>
-    </>
   );
 };
 

@@ -47,6 +47,17 @@ export interface ICollection extends IBase {
   collaborators: string[] | IUser[];
 }
 
+export interface INoteSeo {
+  slug?: string;
+  title?: string;
+  description?: string;
+  keywords?: string[];
+  image?: {
+    url?: string;
+    alt?: string;
+  };
+}
+
 // 📝 INote
 export interface INote extends IBase {
   name: string;
@@ -62,6 +73,7 @@ export interface INote extends IBase {
   slug: string;
   contentUpdatedAt: string;
   tableOfContent: TocItem[];
+  seo?: INoteSeo;
 }
 
 export type PopulatedNote = Omit<INote, "userId" | "collectionId"> & {
@@ -106,7 +118,7 @@ export type PublicUser = Pick<
 
 export type PublicNote = Pick<
   INote,
-  "name" | "slug" | "content" | "contentUpdatedAt"
+  "name" | "slug" | "content" | "contentUpdatedAt" | "seo"
 >;
 
 export interface IPagination {

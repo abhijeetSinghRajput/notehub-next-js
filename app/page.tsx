@@ -121,7 +121,7 @@ export default async function HomePage() {
       item: {
         "@type": "TechArticle",
         name: note.name,
-        url: `${baseUrl}/${note.userId.userName}/${note.collectionId.slug}/${note.slug}`,
+        url: `${baseUrl}/${note.userId.userName}/${note.collectionId.slug}/${note.seo?.slug || note.slug}`,
         author: {
           "@type": "Person",
           name: note.userId.fullName,

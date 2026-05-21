@@ -160,8 +160,8 @@ const NotePageClient: FC<NotePageClientProps> = ({
 
   const shareLink = useMemo(
     () =>
-      `${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${noteSlug}`,
-    [username, collectionSlug, noteSlug],
+      `${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${note?.seo?.slug || note?.slug || noteSlug}`,
+    [username, collectionSlug, noteSlug, note?.seo?.slug, note?.slug],
   );
 
   // Fetch only when SSR did not provide note data

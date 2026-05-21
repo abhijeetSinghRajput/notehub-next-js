@@ -236,17 +236,17 @@ const UserPageClient = ({
 
         {/* Case 2: GitHub not connected AND this is the owner → show connect prompt */}
         {!isGithubConnected && isOwner && (
-          <Card className="p-6 mt-8 bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 group">
+          <Card className="p-6 mt-8 group">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 group-hover:bg-emerald-500/10 transition-colors">
-                  <Github className="w-6 h-6 text-zinc-600 dark:text-zinc-400 group-hover:text-emerald-500" />
+                <div className="p-3 rounded-2xl bg-muted group-hover:bg-emerald-500/10 transition-colors">
+                  <Github className="w-6 h-6 text-muted-foreground group-hover:text-emerald-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h3 className="font-semibold text-foreground">
                     Showcase your GitHub activity
                   </h3>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-muted-foreground">
                     Connect your GitHub account to display your contribution graph on your profile.
                   </p>
                 </div>

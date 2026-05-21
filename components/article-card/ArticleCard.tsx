@@ -41,9 +41,16 @@ export const ArticleCard = memo<ArticleCardProps>(function ArticleCard({
 
   const isOwner = author?.userName === authUser?.userName;
 
-  const noteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/${author?.userName}/${collection.slug}/${note.slug}`;
-  const noteHref = `/${author?.userName}/${collection.slug}/${note.slug}`;
+  const finalNoteSlug = note.seo?.slug || note.slug;
+  const noteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/${author?.userName}/${collection.slug}/${finalNoteSlug}`;
+  const noteHref = `/${author?.userName}/${collection.slug}/${finalNoteSlug}`;
   const collectionHref = `/${author?.userName}/${collection.slug}`;
+
+  const displayTitle = note.seo?.title || note.name;
+  const displayDescription = note.seo?.description || description;
+  const displayImages = note.seo?.image?.url
+    ? [{ src: note.seo.image.url, alt: note.seo.image.alt || note.seo.title || note.name }]
+    : images;
 
   return (
     <Card className="w-full rounded-xl sm:rounded-2xl border-t border-border lg:border p-4 lg:p-6">
@@ -89,7 +96,7 @@ export const ArticleCard = memo<ArticleCardProps>(function ArticleCard({
                 </Link>
                 {" / "}
                 <Link href={noteHref} className="hover:underline">
-                  {note.name}
+                  {displayTitle}
                 </Link>
               </h2>
             </CardTitle>
@@ -101,10 +108,10 @@ export const ArticleCard = memo<ArticleCardProps>(function ArticleCard({
 
             <Link
               href={noteHref}
-              aria-label={`Read more about ${note.name} group`}
+              aria-label={`Read more about ${displayTitle} group`}
             >
               <p className="text-muted-foreground text-sm line-clamp-3">
-                {description}
+                {displayDescription}
               </p>
 
               <div className="mt-2 flex items-center gap-2">
@@ -112,7 +119,7 @@ export const ArticleCard = memo<ArticleCardProps>(function ArticleCard({
                   size="sm"
                   variant="ghost"
                 >
-                  <span className="sr-only">{`Read more about ${note.name}`}</span>
+                  <span className="sr-only">{`Read more about ${displayTitle}`}</span>
                   <span aria-hidden="true">Read More</span>
                   <ChevronRight />
                 </Button>
@@ -121,7 +128,7 @@ export const ArticleCard = memo<ArticleCardProps>(function ArticleCard({
           </div>
 
           {/* Right: image carousel */}
-          {images?.length > 0 && <ImageCarousel images={images} />}
+          {displayImages?.length > 0 && <ImageCarousel images={displayImages} />}
         </div>
       </CardContent>
     </Card>

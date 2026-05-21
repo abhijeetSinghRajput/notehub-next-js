@@ -122,7 +122,7 @@ const NoteItem = ({ note, collectionSlug, username }: NoteItemProps) => {
             />
           ) : (
             <Link
-              href={`/${username}/${collectionSlug}/${note.slug}`}
+              href={`/${username}/${collectionSlug}/${note.seo?.slug || note.slug}`}
               onClick={() => isMobile && setOpenMobile(false)}
               className="truncate px-2.5 py-2 flex-1 text-sidebar-foreground/70"
             >

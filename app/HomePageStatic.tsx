@@ -18,9 +18,10 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
           {notes.map((note: any) => {
             const author = note.userId;
             const collection = note.collectionId;
-            const noteHref = `/${author?.userName}/${collection?.slug}/${note.slug}`;
+            const noteHref = `/${author?.userName}/${collection?.slug}/${note.seo?.slug || note.slug}`;
             const collectionHref = `/${author?.userName}/${collection?.slug}`;
-            const description = note.content
+            const displayTitle = note.seo?.title || note.name;
+            const displayDescription = note.seo?.description || note.content
               ?.replace(/<[^>]*>/g, "")
               .replace(/\s+/g, " ")
               .trim()
@@ -29,7 +30,7 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
             return (
               <div
                 key={note._id}
-                className="w-full rounded-xl sm:rounded-2xl border-t border-border lg:border p-4 lg:p-6"
+                className="w-full rounded-xl bg-card sm:rounded-2xl border-t border-border lg:border p-4 lg:p-6"
               >
                 {/* Author */}
                 <div className="flex items-center gap-3 mb-3">
@@ -61,19 +62,19 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
                   </Link>
                   {" / "}
                   <Link href={noteHref} className="hover:underline">
-                    {note.name}
+                    {displayTitle}
                   </Link>
                 </h2>
 
                 {/* Description */}
                 <p className="text-muted-foreground text-sm line-clamp-3">
-                  {description}
+                  {displayDescription}
                 </p>
 
                 <Link
                   href={noteHref}
                   className="mt-2 inline-flex items-center gap-1 text-sm px-3 py-1.5 rounded-md bg-primary/10 hover:bg-primary/20"
-                  aria-label={`Read more about ${note.name}`}
+                  aria-label={`Read more about ${displayTitle}`}
                 >
                   Read More <ChevronRight className="size-4" />
                 </Link>
