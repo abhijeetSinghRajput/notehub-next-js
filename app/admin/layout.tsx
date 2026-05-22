@@ -61,7 +61,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <AdminSidebar />
       <SidebarInset>
-        <header className="sticky justify-between top-0 z-30 flex h-14 items-center border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/75">
+        <header className="sticky justify-between top-0 z-30 flex h-14 items-center border-b bg-background px-4">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <span className="h-4 w-px bg-border mx-2" />

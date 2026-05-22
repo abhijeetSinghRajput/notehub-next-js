@@ -6,11 +6,14 @@ import {
   Search,
   Loader2,
   Calendar,
+  Clock,
+  Award,
   Folder,
   ArrowUpRight,
   MoreHorizontal
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import SortSelector from "@/components/SortSelector";
 import {
   Tooltip,
   TooltipContent,
@@ -69,6 +72,9 @@ export default function AdminOverviewPage() {
   const [hasMore, setHasMore] = useState(false);
   const [totalItems, setTotalItems] = useState(0);
 
+  const [sortBy, setSortBy] = useState("updated");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
   // Debouncing search for better UX & API performance
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -87,11 +93,11 @@ export default function AdminOverviewPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Fetch blogs when filters or search change
+  // Fetch blogs when filters, search, or sorting change
   useEffect(() => {
     setPage(1);
-    fetchData(1, health, debouncedSearch, true);
-  }, [health, debouncedSearch]);
+    fetchData(1, health, debouncedSearch, sortBy, sortDirection, true);
+  }, [health, debouncedSearch, sortBy, sortDirection]);
 
   // Fetch count statistics for all health filters in the background when search string changes
   useEffect(() => {
@@ -127,13 +133,22 @@ export default function AdminOverviewPage() {
     };
   }, [debouncedSearch, fetchBlogs]);
 
-  const fetchData = async (pageNum: number, healthFilter: HealthFilter, searchStr: string, isReset = false) => {
+  const fetchData = async (
+    pageNum: number,
+    healthFilter: HealthFilter,
+    searchStr: string,
+    sortVal = sortBy,
+    dirVal = sortDirection,
+    isReset = false
+  ) => {
     try {
       const res = await fetchBlogs({
         page: pageNum,
         limit: 20,
         search: searchStr,
         health: healthFilter,
+        sortBy: sortVal,
+        sortDirection: dirVal,
       });
 
       if (res && res.success) {
@@ -153,7 +168,11 @@ export default function AdminOverviewPage() {
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchData(nextPage, health, debouncedSearch, false);
+    fetchData(nextPage, health, debouncedSearch, sortBy, sortDirection, false);
+  };
+
+  const toggleSortDirection = () => {
+    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
   const getInitials = (name: string) => {
@@ -233,7 +252,7 @@ export default function AdminOverviewPage() {
 
   return (
     <TooltipProvider delayDuration={150}>
-      <div className="py-8 flex flex-col gap-6 max-w-6xl mx-auto px-4 md:px-6">
+      <div className="flex flex-col gap-6 max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-5 border-b border-border/60">
           <div className="flex flex-col">
@@ -256,9 +275,9 @@ export default function AdminOverviewPage() {
                 Health Summary
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-row items-center justify-between gap-6 pb-2 pt-1 px-5">
+            <CardContent className="flex flex-row items-center justify-between gap-3 sm:gap-6 pb-2 pt-1 px-3 sm:px-5">
               {/* Custom Legend on the Left */}
-              <div className="flex flex-col justify-center flex-1 gap-3 pl-2 select-none">
+              <div className="flex flex-col justify-center flex-1 gap-2 sm:gap-3 pl-1 sm:pl-2 select-none">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-[3px] bg-[#10b981] shrink-0" />
                   <span className="text-[12px] font-medium text-foreground">
@@ -280,150 +299,152 @@ export default function AdminOverviewPage() {
               </div>
 
               {/* Radial Chart on the Right (overflow-visible to prevent tooltip clipping) */}
-              <div className="h-[120px] w-[220px] relative flex items-center justify-center shrink-0">
-                <ChartContainer config={chartConfig} className="w-[220px] h-[220px] absolute top-0 left-0">
-                  <RadialBarChart
-                    data={chartData}
-                    endAngle={180}
-                    innerRadius={80}
-                    outerRadius={110}
-                  >
-                    <PolarAngleAxis
-                      type="number"
-                      domain={[0, visualTotal > 0 ? visualTotal : 1]}
-                      tick={false}
-                    />
-                    <RadialBar
-                      name="Healthy"
-                      dataKey="healthy"
-                      fill="var(--color-healthy)"
-                      stackId="a"
-                      cornerRadius={5}
-                      forceCornerRadius={true}
-                      className="stroke-transparent stroke-2"
-                    />
-                    <RadialBar
-                      name="Gap1"
-                      dataKey="gap1"
-                      fill="transparent"
-                      stackId="a"
-                      className="stroke-transparent"
-                    />
-                    <RadialBar
-                      name="Warning"
-                      dataKey="warning"
-                      fill="var(--color-warning)"
-                      stackId="a"
-                      cornerRadius={5}
-                      forceCornerRadius={true}
-                      className="stroke-transparent stroke-2"
-                    />
-                    <RadialBar
-                      name="Gap2"
-                      dataKey="gap2"
-                      fill="transparent"
-                      stackId="a"
-                      className="stroke-transparent"
-                    />
-                    <RadialBar
-                      name="Critical"
-                      dataKey="critical"
-                      fill="var(--color-critical)"
-                      stackId="a"
-                      cornerRadius={5}
-                      forceCornerRadius={true}
-                      className="stroke-transparent stroke-2"
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={({ active, payload, content, ...props }) => {
-                        const filteredPayload = payload
-                          ? payload.filter(
-                              (item) =>
-                                item.name !== "gap1" &&
-                                item.name !== "gap2" &&
-                                item.name !== "Gap1" &&
-                                item.name !== "Gap2" &&
-                                item.dataKey !== "gap1" &&
-                                item.dataKey !== "gap2"
-                            )
-                          : [];
-                        return (
-                          <ChartTooltipContent
-                            {...props}
-                            active={active}
-                            payload={filteredPayload}
-                            hideLabel
-                            formatter={(value, name) => {
-                              const nameStr = String(name).toLowerCase();
-                              let actualValue = value;
-                              let label = "";
-                              let color = "";
+              <div className="h-[90px] w-[165px] sm:h-[120px] sm:w-[220px] relative shrink-0 overflow-visible">
+                <div className="scale-75 sm:scale-100 origin-top-left absolute top-0 left-0 w-[220px] h-[220px] overflow-visible">
+                  <ChartContainer config={chartConfig} className="w-[220px] h-[220px] [&_svg]:overflow-visible">
+                    <RadialBarChart
+                      data={chartData}
+                      endAngle={180}
+                      innerRadius={80}
+                      outerRadius={110}
+                    >
+                      <PolarAngleAxis
+                        type="number"
+                        domain={[0, visualTotal > 0 ? visualTotal : 1]}
+                        tick={false}
+                      />
+                      <RadialBar
+                        name="Healthy"
+                        dataKey="healthy"
+                        fill="var(--color-healthy)"
+                        stackId="a"
+                        cornerRadius={5}
+                        forceCornerRadius={true}
+                        className="stroke-transparent stroke-2"
+                      />
+                      <RadialBar
+                        name="Gap1"
+                        dataKey="gap1"
+                        fill="transparent"
+                        stackId="a"
+                        className="stroke-transparent"
+                      />
+                      <RadialBar
+                        name="Warning"
+                        dataKey="warning"
+                        fill="var(--color-warning)"
+                        stackId="a"
+                        cornerRadius={5}
+                        forceCornerRadius={true}
+                        className="stroke-transparent stroke-2"
+                      />
+                      <RadialBar
+                        name="Gap2"
+                        dataKey="gap2"
+                        fill="transparent"
+                        stackId="a"
+                        className="stroke-transparent"
+                      />
+                      <RadialBar
+                        name="Critical"
+                        dataKey="critical"
+                        fill="var(--color-critical)"
+                        stackId="a"
+                        cornerRadius={5}
+                        forceCornerRadius={true}
+                        className="stroke-transparent stroke-2"
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={({ active, payload, content, ...props }) => {
+                          const filteredPayload = payload
+                            ? payload.filter(
+                                (item) =>
+                                  item.name !== "gap1" &&
+                                  item.name !== "gap2" &&
+                                  item.name !== "Gap1" &&
+                                  item.name !== "Gap2" &&
+                                  item.dataKey !== "gap1" &&
+                                  item.dataKey !== "gap2"
+                              )
+                            : [];
+                          return (
+                            <ChartTooltipContent
+                              {...props}
+                              active={active}
+                              payload={filteredPayload}
+                              hideLabel
+                              formatter={(value, name) => {
+                                const nameStr = String(name).toLowerCase();
+                                let actualValue = value;
+                                let label = "";
+                                let color = "";
 
-                              if (nameStr === "healthy") {
-                                actualValue = counts.good;
-                                label = "Healthy";
-                                color = "rgb(16, 185, 129)";
-                              } else if (nameStr === "warning") {
-                                actualValue = counts.warning;
-                                label = "Warning";
-                                color = "rgb(245, 158, 11)";
-                              } else if (nameStr === "critical") {
-                                actualValue = counts.critical;
-                                label = "Critical";
-                                color = "rgb(244, 63, 94)";
-                              } else {
-                                return null;
-                              }
+                                if (nameStr === "healthy") {
+                                  actualValue = counts.good;
+                                  label = "Healthy";
+                                  color = "rgb(16, 185, 129)";
+                                } else if (nameStr === "warning") {
+                                  actualValue = counts.warning;
+                                  label = "Warning";
+                                  color = "rgb(245, 158, 11)";
+                                } else if (nameStr === "critical") {
+                                  actualValue = counts.critical;
+                                  label = "Critical";
+                                  color = "rgb(244, 63, 94)";
+                                } else {
+                                  return null;
+                                }
 
-                              return (
-                                <div className="flex items-center gap-1.5 w-full">
-                                  <div
-                                    className="h-2 w-2 shrink-0 rounded-[2px]"
-                                    style={{ backgroundColor: color }}
-                                  />
-                                  <div className="flex flex-1 justify-between items-center leading-none">
-                                    <span className="text-muted-foreground mr-4">{label}</span>
-                                    <span className="font-mono font-medium text-foreground tabular-nums">
-                                      {Number(actualValue).toLocaleString()}
-                                    </span>
+                                return (
+                                  <div className="flex items-center gap-1.5 w-full">
+                                    <div
+                                      className="h-2 w-2 shrink-0 rounded-[2px]"
+                                      style={{ backgroundColor: color }}
+                                    />
+                                    <div className="flex flex-1 justify-between items-center leading-none">
+                                      <span className="text-muted-foreground mr-4">{label}</span>
+                                      <span className="font-mono font-medium text-foreground tabular-nums">
+                                        {Number(actualValue).toLocaleString()}
+                                      </span>
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            }}
-                          />
-                        );
-                      }}
-                    />
-                    <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
-                      <Label
-                        content={({ viewBox }) => {
-                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                            const displayTotal = counts.all > 0 ? counts.all : totalItems;
-                            return (
-                              <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
-                                <tspan
-                                  x={viewBox.cx}
-                                  y={(viewBox.cy || 0) - 16}
-                                  className="fill-foreground text-2xl font-bold"
-                                >
-                                  {displayTotal.toLocaleString()}
-                                </tspan>
-                                <tspan
-                                  x={viewBox.cx}
-                                  y={(viewBox.cy || 0) + 4}
-                                  className="fill-muted-foreground text-xs uppercase tracking-wider font-semibold"
-                                >
-                                  Blogs
-                                </tspan>
-                              </text>
-                            );
-                          }
+                                );
+                              }}
+                            />
+                          );
                         }}
                       />
-                    </PolarRadiusAxis>
-                  </RadialBarChart>
-                </ChartContainer>
+                      <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                        <Label
+                          content={({ viewBox }) => {
+                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                              const displayTotal = counts.all > 0 ? counts.all : totalItems;
+                              return (
+                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                                  <tspan
+                                    x={viewBox.cx}
+                                    y={(viewBox.cy || 0) - 16}
+                                    className="fill-foreground text-2xl font-bold"
+                                  >
+                                    {displayTotal.toLocaleString()}
+                                  </tspan>
+                                  <tspan
+                                    x={viewBox.cx}
+                                    y={(viewBox.cy || 0) + 4}
+                                    className="fill-muted-foreground text-xs uppercase tracking-wider font-semibold"
+                                  >
+                                    Blogs
+                                  </tspan>
+                                </text>
+                              );
+                            }
+                          }}
+                        />
+                      </PolarRadiusAxis>
+                    </RadialBarChart>
+                  </ChartContainer>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -484,18 +505,35 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Control Bar */}
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-card border border-border/60 rounded-lg p-3">
-          <div className="relative flex-1 max-w-[340px] w-full">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title or SEO target…"
-              className="w-full pl-8 pr-2.5 py-1.5 text-[13px] rounded-md border border-border/60 bg-secondary/30 text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-border/100 focus:bg-secondary/40"
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 bg-card border border-border/60 rounded-lg p-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 max-w-2xl w-full">
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-[340px] w-full">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by title or SEO target…"
+                className="w-full pl-8 pr-2.5 py-1.5 text-[13px] rounded-md border border-border/60 bg-secondary/30 text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-border/100 focus:bg-secondary/40"
+              />
+            </div>
+
+            {/* Sort Selector */}
+            <SortSelector
+              sortBy={sortBy}
+              sortDirection={sortDirection}
+              setSortBy={setSortBy}
+              toggleSortDirection={toggleSortDirection}
+              options={[
+                { value: "seo", label: "SEO Score", icon: Award },
+                { value: "created", label: "Date Created", icon: Calendar },
+                { value: "updated", label: "Updated", icon: Clock },
+              ]}
             />
           </div>
-          <div className="text-[12px] text-muted-foreground/80 font-medium select-none">
+
+          <div className="text-[12px] text-muted-foreground/80 font-medium select-none shrink-0 md:text-right">
             Showing {blogs.length} of {totalItems} blogs
           </div>
         </div>
@@ -523,7 +561,7 @@ export default function AdminOverviewPage() {
                     Visibility
                   </th>
                   <th className="px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-[0.07em] text-muted-foreground/75 text-left">
-                    Created
+                    {sortBy === "updated" ? "Updated" : "Created"}
                   </th>
                   <th className="px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-[0.07em] text-muted-foreground/75 text-right">
                     {/* Empty action column */}
@@ -538,7 +576,8 @@ export default function AdminOverviewPage() {
                     const collectionSlug = blog.collectionId?.slug || "collection";
                     const noteSlug = blog.slug || "note";
                     const blogPath = `/${username}/${collectionSlug}/${noteSlug}`;
-                    const formattedDate = new Date(blog.createdAt).toLocaleDateString(undefined, {
+                    const dateToFormat = sortBy === "updated" ? blog.updatedAt : blog.createdAt;
+                    const formattedDate = new Date(dateToFormat).toLocaleDateString(undefined, {
                       year: "numeric",
                       month: "short",
                       day: "numeric",
@@ -630,10 +669,14 @@ export default function AdminOverviewPage() {
                           </span>
                         </td>
 
-                        {/* Created date cell */}
+                        {/* Created/Updated date cell */}
                         <td className="px-3.5 py-3 align-middle select-none">
                           <div className="text-xs text-muted-foreground flex items-center gap-1.25">
-                            <Calendar className="size-3.5 text-muted-foreground/60 shrink-0" />
+                            {sortBy === "updated" ? (
+                              <Clock className="size-3.5 text-muted-foreground/60 shrink-0" />
+                            ) : (
+                              <Calendar className="size-3.5 text-muted-foreground/60 shrink-0" />
+                            )}
                             <span>{formattedDate}</span>
                           </div>
                         </td>

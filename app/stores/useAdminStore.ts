@@ -20,6 +20,8 @@ export type BlogsQuery = {
   limit: number;
   search: string;
   health: HealthFilter;
+  sortBy?: string;
+  sortDirection?: "asc" | "desc";
 };
 
 type ApiErrorResponse = {
@@ -144,6 +146,8 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
           limit: query.limit,
           search: query.search,
           health: query.health,
+          sortBy: query.sortBy,
+          sortDirection: query.sortDirection,
         },
       });
       set({ isLoadingBlogs: false });

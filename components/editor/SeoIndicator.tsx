@@ -454,14 +454,14 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
 
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-              <TabsList variant="line" className="p-0 grid w-full grid-cols-2">
-                <TabsTrigger value="fields" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:!bg-sidebar-accent rounded-none">
-                  <Settings className="size-3.5" /> Meta Fields
-                </TabsTrigger>
-                <TabsTrigger value="diagnostics" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:!bg-sidebar-accent rounded-none">
-                  <Activity className="size-3.5" /> SEO Audit
-                </TabsTrigger>
-              </TabsList>
+            <TabsList variant="line" className="p-0 grid w-full grid-cols-2">
+              <TabsTrigger value="fields" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:!bg-sidebar-accent rounded-none">
+                <Settings className="size-3.5" /> Meta Fields
+              </TabsTrigger>
+              <TabsTrigger value="diagnostics" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:!bg-sidebar-accent rounded-none">
+                <Activity className="size-3.5" /> SEO Audit
+              </TabsTrigger>
+            </TabsList>
 
             {/* TAB 1: SEO Meta Fields Configuration */}
             <TabsContent value="fields" className="flex-1 overflow-y-auto space-y-5 m-0 p-4">

@@ -7,7 +7,7 @@ const AdminDashboardCard = () => {
     <Card className="max-w-3xl mx-auto mt-4 overflow-hidden shadow-sm">
       <CardContent className="p-4">
         <Link
-          href="/admin/user-management"
+          href="/admin"
           className="flex items-center justify-between gap-4 group"
         >
           <div className="flex items-center gap-3">

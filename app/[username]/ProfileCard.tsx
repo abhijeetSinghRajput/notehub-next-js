@@ -118,7 +118,7 @@ const ProfileCard = ({
               {hasBio && (
                 <div
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="group relative cursor-pointer hover:bg-muted/20 p-2 -m-2 rounded-xl transition-all duration-200"
+                  className="group relative cursor-pointer p-2 -m-2 rounded-xl transition-all duration-200"
                   role="button"
                   aria-expanded={isExpanded}
                   title={isExpanded ? "Click to collapse" : "Click to expand"}

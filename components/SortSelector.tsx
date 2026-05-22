@@ -23,6 +23,11 @@ interface SortSelectorProps {
   sortDirection: "asc" | "desc";
   setSortBy: (value: string) => void;
   toggleSortDirection: () => void;
+  options?: {
+    value: string;
+    label: string;
+    icon: any;
+  }[];
 }
 
 const SortSelector = ({
@@ -30,8 +35,9 @@ const SortSelector = ({
   sortDirection,
   setSortBy,
   toggleSortDirection,
+  options,
 }: SortSelectorProps) => {
-  const options = [
+  const defaultOptions = [
     {
       value: "name",
       label: "Name",
@@ -41,6 +47,8 @@ const SortSelector = ({
     { value: "updated", label: "Updated", icon: Clock },
   ];
 
+  const displayOptions = options || defaultOptions;
+
   return (
     <div className="flex gap-2 items-center">
       <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
@@ -49,7 +57,7 @@ const SortSelector = ({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {options.map((opt) => {
+            {displayOptions.map((opt) => {
               const Icon = opt.icon;
               return (
                 <SelectItem key={opt.value} value={opt.value} className=" px-3 py-2">
