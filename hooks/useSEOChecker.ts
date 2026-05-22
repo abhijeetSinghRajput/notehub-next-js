@@ -81,10 +81,10 @@ export function countWholeWordOccurrences(text: string, keyword: string): number
   while (pos !== -1) {
     const charBefore = pos > 0 ? lowerText[pos - 1] : "";
     const charAfter = pos + lowerKeyword.length < lowerText.length ? lowerText[pos + lowerKeyword.length] : "";
-    
+
     const isBeforeWordChar = /[a-zA-Z0-9_]/.test(charBefore);
     const isAfterWordChar = /[a-zA-Z0-9_]/.test(charAfter);
-    
+
     if (!isBeforeWordChar && !isAfterWordChar) {
       count++;
     }
@@ -146,13 +146,12 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     label: "Title length (50–60 chars)",
     pass: titleLen >= 50 && titleLen <= 60,
     severity: titleLen < 30 || titleLen > 70 ? "error" : "warning",
-    message: `${titleLen} characters. ${
-      titleLen < 50
-        ? "Too short — aim for 50–60."
-        : titleLen > 60
+    message: `${titleLen} characters. ${titleLen < 50
+      ? "Too short — aim for 50–60."
+      : titleLen > 60
         ? "Too long — over 60 chars may be truncated in SERPs."
         : "Perfect length."
-    }`,
+      }`,
   });
 
   if (hasKeywords) {
@@ -202,13 +201,12 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     label: "Description length (120–155 chars)",
     pass: descLen >= 120 && descLen <= 155,
     severity: descLen < 80 || descLen > 160 ? "error" : "warning",
-    message: `${descLen} characters. ${
-      descLen < 120
-        ? "Too short — aim for 120–155 chars."
-        : descLen > 155
+    message: `${descLen} characters. ${descLen < 120
+      ? "Too short — aim for 120–155 chars."
+      : descLen > 155
         ? "Too long — may be truncated in SERPs."
         : "Ideal length."
-    }`,
+      }`,
   });
 
   if (hasKeywords) {
@@ -253,13 +251,12 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     label: "Slug length (3–75 chars)",
     pass: slug.length >= 3 && slug.length <= 75,
     severity: "warning",
-    message: `${slug.length} characters. ${
-      slug.length < 3
-        ? "Too short."
-        : slug.length > 75
+    message: `${slug.length} characters. ${slug.length < 3
+      ? "Too short."
+      : slug.length > 75
         ? "Consider shortening the slug."
         : "Good length."
-    }`,
+      }`,
   });
 
   if (hasKeywords) {
@@ -284,13 +281,12 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     label: "Word count ≥ 300",
     pass: wordCount >= 300,
     severity: wordCount < 150 ? "error" : "warning",
-    message: `${wordCount} words. ${
-      wordCount < 300
-        ? "Aim for at least 300 words for good indexing."
-        : wordCount >= 1000
+    message: `${wordCount} words. ${wordCount < 300
+      ? "Aim for at least 300 words for good indexing."
+      : wordCount >= 1000
         ? "Great depth — long-form content ranks well."
         : "Decent length."
-    }`,
+      }`,
   });
 
   if (hasKeywords) {
@@ -318,7 +314,7 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
       const missing = secondaryChecks.filter((sc) => sc.count === 0);
       const overused = secondaryChecks.filter((sc) => sc.count > 3);
       const perfect = secondaryChecks.filter((sc) => sc.ok);
-      
+
       const secondaryPass = missing.length === 0;
 
       checks.push({
@@ -358,8 +354,8 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
       h1Count === 0
         ? "No H1 found — add one main heading."
         : h1Count === 1
-        ? "One H1 found — great."
-        : `${h1Count} H1 tags found — use only one.`,
+          ? "One H1 found — great."
+          : `${h1Count} H1 tags found — use only one.`,
   });
 
   checks.push({
@@ -372,8 +368,8 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
       h2Count === 0
         ? "Add H2 subheadings to structure your content."
         : h2Count === 1
-        ? "Add at least one more H2 to improve structure."
-        : `${h2Count} H2 headings found.`,
+          ? "Add at least one more H2 to improve structure."
+          : `${h2Count} H2 headings found.`,
   });
 
   // ── Heading Hierarchy Accessibility Sequence Checker (h1->h2->h3) ──────────────
@@ -402,8 +398,8 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     message: skippedHeading
       ? `Accessibility issue: Heading levels are skipped (${skippedDetails}). Ensure headings follow a sequential structure (e.g. H1 -> H2 -> H3) without skipping levels for accessibility.`
       : headingLevels.length > 0
-      ? "Heading sequential hierarchy is perfectly structured for accessibility."
-      : "No headings found to evaluate hierarchy.",
+        ? "Heading sequential hierarchy is perfectly structured for accessibility."
+        : "No headings found to evaluate hierarchy.",
   });
 
   if (hasKeywords && h2Count > 0) {
@@ -424,8 +420,17 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
   }
 
   // Links
-  const internalLinks = (content.match(/href=["'](?!https?:\/\/)([^"']+)["']/g) || []).length;
-  const externalLinks = (content.match(/href=["']https?:\/\/[^"']+["']/g) || []).length;
+  const domain = process.env.NEXT_PUBLIC_DOMAIN;
+
+  const internalLinks = (
+    content.match(
+      new RegExp(`href=["']https?:\/\/${domain.replace(/\./g, "\\.")}[^"']*["']`, "g")
+    ) || []
+  ).length;
+
+  const externalLinks = (
+    content.match(/href=["']https?:\/\/(?!notehub-official\.vercel\.app)[^"']+["']/g) || []
+  ).length;
 
   checks.push({
     id: "internal_links",
@@ -433,9 +438,8 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     label: "Has internal links",
     pass: internalLinks >= 2,
     severity: "warning",
-    message: `${internalLinks} internal link${internalLinks !== 1 ? "s" : ""}. ${
-      internalLinks < 2 ? "Add more internal links to related articles." : "Good internal linking."
-    }`,
+    message: `${internalLinks} internal link${internalLinks !== 1 ? "s" : ""}. ${internalLinks < 2 ? "Add more internal links to related articles." : "Good internal linking."
+      }`,
   });
 
   checks.push({
@@ -444,9 +448,8 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     label: "Has external/authority links",
     pass: externalLinks >= 1,
     severity: "info",
-    message: `${externalLinks} external link${externalLinks !== 1 ? "s" : ""}. ${
-      externalLinks < 1 ? "Link to authoritative sources where relevant." : "Good."
-    }`,
+    message: `${externalLinks} external link${externalLinks !== 1 ? "s" : ""}. ${externalLinks < 1 ? "Link to authoritative sources where relevant." : "Good."
+      }`,
   });
 
   // ── Image checks ──────────────────────────────────────────────────────────
@@ -478,9 +481,8 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
       message:
         imagesWithAlt === totalImages
           ? "All images have alt text."
-          : `${totalImages - imagesWithAlt} image${
-              totalImages - imagesWithAlt !== 1 ? "s are" : " is"
-            } missing alt text.`,
+          : `${totalImages - imagesWithAlt} image${totalImages - imagesWithAlt !== 1 ? "s are" : " is"
+          } missing alt text.`,
     });
 
     if (hasKeywords) {
@@ -495,9 +497,8 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
         severity: "warning",
         message:
           imagesWithPrimaryKeywordAlt >= 1
-            ? `${imagesWithPrimaryKeywordAlt} image alt${
-                imagesWithPrimaryKeywordAlt !== 1 ? "s include" : " includes"
-              } the primary keyword.`
+            ? `${imagesWithPrimaryKeywordAlt} image alt${imagesWithPrimaryKeywordAlt !== 1 ? "s include" : " includes"
+            } the primary keyword.`
             : `Include your primary keyword "${primaryKeyword}" in at least one image's alt text.`,
       });
     }
@@ -511,9 +512,8 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
       message:
         imagesWithTitle === totalImages
           ? "All images have title attributes."
-          : `${totalImages - imagesWithTitle} image${
-              totalImages - imagesWithTitle !== 1 ? "s are" : " is"
-            } missing title attributes.`,
+          : `${totalImages - imagesWithTitle} image${totalImages - imagesWithTitle !== 1 ? "s are" : " is"
+          } missing title attributes.`,
     });
   }
 
@@ -601,23 +601,52 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     group: "Technical",
     label: "Has 3–8 tags",
     pass: tags.length >= 3 && tags.length <= 8,
-    severity: "info",
-    message: `${tags.length} tag${tags.length !== 1 ? "s" : ""}. ${
-      tags.length < 3
-        ? "Add more descriptive tags."
-        : tags.length > 8
+    severity: "warning",
+    message: `${tags.length} tag${tags.length !== 1 ? "s" : ""}. ${tags.length < 3
+      ? "Add more descriptive tags."
+      : tags.length > 8
         ? "Too many tags — focus on the most relevant."
         : "Good number of tags."
-    }`,
+      }`,
   });
 
   // ── Score calculation ─────────────────────────────────────────────────────
-  const weights = { error: 3, warning: 2, info: 1, pass: 0 };
-  const totalWeight = checks.reduce((sum, c) => sum + (weights[c.severity] || 1), 0);
-  const passedWeight = checks
-    .filter((c) => c.pass)
-    .reduce((sum, c) => sum + (weights[c.severity] || 1), 0);
-  const score = totalWeight > 0 ? Math.round((passedWeight / totalWeight) * 100) : 100;
+  let penaltyTotal = 0;
+
+  // 1. Missing title: -25
+  if (title.trim().length === 0) {
+    penaltyTotal += 25;
+  }
+  // 2. Missing description: -15
+  if (description.trim().length === 0) {
+    penaltyTotal += 15;
+  }
+  // 3. Missing H1: -20
+  if (h1Count === 0) {
+    penaltyTotal += 20;
+  }
+  // 4. No internal links: -6
+  if (internalLinks === 0) {
+    penaltyTotal += 6;
+  }
+  // 5. No external links: -4
+  if (externalLinks === 0) {
+    penaltyTotal += 4;
+  }
+  // 6. Missing image alt: -8
+  if (totalImages > 0 && imagesWithAlt < totalImages) {
+    penaltyTotal += 8;
+  }
+  // 7. Thin content: -15
+  if (wordCount < 300) {
+    penaltyTotal += 15;
+  }
+  // 8. Too many tags: -3
+  if (tags.length > 8) {
+    penaltyTotal += 3;
+  }
+
+  const score = Math.max(0, 100 - penaltyTotal);
 
   return { checks, score };
 }

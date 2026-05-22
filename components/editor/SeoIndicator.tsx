@@ -323,6 +323,8 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
 
   if (!editor || !activeNote) return null;
 
+  const isKeywordsOutOfBounds = seoKeywords.length < 3 || seoKeywords.length > 8;
+
   // Score colors & classes
   const ringColor = score >= 90 ? "stroke-emerald-500" : score >= 50 ? "stroke-amber-500" : "stroke-rose-500";
   const textColor = score >= 90 ? "text-emerald-500" : score >= 50 ? "text-amber-500" : "text-rose-500";
@@ -545,9 +547,17 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
 
               {/* Keywords Chip Input */}
               <div className="space-y-1.5">
-                <Label htmlFor="seo-keywords-input" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Focus Keywords
-                </Label>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="seo-keywords-input" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Focus Keywords (3–8 tags)
+                  </Label>
+                  <span className={cn(
+                    "text-[10px] font-semibold transition-colors",
+                    isKeywordsOutOfBounds ? "text-warn" : "text-emerald-500"
+                  )}>
+                    {seoKeywords.length} / 3–8 tags
+                  </span>
+                </div>
 
                 {/* Chips display */}
                 {seoKeywords.length > 0 && (
@@ -615,11 +625,21 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
                     }
                   }}
                   placeholder={seoKeywords.length === 0 ? "Type a keyword and press Enter or comma" : "Add another keyword..."}
-                  className="h-10 text-sm font-medium"
+                  className={cn(
+                    "h-10 text-sm font-medium transition-all duration-300",
+                    isKeywordsOutOfBounds
+                      ? "border-warn/60! focus-visible:border-warn! focus-visible:ring-warn/40!"
+                      : "focus-visible:border-ring focus-visible:ring-ring/50"
+                  )}
                 />
                 <p className="text-[10px] text-muted-foreground">
                   Press <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">Enter</kbd> or <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">,</kbd> to add &nbsp;·&nbsp; <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">⌫</kbd> to remove last
                 </p>
+                {isKeywordsOutOfBounds && (
+                  <p className="text-[10px] text-warn font-semibold mt-1 flex items-center gap-1">
+                    ⚠️ Aim for between 3 and 8 focus keywords to optimize search visibility.
+                  </p>
+                )}
               </div>
 
               {/* Featured SEO Image Fields */}
