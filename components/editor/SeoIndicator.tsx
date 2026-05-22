@@ -153,9 +153,16 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
     // Only seed when the active note changes (i.e. a different note is loaded)
     if (!activeNote || initializedForNoteRef.current === noteId) return;
 
-    setSeoSlug(activeNote.seo?.slug || "");
-    setSeoTitle(activeNote.seo?.title || "");
-    setSeoDescription(activeNote.seo?.description || "");
+    const contentStr = activeNote.content || "";
+    const fallbackText = contentStr
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    const firstPara = fallbackText.slice(0, 155);
+
+    setSeoSlug(activeNote.seo?.slug || activeNote.slug || "");
+    setSeoTitle(activeNote.seo?.title || activeNote.name || "");
+    setSeoDescription(activeNote.seo?.description || firstPara || "");
     setSeoKeywords(Array.isArray(activeNote.seo?.keywords) ? [...activeNote.seo.keywords] : []);
     setKeywordInput("");
 
@@ -189,7 +196,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
   const seoInputData = useMemo<SEOInputData>(() => {
     const contentStr = editorContent || "";
     const fallbackText = contentStr
-      .replace(/<[^>]*>/g, "")
+      .replace(/<[^>]*>/g, " ")
       .replace(/\s+/g, " ")
       .trim();
     const firstPara = fallbackText.slice(0, 160);
@@ -202,7 +209,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
       keywords: seoKeywords,
       images: editorImages || [],
       canonicalUrl: typeof window !== "undefined"
-        ? `${window.location.origin}/${authUser?.userName || "user"}/${seoSlug || activeNote?.slug || ""}`
+        ? `https://${process.env.NEXT_PUBLIC_DOMAIN || "notehub-official.vercel.app"}/${authUser?.userName || "user"}/${seoSlug || activeNote?.slug || ""}`
         : "",
       ogTitle: seoTitle || activeNote?.name || "",
       ogDescription: seoDescription || firstPara || "",

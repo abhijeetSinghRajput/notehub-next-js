@@ -420,7 +420,7 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
   }
 
   // Links
-  const domain = process.env.NEXT_PUBLIC_DOMAIN;
+  const domain = process.env.NEXT_PUBLIC_DOMAIN || "notehub-official.vercel.app";
 
   const internalLinks = (
     content.match(
@@ -613,37 +613,140 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
   // ── Score calculation ─────────────────────────────────────────────────────
   let penaltyTotal = 0;
 
-  // 1. Missing title: -25
-  if (title.trim().length === 0) {
-    penaltyTotal += 25;
+  for (const check of checks) {
+    if (check.pass) continue;
+
+    switch (check.id) {
+      // Title
+      case "title_exists":
+        penaltyTotal += 25;
+        break;
+      case "title_length":
+        if (title.trim().length > 0) {
+          if (titleLen < 30 || titleLen > 70) {
+            penaltyTotal += 8;
+          } else {
+            penaltyTotal += 4;
+          }
+        }
+        break;
+      case "title_keyword":
+        penaltyTotal += 10;
+        break;
+      case "title_keyword_position":
+        penaltyTotal += 3;
+        break;
+
+      // Meta Description
+      case "desc_exists":
+        penaltyTotal += 15;
+        break;
+      case "desc_length":
+        if (description.trim().length > 0) {
+          if (descLen < 80 || descLen > 160) {
+            penaltyTotal += 6;
+          } else {
+            penaltyTotal += 3;
+          }
+        }
+        break;
+      case "desc_keyword":
+        penaltyTotal += 4;
+        break;
+
+      // Slug
+      case "slug_exists":
+        penaltyTotal += 15;
+        break;
+      case "slug_format":
+        penaltyTotal += 8;
+        break;
+      case "slug_length":
+        penaltyTotal += 3;
+        break;
+      case "slug_keyword":
+        penaltyTotal += 3;
+        break;
+
+      // Content
+      case "content_length":
+        if (wordCount < 150) {
+          penaltyTotal += 15;
+        } else {
+          penaltyTotal += 8;
+        }
+        break;
+      case "keyword_intro":
+        penaltyTotal += 3;
+        break;
+      case "single_h1":
+        if (h1Count === 0) {
+          penaltyTotal += 20;
+        } else {
+          penaltyTotal += 8;
+        }
+        break;
+      case "has_h2":
+        if (h2Count === 0) {
+          penaltyTotal += 10;
+        } else {
+          penaltyTotal += 5;
+        }
+        break;
+      case "heading_sequence":
+        penaltyTotal += 8;
+        break;
+      case "keyword_in_heading":
+        penaltyTotal += 4;
+        break;
+      case "internal_links":
+        if (internalLinks === 0) {
+          penaltyTotal += 6;
+        } else {
+          penaltyTotal += 3;
+        }
+        break;
+      case "external_links":
+        penaltyTotal += 4;
+        break;
+
+      // Images
+      case "has_images":
+        penaltyTotal += 5;
+        break;
+      case "image_alts":
+        penaltyTotal += 8;
+        break;
+      case "image_alt_keyword":
+        penaltyTotal += 3;
+        break;
+
+      // Social
+      case "og_title":
+        penaltyTotal += 2;
+        break;
+      case "og_description":
+        penaltyTotal += 2;
+        break;
+
+      // Technical
+      case "canonical_url":
+        if (canonicalUrl.trim().length === 0) {
+          penaltyTotal += 4;
+        }
+        break;
+      case "has_tags":
+        penaltyTotal += 3;
+        break;
+
+      default:
+        break;
+    }
   }
-  // 2. Missing description: -15
-  if (description.trim().length === 0) {
+
+  // Localhost canonical check: +15 penalty (realistic environment audit)
+  if (canonicalUrl.toLowerCase().includes("localhost")) {
     penaltyTotal += 15;
-  }
-  // 3. Missing H1: -20
-  if (h1Count === 0) {
-    penaltyTotal += 20;
-  }
-  // 4. No internal links: -6
-  if (internalLinks === 0) {
-    penaltyTotal += 6;
-  }
-  // 5. No external links: -4
-  if (externalLinks === 0) {
-    penaltyTotal += 4;
-  }
-  // 6. Missing image alt: -8
-  if (totalImages > 0 && imagesWithAlt < totalImages) {
-    penaltyTotal += 8;
-  }
-  // 7. Thin content: -15
-  if (wordCount < 300) {
-    penaltyTotal += 15;
-  }
-  // 8. Too many tags: -3
-  if (tags.length > 8) {
-    penaltyTotal += 3;
   }
 
   const score = Math.max(0, 100 - penaltyTotal);

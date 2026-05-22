@@ -13,6 +13,15 @@ type UsersQuery = {
   filter: UserFilter;
 };
 
+export type HealthFilter = "all" | "good" | "warning" | "critical";
+
+export type BlogsQuery = {
+  page: number;
+  limit: number;
+  search: string;
+  health: HealthFilter;
+};
+
 type ApiErrorResponse = {
   message?: string;
 };
@@ -109,6 +118,12 @@ interface AdminStore {
   uploadUserCover: (userId: string, file: File) => Promise<{ success: boolean; user?: any }>;
   removeUserCover: (userId: string) => Promise<{ success: boolean; user?: any }>;
   createUser: (data: any) => Promise<{ success: boolean; message?: string; user?: IUser }>;
+
+  isLoadingBlogs: boolean;
+  blogsError: string | null;
+  fetchBlogs: (
+    query: BlogsQuery
+  ) => Promise<{ blogs: any[]; pagination: any; success: boolean }>;
 }
 
 export const useAdminStore = create<AdminStore>((set, get) => ({
@@ -116,6 +131,30 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
   usersError: null,
   usersCache: {},
   singleUserCache: {},
+
+  isLoadingBlogs: false,
+  blogsError: null,
+
+  fetchBlogs: async (query) => {
+    set({ isLoadingBlogs: true, blogsError: null });
+    try {
+      const response = await axiosInstance.get("/admin/blogs", {
+        params: {
+          page: query.page,
+          limit: query.limit,
+          search: query.search,
+          health: query.health,
+        },
+      });
+      set({ isLoadingBlogs: false });
+      return response.data;
+    } catch (error: any) {
+      const err = error as AxiosError<ApiErrorResponse>;
+      const message = err?.response?.data?.message || err?.message || "Failed to fetch blogs.";
+      set({ isLoadingBlogs: false, blogsError: message });
+      return { success: false, blogs: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 20 } };
+    }
+  },
 
   getCachedUsers: (query, staleTime = DEFAULT_STALE_TIME) => {
     const normalizedQuery = normalizeQuery(query);
