@@ -117,6 +117,7 @@ const Footer = ({ className }: { className: string }) => {
           {/* Brand block */}
           <div className="flex flex-col gap-4 col-span-2 sm:col-span-3 md:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2">
+              <span className="sr-only">NoteHub Home</span>
               <LogoIcon />
               <LogoText />
             </Link>
