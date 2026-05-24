@@ -8,7 +8,6 @@ import GithubIcon from "./icons/githubIcon";
 const CELL_SIZE = 10;
 const CELL_GAP = 3;
 const STEP = CELL_SIZE + CELL_GAP;
-const DAY_LABEL_WIDTH = 28;
 const MONTH_LABEL_HEIGHT = 20;
 
 const COLORS = {
@@ -96,20 +95,20 @@ export default function GitHubContribution({
     const month = new Date(firstDay.date).getMonth();
     if (month !== lastMonth) {
       monthLabels.push({
-        x: DAY_LABEL_WIDTH + wi * STEP,
+        x: wi * STEP,
         label: new Date(firstDay.date).toLocaleString("default", { month: "short" }),
       });
       lastMonth = month;
     }
   });
 
-  const svgWidth = DAY_LABEL_WIDTH + weeks.length * STEP;
+  const svgWidth = weeks.length * STEP;
   const svgHeight = MONTH_LABEL_HEIGHT + 7 * STEP;
 
   return (
     <>
       <div className="flex justify-between items-center gap-8 mb-2">
-        <p className="text-xs text-muted-foreground mb-2">
+        <p className="mb-2 text-muted-foreground text-xs">
           <span className="font-medium text-foreground">
             {totalContributions.toLocaleString()}
           </span>{" "}
@@ -138,11 +137,10 @@ export default function GitHubContribution({
           </div>
         )}
       </div>
-      <div className="w-full overflow-x-auto">
+      <div className="w-full">
 
         <svg
-          width={svgWidth}
-          height={svgHeight}
+          width="100%"
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="block"
         >
@@ -160,27 +158,10 @@ export default function GitHubContribution({
             </text>
           ))}
 
-          {/* Day labels (Mon, Wed, Fri) */}
-          {["", "Mon", "", "Wed", "", "Fri", ""].map((label, i) => (
-            label ? (
-              <text
-                key={i}
-                x={DAY_LABEL_WIDTH - 4}
-                y={MONTH_LABEL_HEIGHT + i * STEP + CELL_SIZE - 2}
-                fontSize={10}
-                textAnchor="end"
-                fill={isDark ? "#8b949e" : "#57606a"}
-                fontFamily="monospace"
-              >
-                {label}
-              </text>
-            ) : null
-          ))}
-
           {/* Cells */}
           {weeks.map((week, wi) =>
             week.contributionDays.map((day, di) => {
-              const x = DAY_LABEL_WIDTH + wi * STEP;
+              const x = wi * STEP;
               const y = MONTH_LABEL_HEIGHT + di * STEP;
               return (
                 <rect
@@ -206,30 +187,31 @@ export default function GitHubContribution({
         </svg>
       </div>
       {/* Legend */}
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex justify-between items-center mt-4">
         <div>
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
           <GithubIcon className="size-4"/>
           {gh_username && (
             <a href={`https://github.com/${gh_username}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="group text-xs text-muted-foreground inline-flex items-center gap-0.5 hover:text-foreground transition-colors">
+              className="group inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground text-xs transition-colors">
                 {gh_username}
-                <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 duration-200" />
             </a>
           )}
         </div>
         </div>
-        <div className="flex items-center gap-1 ">
-          <span className="text-xs text-muted-foreground">Less</span>
+        <div className="flex items-center gap-0.5 sm:gap-1">
+          <span className="text-muted-foreground text-xs">Less</span>
           {colors.map((c, i) => (
             <div
               key={i}
-              style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: c }}
+              className="rounded-[2px] size-2 sm:size-3"
+              style={{ backgroundColor: c }}
             />
           ))}
-          <span className="text-xs text-muted-foreground">More</span>
+          <span className="text-muted-foreground text-xs">More</span>
         </div>
       </div>
     </>

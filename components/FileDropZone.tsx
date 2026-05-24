@@ -17,6 +17,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import Image from "next/image";
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 
 interface FileDropZoneProps {
   onImageSelect: (url: string) => void;
@@ -44,6 +45,11 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({ onImageSelect }) => {
     const file = files[0];
     if (isUploading) return toast.error("Wait until uploading finishes");
 
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
+    if (!allowedTypes.includes(file.type)) {
+      return toast.error("Only JPEG, PNG, WebP, GIF and SVG files are allowed");
+    }
+
     setIsUploading(true);
     await uploadImage(file);
     setIsUploading(false);
@@ -53,6 +59,11 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({ onImageSelect }) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (isUploading) return toast.error("Wait until uploading finishes");
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
+    if (!allowedTypes.includes(file.type)) {
+      return toast.error("Only JPEG, PNG, WebP, GIF and SVG files are allowed");
+    }
 
     setIsUploading(true);
     await uploadImage(file);
@@ -93,7 +104,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({ onImageSelect }) => {
                 type="file"
                 hidden
                 id="upload-photo"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
                 onChange={handleInputChange}
               />
             </label>
@@ -110,7 +121,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({ onImageSelect }) => {
                 key={index}
                 className="relative rounded aspect-square bg-muted/30 overflow-hidden flex items-center justify-center group"
               >
-                <Image
+                <CloudinaryImage
                   src={url}
                   alt="note"
                   fill

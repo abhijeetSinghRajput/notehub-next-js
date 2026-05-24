@@ -21,13 +21,26 @@ const isAllowedDomain = (src: string) => {
 
 const isCloudinaryUrl = (src: string) => src.includes("res.cloudinary.com");
 
+const isSvgUrl = (src: string) => {
+  const lowercase = src.toLowerCase();
+  return lowercase.endsWith(".svg") || lowercase.includes(".svg") || lowercase.includes(".svg?");
+};
+
+const isGifUrl = (src: string) => {
+  const lowercase = src.toLowerCase();
+  return lowercase.endsWith(".gif") || lowercase.includes(".gif?");
+};
+
 // Strip any existing Cloudinary transformation params from the URL
-// so we don't double-apply them
+// so we don't double-apply them. Uses a negative lookahead to preserve
+// version segments like /v1234567890/ while removing transform segments.
 const stripCloudinaryTransforms = (src: string) =>
-  src.replace(/\/upload\/[^/]+\//, "/upload/");
+  src.replace(/\/upload\/(?![v\d])([^/]+)\//, "/upload/");
 
 const cloudinaryLoader: ImageLoader = ({ src, width, quality }) => {
   if (!isCloudinaryUrl(src)) return src;
+  // SVG and GIF must not be transformed
+  if (isSvgUrl(src) || isGifUrl(src)) return src;
   const q = quality ?? 75;
   const clean = stripCloudinaryTransforms(src);
   return clean.replace(
@@ -45,8 +58,12 @@ export default function CloudinaryImage({ src, alt, ...props }: CloudinaryImageP
   }
 
   if (isCloudinaryUrl(src)) {
-    // Use Cloudinary loader — Next.js generates dense srcset,
-    // Cloudinary serves exact width + format
+    // SVG and GIF must bypass the optimizer to preserve their format/animation
+    if (isSvgUrl(src) || isGifUrl(src)) {
+      return <Image src={src} alt={altText} unoptimized {...props} />;
+    }
+    // Use Cloudinary loader — Next.js generates a dense srcset,
+    // Cloudinary serves the exact requested width + auto format
     return (
       <Image
         src={src}

@@ -34,8 +34,21 @@ type ImageLightboxProps = {
 const ImageLightbox = memo(
   ({ src, slides, index = 0, onClose }: ImageLightboxProps) => {
     const resolvedSlides = useMemo(() => {
-      if (slides && slides.length > 0) return slides;
-      if (src) return [{ src }];
+      const cleanUrl = (url: string) => {
+        if (url && url.includes("res.cloudinary.com")) {
+          // Strip any existing transformations (e.g. w_200, h_200)
+          return url.replace(/\/upload\/(?![v\d])([^/]+)\//, "/upload/");
+        }
+        return url;
+      };
+
+      if (slides && slides.length > 0) {
+        return slides.map((slide) => ({
+          ...slide,
+          src: cleanUrl(slide.src),
+        }));
+      }
+      if (src) return [{ src: cleanUrl(src) }];
       return [] as ImageLightboxSlide[];
     }, [slides, src]);
 

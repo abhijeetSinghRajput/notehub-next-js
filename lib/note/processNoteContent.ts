@@ -202,29 +202,33 @@ function rehypeOptimizeImages() {
       const src = node.properties?.src as string;
       if (!src) return;
 
-      // Optimize URL
-      if (src.includes("res.cloudinary.com") && !src.includes("f_auto")) {
-        node.properties.src = src.replace(
+      const lowercaseSrc = src.toLowerCase();
+      const isSvg = lowercaseSrc.endsWith(".svg") || lowercaseSrc.includes(".svg") || lowercaseSrc.includes(".svg?");
+
+      // Optimize URL only if it's not an SVG
+      if (!isSvg && src.includes("res.cloudinary.com")) {
+        // Strip any existing transformations (e.g. w_800, c_limit)
+        const cleanSrc = src.replace(/\/upload\/(?![v\d])([^/]+)\//, "/upload/");
+
+        // Set optimal fallback src
+        node.properties.src = cleanSrc.replace(
           "/upload/",
-          "/upload/f_auto,q_auto,w_800/"
+          "/upload/f_auto,q_auto,w_1600/"
         );
-      }
 
-      // Add lazy loading to all images
-      node.properties.loading = "lazy";
-      node.properties.decoding = "async";
-
-      // Add srcset for Cloudinary images
-      const optimizedSrc = node.properties.src as string;
-      if (optimizedSrc.includes("res.cloudinary.com")) {
-        const srcset = [320, 640, 800]
-          .map((w) => `${optimizedSrc.replace(/w_\d+/, `w_${w}`)} ${w}w`)
+        // Generate responsive high-resolution srcset
+        const targetSrc = cleanSrc.replace("/upload/", "/upload/w_1600/");
+        const srcset = [320, 640, 1024, 1600, 2000]
+          .map((w) => `${targetSrc.replace(/w_\d+/, `w_${w}`)} ${w}w`)
           .join(", ");
 
         node.properties.srcset = srcset;
-        node.properties.sizes =
-          "(max-width: 768px) 100vw, 800px";
+        node.properties.sizes = "(max-width: 1024px) 100vw, 1200px";
       }
+
+      // Add lazy loading and decoding to all images
+      node.properties.loading = "lazy";
+      node.properties.decoding = "async";
     });
   };
 }
