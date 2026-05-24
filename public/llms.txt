@@ -1,0 +1,168 @@
+# NoteHub
+
+> A collaborative blog and note publishing platform for developers and students. Covers frontend system design, DSA, algorithms, AI/ML, data science, React, Node.js, SQL, and DBMS. 140+ published notes by the developer community.
+
+## About
+
+NoteHub is a free platform where developers and students publish technical blogs, notes, and guides. Content is organized into collections by topic and author. The platform supports rich markdown, code blocks, LaTeX, and collaborative publishing.
+
+- URL: https://notehub-official.vercel.app
+- Built by: Abhijeet Singh Rajput (@abhijeetsingh)
+- Stack: Next.js, Node.js, MongoDB, React
+- GitHub: https://github.com/abhijeetSinghRajput/notehub
+
+## Platform Pages
+
+- [Home](https://notehub-official.vercel.app/): Browse all public notes and collections.
+- [All Notes Index](https://notehub-official.vercel.app/index): Full listing of published notes.
+- [Privacy Policy](https://notehub-official.vercel.app/privacy-policy): Privacy policy for NoteHub.
+
+## Authors
+
+- [Abhijeet Singh Rajput](https://notehub-official.vercel.app/abhijeetsingh) (@abhijeetsingh): MERN stack developer, platform founder. Publishes notes on frontend system design, DSA, AI/ML, data science, and algorithms.
+- [Naveen Kumar](https://notehub-official.vercel.app/naveen09) (@naveen09): Publishes notes on React and Node.js.
+- [Divya Sachan](https://notehub-official.vercel.app/divyasachan) (@divyasachan): Publishes notes on SQL and database topics.
+- [Vikash Kumar](https://notehub-official.vercel.app/vikashkumar) (@vikashkumar): Community contributor.
+- [Gyan Prakash](https://notehub-official.vercel.app/gyan-prakash) (@gyan-prakash): Community contributor.
+- [Adarsh Kumar](https://notehub-official.vercel.app/adarshkashyap) (@adarshkashyap): Publishes notes on DBMS.
+
+## Collections
+
+### Frontend System Design (by Abhijeet Singh Rajput) — 2 notes
+https://notehub-official.vercel.app/abhijeetsingh/frontend-system-design
+
+- [Critical Rendering Path: DOM, CSSOM, Reflow & Repaint](https://notehub-official.vercel.app/abhijeetsingh/frontend-system-design/browser-rendering-pipeline-critical-rendering-path): Learn how the critical rendering path works — DOM, CSSOM, render tree, reflow, repaint, and how to optimize each stage for faster pages.
+- [Core Web Vitals: How LCP, CLS & INP Are Really Measured](https://notehub-official.vercel.app/abhijeetsingh/frontend-system-design/core-web-vitals-lcp-cls-inp-measured): Master Core Web Vitals by learning how LCP, CLS, and INP are measured before you optimize — so every fix targets the right problem.
+
+### DAA — Design and Analysis of Algorithms (by Abhijeet Singh Rajput) — 19 notes
+https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis
+
+- [Algorithm: Time & Space Complexity](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/algorithm): Basics of algorithms, time complexity, and space complexity with examples.
+- [Asymptotic Notation](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/asymtotic-notation): Big-O, Big-Theta, Big-Omega explained.
+- [Binary Search (Recurrence Relation)](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/binary-search-recurrence-relation): Binary search with recurrence relation analysis.
+- [Binary Search Tree](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/binary-search-tree): BST operations and properties.
+- [Comparison of Two Functions](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/comparison-of-two-functions): Techniques for comparing algorithmic growth rates.
+- [DAA Assignment 1](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/daa-assignment-1): Practice problems for DAA fundamentals.
+- [Dijkstra's Algorithm](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/dijkstra-s-algorithm): Shortest path algorithm with step-by-step explanation.
+- [Dynamic Programming & 0/1 Knapsack](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/dynamic-programming-0-1-knapsack): DP approach to the 0/1 knapsack problem.
+- [Fraction Knapsack](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/fraction-knapsack): Greedy approach to the fractional knapsack problem.
+- [Graph](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/graph): Graph representations and traversal algorithms.
+- [Greedy Approach for Algorithm Design](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/greedy-approach-for-algorithm-design): Greedy strategy and when to apply it.
+- [Merge Sort](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/merge-sort): Divide and conquer merge sort with complexity analysis.
+- [MiniMax using Divide and Conquer](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/minimax-using-divide-and-conquer-approach): Finding min and max using divide and conquer.
+- [MST: Kruskal's & Prim's Algorithm](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/mst-kruskal-s-prim-s-algorithm): Minimum spanning tree algorithms compared.
+- [Optimal Binary Search Tree (OBST)](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/optimal-binary-search-tree-obst): Dynamic programming approach to minimize average search cost in BSTs.
+- [All Pairs Shortest Path (Floyd's)](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/all-pairs-shortest-path-floyd-s): Floyd-Warshall algorithm for all-pairs shortest paths.
+- [Permutation and Combination](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/permutation-and-combination): Counting techniques for algorithm analysis.
+- [Quick Sort](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/quick-sort): Quicksort algorithm with partitioning explained.
+- [Tower of Hanoi](https://notehub-official.vercel.app/abhijeetsingh/daa-design-and-analysis/tower-of-hanoi): Recursive solution to the Tower of Hanoi problem.
+
+### AI & ML (by Abhijeet Singh Rajput) — 24 notes
+https://notehub-official.vercel.app/abhijeetsingh/ai-ml
+
+- [Machine Learning](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/machine-learning): Introduction to machine learning concepts and models.
+- [How Machine Learns?](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/how-machine-learns): Core learning mechanisms in ML systems.
+- [Type of Learning Models](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/type-of-learning-models): Supervised, unsupervised, and reinforcement learning.
+- [Statistics](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/statistics): Statistical foundations for machine learning.
+- [Linear Regression](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/linear-regression): Linear regression fundamentals and use cases.
+- [Linear Regression Numerical Using Least Squares Method](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/linear-regression-numerical-using-least-squares-method): Numerical examples using the least squares method for regression.
+- [Logistic Regression](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/logistic-regression): Binary classification using logistic regression.
+- [Polynomial Regression](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/polynomial-regression): Extending linear regression to polynomial features.
+- [Cross Validation](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/cross-validation): Model evaluation using k-fold cross validation.
+- [KNN Classification](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/knn-classification): K-Nearest Neighbors algorithm explained.
+- [Support Vector Machine (SVM)](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/support-vector-machine-svm): SVM for classification with margin and kernel concepts.
+- [Decision Tree](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/decision-tree): Decision tree structure and splitting criteria.
+- [Decision Tree Algorithm](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/decision-tree-algorithm): Implementation and optimization of decision trees.
+- [ID3 Algorithm](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/id3-algorithm): Information gain and entropy in the ID3 decision tree algorithm.
+- [Bayesian Classifier (Naive Bayes)](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/bayesian-classifier-naive-boryes): Probabilistic classification using Bayes' theorem.
+- [K-Means Clustering](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/k-means-clustering): Unsupervised clustering with K-Means.
+- [DB Scan Clustering](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/db-scan-clustering): Density-based clustering algorithm explained.
+- [DB Scan Clustering Numerical](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/db-scan-clustering-numerical): Numerical worked examples for DBSCAN.
+- [Apriori Algorithm](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/apriori-algorithm): Association rule mining using the Apriori algorithm.
+- [Artificial Neural Network](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/artificial-neural-network): Structure and training of artificial neural networks.
+- [Perceptron](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/perceptron): The perceptron model as the foundation of neural networks.
+- [Loss Function](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/loss-function): Common loss functions used in ML model training.
+- [Dimensionality Reduction](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/dimensionality-reduction): PCA and other techniques for reducing feature space.
+- [Data Preprocessing And Grid Search](https://notehub-official.vercel.app/abhijeetsingh/ai-ml/data-preprocessing-and-grid-search): Data cleaning, normalization, and hyperparameter tuning.
+
+### Machine Learning 2 (by Abhijeet Singh Rajput) — 15 notes
+https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2
+
+- [Gradient Descent](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/gradient-descent): Optimization using gradient descent for ML models.
+- [Ensemble Learning](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/ensambling-learning): Bagging, boosting, and random forests.
+- [Random Forest (ID3 Algorithm)](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/random-forest-id3-algorithm): Random forest using ID3 as the base learner.
+- [CNN (Convolutional Neural Networks)](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/rectified-linear-unit-in-cnn): ReLU and CNN architecture for image recognition.
+- [Convolutional Neural Network (CNN)](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/convolutional-neural-network-cnn): Deep dive into CNN layers and feature maps.
+- [RNN — Recurrent Neural Network](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/recurrent-neural-network-rnn): Sequential data modeling with RNNs.
+- [LSTM (Long Short-Term Memory)](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/lstm-long-short-term-memory): LSTM architecture for long-range sequence dependencies.
+- [XG Boost](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/xg-boost): Extreme gradient boosting for structured data.
+- [Gaussian Mixture Model](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/gaussian-mixture-model): Probabilistic clustering using GMMs.
+- [ICA — Independent Component Analysis](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/independent-component-analysis-ica): Blind source separation using ICA.
+- [Spectral Clustering](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/spectral-clustering): Graph-based clustering using eigenvalues.
+- [Markov Decision Process (MDP)](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/markov-decision-process-mdp): Reinforcement learning foundations with MDP.
+- [NLP — Natural Language Processing](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/natural-language-processing-nlp): NLP basics including tokenization, lemmatization, and text processing.
+- [Time Series & ARIMA Model of Forecasting](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/time-series-arima-model-of-forecasting): Time series analysis and ARIMA-based forecasting.
+- [REST API](https://notehub-official.vercel.app/abhijeetsingh/machine-learning-2/rest-api): REST API concepts for ML model serving.
+
+### Data Science (by Abhijeet Singh Rajput) — 4 notes
+https://notehub-official.vercel.app/abhijeetsingh/data-science
+
+- [Data Science Basics – Introduction](https://notehub-official.vercel.app/abhijeetsingh/data-science/data-science-basics-introduction): Introduction to data science, tools, and applications.
+- [Confusion Matrix](https://notehub-official.vercel.app/abhijeetsingh/data-science/confusion-matrix): Precision, recall, F1 score, accuracy explained with examples.
+- [Text Mining](https://notehub-official.vercel.app/abhijeetsingh/data-science/text-mining): Techniques for extracting insights from unstructured text data.
+- [R Programming](https://notehub-official.vercel.app/abhijeetsingh/data-science/r-programming): R programming fundamentals for data analysis.
+
+### DSA — Data Structures & Algorithms (by Abhijeet Singh Rajput) — 8 notes
+https://notehub-official.vercel.app/abhijeetsingh/dsa
+
+- [Segment Tree](https://notehub-official.vercel.app/abhijeetsingh/dsa/segment-tree): Segment tree construction and range query operations.
+- [Segment Tree Problem](https://notehub-official.vercel.app/abhijeetsingh/dsa/segment-tree-problem): Practice problems on segment trees.
+- [Fenwick Tree](https://notehub-official.vercel.app/abhijeetsingh/dsa/fenwick-tree): Binary indexed tree for prefix sum queries.
+- [Manacher's Algorithm](https://notehub-official.vercel.app/abhijeetsingh/dsa/manachers-algorithm): Linear time longest palindromic substring algorithm.
+- [MO's Algorithm](https://notehub-official.vercel.app/abhijeetsingh/dsa/mos-algorithm): Offline range query processing with MO's algorithm.
+- [Square Root Decomposition](https://notehub-official.vercel.app/abhijeetsingh/dsa/square-root-decomposition): Block decomposition technique for range queries.
+- [HWI Practice](https://notehub-official.vercel.app/abhijeetsingh/dsa/hwi-practice): Practice problems for advanced DSA topics.
+- [Linked List Questions](https://notehub-official.vercel.app/abhijeetsingh/dsa/17-march-linked-list-questions): Linked list problem set and solutions.
+
+### React (by Naveen Kumar) — 9 notes
+https://notehub-official.vercel.app/naveen09/react
+
+- [Day 1 of Learning React](https://notehub-official.vercel.app/naveen09/react/day-1-of-learning-react): Introduction to React — components, JSX, and rendering.
+- [Day 2 of Learning React JS](https://notehub-official.vercel.app/naveen09/react/day-2-of-learning-react-js): Props, state, and event handling in React.
+- [Day 3 of Learning React JS](https://notehub-official.vercel.app/naveen09/react/day-3-of-learning-react-js): Component lifecycle and conditional rendering.
+- [UseState](https://notehub-official.vercel.app/naveen09/react/usestate): useState hook explained with examples.
+- [Use of Props](https://notehub-official.vercel.app/naveen09/react/use-of-props): Passing and using props in React components.
+- [Use of Ref](https://notehub-official.vercel.app/naveen09/react/use-of-rel): useRef hook for DOM access and mutable values.
+- [Deep Dive in Hooks](https://notehub-official.vercel.app/naveen09/react/deep-dive-in-hooks): Comprehensive guide to React hooks.
+- [Practice Questions of useState](https://notehub-official.vercel.app/naveen09/react/practice-questions-of-usestate): Hands-on practice problems for useState.
+- [Concept of Controlled and Uncontrolled](https://notehub-official.vercel.app/naveen09/react/concept-of-controlled-and-uncontrolled): Controlled vs uncontrolled components in React forms.
+
+### Node.js (by Naveen Kumar) — 1 note
+https://notehub-official.vercel.app/naveen09/nodejs
+
+- [Day 1 of Learning Node JS](https://notehub-official.vercel.app/naveen09/nodejs/day-1-of-learning-node-js): Introduction to Node.js, modules, and the event loop.
+
+### SQL (by Divya Sachan) — 11 notes
+https://notehub-official.vercel.app/divyasachan/sql
+
+- [Assignment 1 — Introduction to SQL](https://notehub-official.vercel.app/divyasachan/sql/assignment-1): SQL basics, DDL, and database creation.
+- [Assignment 2 — DML](https://notehub-official.vercel.app/divyasachan/sql/assignement-2): Data manipulation language — INSERT, UPDATE, DELETE.
+- [Assignment 3 — Constraints](https://notehub-official.vercel.app/divyasachan/sql/assignment-3): PRIMARY KEY, FOREIGN KEY, UNIQUE, NOT NULL constraints.
+- [Assignment 4 — Single Row Functions](https://notehub-official.vercel.app/divyasachan/sql/assignment-4): String, numeric, and date functions in SQL.
+- [Assignment 5 — Aggregate Functions](https://notehub-official.vercel.app/divyasachan/sql/assignment-5): COUNT, SUM, AVG, MIN, MAX with GROUP BY.
+- [Assignment 6 — Joins](https://notehub-official.vercel.app/divyasachan/sql/assignment-6): INNER, LEFT, RIGHT, FULL JOIN explained with examples.
+- [Assignment 7 — SQL / DDL / Constraints](https://notehub-official.vercel.app/divyasachan/sql/assignment-7): Advanced DDL and constraint problems.
+- [Assignment 8 — Views](https://notehub-official.vercel.app/divyasachan/sql/assignement-8-views): Creating and using SQL views.
+- [Assignment 9 — PL/SQL](https://notehub-official.vercel.app/divyasachan/sql/assignment-9-pl-sql): Procedural SQL — procedures, functions, and cursors.
+- [SQL Quick Recap](https://notehub-official.vercel.app/divyasachan/sql/sql-quick-recap): Fast revision of core SQL concepts.
+- [Triggers](https://notehub-official.vercel.app/divyasachan/sql/triggers): SQL triggers — syntax, types, and use cases.
+
+### DBMS (by Adarsh Kumar) — 2 notes
+https://notehub-official.vercel.app/adarshkashyap/dbms
+
+- [DBMS Syllabus](https://notehub-official.vercel.app/adarshkashyap/dbms/overview-of-dbms): Overview of the DBMS course syllabus and topics.
+- [DBMS Unit 1](https://notehub-official.vercel.app/adarshkashyap/dbms/overview-of-dbms-1): Core DBMS concepts — data models, schemas, and architecture.
+
+## Optional
+
+- [llms-full.txt](https://notehub-official.vercel.app/llms-full.txt)
