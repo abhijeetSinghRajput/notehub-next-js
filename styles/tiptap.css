@@ -290,22 +290,16 @@ to reserver the h1 for page title
 }
 
 .tiptap a {
-  color: #1a0dab;
-}
-
-.tiptap a:hover {
-  color: hsl(245, 86%, 56%);
+  color: #0066ff;
   text-decoration: underline;
 }
+
 
 .dark .tiptap a {
   color: #7ab7ff;
-  text-decoration: underline;
 }
 
-.dark .tiptap a:hover {
-  color: #5e83b3;
-}
+
 
 .tiptap ul {
   @apply list-disc;
