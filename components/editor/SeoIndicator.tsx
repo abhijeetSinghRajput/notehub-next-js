@@ -49,6 +49,7 @@ import {
   AlignLeft,
   Share2,
   X as XIcon,
+  Copy,
 } from "lucide-react";
 
 // Severity configs for diagnostics panel
@@ -91,6 +92,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("fields");
   const [isSaving, setIsSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Read note cache & draft reactively
   const note = useNoteStore((state) => state.noteCache[noteId]?.data);
@@ -326,6 +328,40 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
     }
 
     toast.success("Auto-filled SEO fields from content");
+  };
+
+  const handleCopySeoReport = () => {
+    try {
+      const markdownReport = `# SEO Audit Report for "${activeNote?.name || "Untitled Note"}"
+**SEO Score**: ${score}/100
+
+## Summary
+* **Passed Checks**: ${summary.passed}
+* **Errors**: ${summary.errors}
+* **Warnings**: ${summary.warnings}
+
+## Grouped Diagnostics
+${Object.entries(grouped)
+  .map(([group, checks]) => {
+    const checkLines = checks
+      .map((c) => {
+        const status = c.pass ? "✅ [PASS]" : `❌ [${c.severity.toUpperCase()}]`;
+        return `- ${status} **${c.label}**: ${c.message}`;
+      })
+      .join("\n");
+    return `### ${group}\n${checkLines}`;
+  })
+  .join("\n\n")}
+`;
+
+      navigator.clipboard.writeText(markdownReport);
+      setCopied(true);
+      toast.success("SEO report copied as Markdown");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy SEO report:", err);
+      toast.error("Failed to copy SEO report");
+    }
   };
 
   if (!editor || !activeNote) return null;
@@ -718,9 +754,27 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
 
             {/* TAB 2: SEO Diagnostics Audit Panel */}
             <TabsContent value="diagnostics" className="flex-1 overflow-y-auto space-y-4 m-0">
-              <h3 className="text-sm font-semibold flex items-center gap-1.5 px-4 py-2 border-b text-foreground">
-                <Activity className="size-4 text-primary" /> Live SEO Audit Logs
-              </h3>
+              <div className="flex items-center justify-between px-4 py-2 border-b">
+                <h3 className="text-sm font-semibold flex items-center gap-1.5 text-foreground">
+                  <Activity className="size-4 text-primary" /> Live SEO Audit Logs
+                </h3>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={handleCopySeoReport}
+                  className="text-xs h-7 gap-1 font-semibold hover:bg-primary/5 hover:text-primary transition-colors border-dashed shrink-0"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="size-3 text-emerald-500" /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="size-3" /> Copy Markdown
+                    </>
+                  )}
+                </Button>
+              </div>
 
               <Accordion type="multiple" className="w-full">
                 {Object.entries(grouped).map(([group, checks]) => {
