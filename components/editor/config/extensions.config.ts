@@ -1033,7 +1033,6 @@ export const extensions = [
     HTMLAttributes: {
       target: "_blank",
       rel: "noopener noreferrer",
-      class: "cursor-text",
     },
     validate: (href) => /^https?:\/\//.test(href),
   }),

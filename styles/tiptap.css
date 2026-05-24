@@ -290,12 +290,21 @@ to reserver the h1 for page title
 }
 
 .tiptap a {
-  color: #2964aa;
-  text-decoration: none;
+  color: #1a0dab;
 }
 
 .tiptap a:hover {
-  color: #749ac8;
+  color: hsl(245, 86%, 56%);
+  text-decoration: underline;
+}
+
+.dark .tiptap a {
+  color: #7ab7ff;
+  text-decoration: underline;
+}
+
+.dark .tiptap a:hover {
+  color: #5e83b3;
 }
 
 .tiptap ul {
@@ -855,10 +864,3 @@ button:disabled {
   background-color: color-mix(in oklch, var(--accent) 40%, transparent);
 }
 
-.dark .tiptap a {
-  color: #7ab7ff;
-}
-
-.dark .tiptap a:hover {
-  color: #5e83b3;
-}
