@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Globe, Lock, Pencil, MoreHorizontal, Users, Check, Hash, TextCursor, Loader2, X, Settings, Trash2 } from "lucide-react";
+import { Calendar, Clock, Globe, Lock, Pencil, MoreHorizontal, Users, Check, Hash, TextCursor, Loader2, X, Settings, Trash2, Copy } from "lucide-react";
 import { cn, format, formatTimeAgo } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
 import BadgeIcon from "@/components/icons/BadgeIcon";
@@ -29,7 +29,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { htmlToMarkdown } from "@/lib/note/htmlToMarkdown.client";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { BaseCollaboratorsDialog } from "../CollaboratorsDialog";
 import { useRouter } from "next/navigation";
@@ -66,6 +67,7 @@ export default function NoteHeader({
   const [isCollaboratorsOpen, setIsCollaboratorsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isMdCopied, setIsMdCopied] = useState(false);
 
   const [formData, setFormData] = useState({
     name: note.name || "",
@@ -176,6 +178,16 @@ export default function NoteHeader({
   };
 
 
+  const handleCopyMarkdown = useCallback(async () => {
+    const md = `# ${note.name}\n\n${htmlToMarkdown(note.content)}`;
+    try {
+      await navigator.clipboard.writeText(md);
+      setIsMdCopied(true);
+      setTimeout(() => setIsMdCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy markdown");
+    }
+  }, [note.name, note.content]);
 
   return (
     <div className="space-y-10 mb-8 sm:mb-16 px-4 py-12 border-b border-dashed">
@@ -248,35 +260,58 @@ export default function NoteHeader({
 
       {/* --- AUTHOR & COLLABORATORS --- */}
       <div className="flex sm:flex-row flex-col justify-between sm:items-center gap-6 pt-2">
-        <Link
-          href={`/${author?.userName}`}
-          className="group flex flex-row items-center gap-4 w-max transition-all"
-        >
-          <div className="relative p-1 border-2 border-primary/10 group-hover:border-primary/30 rounded-full size-14 transition-all shrink-0">
-            <div className="relative rounded-full size-full overflow-hidden">
-              <CloudinaryImage
-                src={author.avatar || "/avatar.svg"}
-                alt={author?.fullName || "Author"}
-                fill
-                sizes="56px"
-                className="object-cover group-hover:scale-105 transition-transform"
-                preload
-                fetchPriority="high"
-              />
+        <div className="flex justify-between items-center gap-3 w-full">
+          <Link
+            href={`/${author?.userName}`}
+            className="group flex flex-row items-center gap-4 w-max transition-all"
+          >
+            <div className="relative p-1 border-2 border-primary/10 group-hover:border-primary/30 rounded-full size-14 transition-all shrink-0">
+              <div className="relative rounded-full size-full overflow-hidden">
+                <CloudinaryImage
+                  src={author.avatar || "/avatar.svg"}
+                  alt={author?.fullName || "Author"}
+                  fill
+                  sizes="56px"
+                  className="object-cover group-hover:scale-105 transition-transform"
+                  preload
+                  fetchPriority="high"
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 font-bold text-foreground text-lg leading-tight">
-              <span>{author?.fullName}</span>
-              {author?.role === "admin" && (
-                <BadgeIcon className="size-5 text-blue-500" />
-              )}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 font-bold text-foreground text-lg leading-tight">
+                <span>{author?.fullName}</span>
+                {author?.role === "admin" && (
+                  <BadgeIcon className="size-5 text-blue-500" />
+                )}
+              </div>
+              <span className="text-muted-foreground text-sm">
+                @{author?.userName}
+              </span>
             </div>
-            <span className="text-muted-foreground text-sm">
-              @{author?.userName}
-            </span>
-          </div>
-        </Link>
+          </Link>
+
+          {/* Copy MD button */}
+          <Button
+            onClick={handleCopyMarkdown}
+            aria-label="Copy note as Markdown"
+            tooltip="Copy note as Markdown"
+            size="sm"
+            variant={"outline"}
+            className="gap-1 hover:bg-primary/5 border-dashed w-22 h-7 font-semibold hover:text-primary text-xs transition-colors shrink-0"
+          >
+            {isMdCopied ? (
+              <>
+                <Check className="size-3 text-emerald-500" /> Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="size-3" /> Copy MD
+              </>
+            )}
+          </Button>
+
+        </div>
 
         {/* Collaborators List */}
         {(note.collaborators && note.collaborators.length > 0) && (
