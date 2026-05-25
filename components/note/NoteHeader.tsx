@@ -313,6 +313,7 @@ export default function NoteHeader({
 
         </div>
 
+      </div>
         {/* Collaborators List */}
         {(note.collaborators && note.collaborators.length > 0) && (
           <div
@@ -336,7 +337,6 @@ export default function NoteHeader({
             </div>
           </div>
         )}
-      </div>
 
       {/* --- DIALOGS --- */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
