@@ -10,7 +10,7 @@ import {
   Award,
   Folder,
   ArrowUpRight,
-  MoreHorizontal
+  MoreHorizontal,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import SortSelector from "@/components/SortSelector";
@@ -111,7 +111,7 @@ export default function AdminOverviewPage() {
             limit: 1,
             search: debouncedSearch,
             health: h,
-          })
+          }),
         );
         const results = await Promise.all(promises);
         if (!active) return;
@@ -139,7 +139,7 @@ export default function AdminOverviewPage() {
     searchStr: string,
     sortVal = sortBy,
     dirVal = sortDirection,
-    isReset = false
+    isReset = false,
   ) => {
     try {
       const res = await fetchBlogs({
@@ -204,8 +204,20 @@ export default function AdminOverviewPage() {
     }
 
     return (
-      <svg className="h-8 w-8 shrink-0 select-none" viewBox="0 0 36 36" role="img" aria-label={`${score} out of 100`}>
-        <circle cx="18" cy="18" r={r} fill="none" className="stroke-border" strokeWidth="3" />
+      <svg
+        className="h-8 w-8 shrink-0 select-none"
+        viewBox="0 0 36 36"
+        role="img"
+        aria-label={`${score} out of 100`}
+      >
+        <circle
+          cx="18"
+          cy="18"
+          r={r}
+          fill="none"
+          className="stroke-border"
+          strokeWidth="3"
+        />
         <circle
           cx="18"
           cy="18"
@@ -233,12 +245,15 @@ export default function AdminOverviewPage() {
   // Visual offsets for stacked radial bar rendering (avoids collapse of small segments)
   const visualHealthy = counts.good > 0 ? Math.max(counts.good, 12) : 0;
   const visualWarning = counts.warning > 0 ? Math.max(counts.warning, 12) : 0;
-  const visualCritical = counts.critical > 0 ? Math.max(counts.critical, 12) : 0;
+  const visualCritical =
+    counts.critical > 0 ? Math.max(counts.critical, 12) : 0;
 
   // Define visual gaps (only if adjacent active segments exist)
-  const gap1 = (visualHealthy > 0 && (visualWarning > 0 || visualCritical > 0)) ? 3 : 0;
-  const gap2 = (visualWarning > 0 && visualCritical > 0) ? 3 : 0;
-  const visualTotal = visualHealthy + gap1 + visualWarning + gap2 + visualCritical;
+  const gap1 =
+    visualHealthy > 0 && (visualWarning > 0 || visualCritical > 0) ? 3 : 0;
+  const gap2 = visualWarning > 0 && visualCritical > 0 ? 3 : 0;
+  const visualTotal =
+    visualHealthy + gap1 + visualWarning + gap2 + visualCritical;
 
   const chartData = [
     {
@@ -247,7 +262,7 @@ export default function AdminOverviewPage() {
       warning: visualWarning,
       gap2: gap2,
       critical: visualCritical,
-    }
+    },
   ];
 
   return (
@@ -264,7 +279,8 @@ export default function AdminOverviewPage() {
               Blogs health overview
             </h1>
             <p className="text-[13px] text-muted-foreground/80 mt-1 leading-relaxed max-w-[500px]">
-              SEO compliance, quality scores, and structural health across all published notes.
+              SEO compliance, quality scores, and structural health across all
+              published notes.
             </p>
           </div>
 
@@ -281,19 +297,28 @@ export default function AdminOverviewPage() {
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-[3px] bg-[#10b981] shrink-0" />
                   <span className="text-[12px] font-medium text-foreground">
-                    Healthy: <span className="font-semibold text-muted-foreground/80 ml-0.5">{counts.good}</span>
+                    Healthy: {" "}
+                    <span className="font-semibold text-muted-foreground/80 ml-0.5">
+                      ≥ 80
+                    </span>
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-[3px] bg-[#f59e0b] shrink-0" />
                   <span className="text-[12px] font-medium text-foreground">
-                    Warning: <span className="font-semibold text-muted-foreground/80 ml-0.5">{counts.warning}</span>
+                    Warning: {" "}
+                    <span className="font-semibold text-muted-foreground/80 ml-0.5">
+                      ≥ 50
+                    </span>
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-[3px] bg-[#f43f5e] shrink-0" />
                   <span className="text-[12px] font-medium text-foreground">
-                    Critical: <span className="font-semibold text-muted-foreground/80 ml-0.5">{counts.critical}</span>
+                    Critical: {" "}
+                    <span className="font-semibold text-muted-foreground/80 ml-0.5">
+                      &lt; 50
+                    </span>
                   </span>
                 </div>
               </div>
@@ -301,7 +326,10 @@ export default function AdminOverviewPage() {
               {/* Radial Chart on the Right (overflow-visible to prevent tooltip clipping) */}
               <div className="h-[90px] w-[165px] sm:h-[120px] sm:w-[220px] relative shrink-0 overflow-visible">
                 <div className="scale-75 sm:scale-100 origin-top-left absolute top-0 left-0 w-[220px] h-[220px] overflow-visible">
-                  <ChartContainer config={chartConfig} className="w-[220px] h-[220px] [&_svg]:overflow-visible">
+                  <ChartContainer
+                    config={chartConfig}
+                    className="w-[220px] h-[220px] [&_svg]:overflow-visible"
+                  >
                     <RadialBarChart
                       data={chartData}
                       endAngle={180}
@@ -365,7 +393,7 @@ export default function AdminOverviewPage() {
                                   item.name !== "Gap1" &&
                                   item.name !== "Gap2" &&
                                   item.dataKey !== "gap1" &&
-                                  item.dataKey !== "gap2"
+                                  item.dataKey !== "gap2",
                               )
                             : [];
                           return (
@@ -403,7 +431,9 @@ export default function AdminOverviewPage() {
                                       style={{ backgroundColor: color }}
                                     />
                                     <div className="flex flex-1 justify-between items-center leading-none">
-                                      <span className="text-muted-foreground mr-4">{label}</span>
+                                      <span className="text-muted-foreground mr-4">
+                                        {label}
+                                      </span>
                                       <span className="font-mono font-medium text-foreground tabular-nums">
                                         {Number(actualValue).toLocaleString()}
                                       </span>
@@ -415,13 +445,22 @@ export default function AdminOverviewPage() {
                           );
                         }}
                       />
-                      <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                      <PolarRadiusAxis
+                        tick={false}
+                        tickLine={false}
+                        axisLine={false}
+                      >
                         <Label
                           content={({ viewBox }) => {
                             if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                              const displayTotal = counts.all > 0 ? counts.all : totalItems;
+                              const displayTotal =
+                                counts.all > 0 ? counts.all : totalItems;
                               return (
-                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                                <text
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  textAnchor="middle"
+                                >
                                   <tspan
                                     x={viewBox.cx}
                                     y={(viewBox.cy || 0) - 16}
@@ -453,10 +492,34 @@ export default function AdminOverviewPage() {
         {/* Filter Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {[
-            { id: "all", label: "All blogs", value: "all", sub: "across all states", dotColor: null },
-            { id: "good", label: "Healthy · 80+", value: "good", sub: "passing threshold", dotColor: "bg-emerald-500" },
-            { id: "warning", label: "Warning · 50–79", value: "warning", sub: "needs attention", dotColor: "bg-amber-500" },
-            { id: "critical", label: "Critical · <50", value: "critical", sub: "action required", dotColor: "bg-rose-500" },
+            {
+              id: "all",
+              label: "All blogs",
+              value: "all",
+              sub: "across all states",
+              dotColor: null,
+            },
+            {
+              id: "good",
+              label: "Healthy · 80+",
+              value: "good",
+              sub: "passing threshold",
+              dotColor: "bg-emerald-500",
+            },
+            {
+              id: "warning",
+              label: "Warning · 50–79",
+              value: "warning",
+              sub: "needs attention",
+              dotColor: "bg-amber-500",
+            },
+            {
+              id: "critical",
+              label: "Critical · <50",
+              value: "critical",
+              sub: "action required",
+              dotColor: "bg-rose-500",
+            },
           ].map((filterItem) => {
             const isActive = health === filterItem.value;
             const countValue = counts[filterItem.value as keyof typeof counts];
@@ -477,7 +540,9 @@ export default function AdminOverviewPage() {
                   }`}
                 >
                   {filterItem.dotColor && (
-                    <span className={`inline-block w-1.25 h-1.25 rounded-full mr-1.5 shrink-0 ${filterItem.dotColor}`} />
+                    <span
+                      className={`inline-block w-1.25 h-1.25 rounded-full mr-1.5 shrink-0 ${filterItem.dotColor}`}
+                    />
                   )}
                   {filterItem.label}
                 </span>
@@ -573,11 +638,15 @@ export default function AdminOverviewPage() {
                   blogs.map((blog) => {
                     const score = blog.seo?.score ?? 100;
                     const username = blog.userId?.userName || "user";
-                    const collectionSlug = blog.collectionId?.slug || "collection";
+                    const collectionSlug =
+                      blog.collectionId?.slug || "collection";
                     const noteSlug = blog.slug || "note";
                     const blogPath = `/${username}/${collectionSlug}/${noteSlug}`;
-                    const dateToFormat = sortBy === "updated" ? blog.updatedAt : blog.createdAt;
-                    const formattedDate = new Date(dateToFormat).toLocaleDateString(undefined, {
+                    const dateToFormat =
+                      sortBy === "updated" ? blog.updatedAt : blog.createdAt;
+                    const formattedDate = new Date(
+                      dateToFormat,
+                    ).toLocaleDateString(undefined, {
                       year: "numeric",
                       month: "short",
                       day: "numeric",
@@ -587,16 +656,27 @@ export default function AdminOverviewPage() {
                       <tr
                         key={blog._id}
                         onClick={() => router.push(blogPath)}
-                        className="group hover:bg-secondary/20 transition-colors duration-100 cursor-pointer"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            router.push(blogPath);
+                          }
+                        }}
+                        tabIndex={0}
+                        role="link"
+                        className="group hover:bg-secondary/20 transition-colors duration-100 cursor-pointer focus:outline-none focus:bg-secondary/20"
                       >
                         {/* Blog & Author cell */}
                         <td className="px-3.5 py-3 align-middle max-w-sm">
                           <div className="flex items-center gap-2.5 overflow-hidden">
                             {/* Avatar wrapped in tooltip */}
-                            <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <div
+                              className="shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <div className="relative size-7 shrink-0 rounded-full overflow-hidden border border-border/60 bg-secondary/80 flex items-center justify-center text-[10px] font-medium text-muted-foreground cursor-default select-none">
+                                  <div className="relative size-8 shrink-0 rounded-full overflow-hidden">
                                     {blog.userId?.avatar ? (
                                       <CloudinaryImage
                                         src={blog.userId.avatar}
@@ -608,21 +688,22 @@ export default function AdminOverviewPage() {
                                         fetchPriority="low"
                                       />
                                     ) : (
-                                      getInitials(blog.userId?.fullName || "User")
+                                      getInitials(
+                                        blog.userId?.fullName || "User",
+                                      )
                                     )}
                                   </div>
                                 </TooltipTrigger>
-                                <TooltipContent
-                                  align="start"
-                                  className="max-w-64 text-pretty bg-popover text-popover-foreground border border-border shadow-md"
-                                >
+                                <TooltipContent align="end" className="max-w-64 text-pretty">
                                   <div>
                                     <p className="text-sm font-medium">
                                       {blog.userId?.fullName || "Anonymous"}
                                     </p>
                                     <div className="text-muted-foreground text-xs">
                                       <p>{`@${blog.userId?.userName || "anonymous"}`}</p>
-                                      {blog.userId?.email && <p>{blog.userId.email}</p>}
+                                      {blog.userId?.email && (
+                                        <p>{blog.userId.email}</p>
+                                      )}
                                     </div>
                                   </div>
                                 </TooltipContent>
@@ -635,7 +716,9 @@ export default function AdminOverviewPage() {
                               </div>
                               <div className="text-[11px] text-muted-foreground/60 mt-0.5 flex items-center gap-1 select-none">
                                 <Folder className="size-3 text-muted-foreground/50 shrink-0" />
-                                <span className="truncate">{blog.collectionId?.name || "General"}</span>
+                                <span className="truncate">
+                                  {blog.collectionId?.name || "General"}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -649,8 +732,14 @@ export default function AdminOverviewPage() {
                               <div className="text-[13px] font-medium text-foreground leading-none">
                                 {score}
                               </div>
-                              <div className={`text-[10px] font-semibold uppercase tracking-[0.05em] leading-none ${getScoreLabelClass(score)}`}>
-                                {score >= 80 ? "Healthy" : score >= 50 ? "Warning" : "Critical"}
+                              <div
+                                className={`text-[10px] font-semibold uppercase tracking-[0.05em] leading-none ${getScoreLabelClass(score)}`}
+                              >
+                                {score >= 80
+                                  ? "Healthy"
+                                  : score >= 50
+                                    ? "Warning"
+                                    : "Critical"}
                               </div>
                             </div>
                           </div>
@@ -665,7 +754,9 @@ export default function AdminOverviewPage() {
                                 : "text-[11px] font-medium px-2 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-400 dark:bg-rose-500/20"
                             }`}
                           >
-                            {blog.visibility === "public" ? "Public" : "Private"}
+                            {blog.visibility === "public"
+                              ? "Public"
+                              : "Private"}
                           </span>
                         </td>
 

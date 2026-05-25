@@ -349,6 +349,7 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
               key={note._id}
               note={note}
               isOwner={isOwner}
+              isAdmin={isAdmin}
               username={username}
               collectionSlug={collectionSlug}
             />

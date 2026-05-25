@@ -51,6 +51,7 @@ export interface INoteSeo {
   slug?: string;
   title?: string;
   description?: string;
+  score?: number;
   keywords?: string[];
   image?: {
     url?: string;
