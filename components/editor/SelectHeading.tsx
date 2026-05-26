@@ -12,6 +12,9 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
   Pilcrow,
 } from "lucide-react";
 
@@ -28,14 +31,14 @@ export const SelectHeading = ({ editor }: { editor: Editor }) => {
   };
 
   const getIcon = () => {
-    let Icon = <Heading />;
+    if (editor.isActive("heading", { level: 1 })) return <Heading1 className="size-5"/>;
+    if (editor.isActive("heading", { level: 2 })) return <Heading2 className="size-5"/>;
+    if (editor.isActive("heading", { level: 3 })) return <Heading3 className="size-5"/>;
+    if (editor.isActive("heading", { level: 4 })) return <Heading4 className="size-5"/>;
+    if (editor.isActive("heading", { level: 5 })) return <Heading5 className="size-5"/>;
+    if (editor.isActive("heading", { level: 6 })) return <Heading6 className="size-5"/>;
+    return <Pilcrow />;
 
-    if (editor.isActive("heading", { level: 1 })) Icon = <Heading1 className="size-5"/>;
-    if (editor.isActive("heading", { level: 2 })) Icon = <Heading2 className="size-5"/>;
-    if (editor.isActive("heading", { level: 3 })) Icon = <Heading3 className="size-5"/>;
-    if (editor.isActive("paragraph")) Icon = <Pilcrow />;
-
-    return Icon;
   };
 
   return (

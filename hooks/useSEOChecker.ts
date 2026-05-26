@@ -37,6 +37,14 @@ export interface SEODiagnostic {
   pass: boolean;
   severity: "error" | "warning" | "info" | "pass";
   message: string;
+  visual?: {
+    type: "heading-tree";
+    items: {
+      level: number;
+      text: string;
+      missingBefore?: number;
+    }[];
+  };
 }
 
 export interface SEOInputData {
@@ -373,20 +381,38 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
   });
 
   // ── Heading Hierarchy Accessibility Sequence Checker (h1->h2->h3) ──────────────
-  const headingMatches = Array.from(content.matchAll(/<h([1-6])[\s>]/gi));
-  const headingLevels = headingMatches.map((m) => parseInt(m[1]));
-
+  const headingRegex = /<h([1-6])\b[^>]*>(.*?)<\/h\1>/gi;
+  const rawHeadings: { level: number; text: string; missingBefore?: number }[] = [];
+  let headingMatch;
   let skippedHeading = false;
   let skippedDetails = "";
   let lastLevel = 0;
 
-  for (const level of headingLevels) {
-    if (level > lastLevel + 1) {
-      skippedHeading = true;
-      skippedDetails = `Skipped from H${lastLevel || 1} to H${level}`;
-      break;
+  while ((headingMatch = headingRegex.exec(content)) !== null) {
+    const level = parseInt(headingMatch[1]);
+    let text = headingMatch[2].replace(/<[^>]*>/g, "").trim();
+    if (!text) {
+      text = "(empty heading)";
     }
+    
+    let missingBefore: number | undefined;
+    if (!skippedHeading && level > lastLevel + 1) {
+      skippedHeading = true;
+      missingBefore = lastLevel + 1;
+      skippedDetails = `Skipped from H${lastLevel || 1} to H${level}`;
+    }
+    
+    rawHeadings.push({ level, text, missingBefore });
     lastLevel = level;
+  }
+
+  // Slice visual tree when violation is found: stop rendering after first violation + up to 2 nearby headings
+  let visualItems: { level: number; text: string; missingBefore?: number }[] = [];
+  if (skippedHeading) {
+    const violationIndex = rawHeadings.findIndex((h) => h.missingBefore !== undefined);
+    visualItems = violationIndex !== -1
+      ? rawHeadings.slice(0, violationIndex + 3)
+      : rawHeadings;
   }
 
   checks.push({
@@ -396,16 +422,23 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     pass: !skippedHeading,
     severity: "error",
     message: skippedHeading
-      ? `Accessibility issue: Heading levels are skipped (${skippedDetails}). Ensure headings follow a sequential structure (e.g. H1 -> H2 -> H3) without skipping levels for accessibility.`
-      : headingLevels.length > 0
+      ? `Missing heading level detected (${skippedDetails}).`
+      : rawHeadings.length > 0
         ? "Heading sequential hierarchy is perfectly structured for accessibility."
         : "No headings found to evaluate hierarchy.",
+    ...(skippedHeading && visualItems.length > 0
+      ? {
+          visual: {
+            type: "heading-tree",
+            items: visualItems,
+          },
+        }
+      : {}),
   });
 
   if (hasKeywords && h2Count > 0) {
-    const headings = content.match(/<h[1-6][^>]*>.*?<\/h[1-6]>/gi) || [];
-    const primaryKeywordInHeading = headings.some((h) =>
-      h.toLowerCase().includes(primaryKeyword)
+    const primaryKeywordInHeading = rawHeadings.some((h) =>
+      h.text.toLowerCase().includes(primaryKeyword)
     );
     checks.push({
       id: "keyword_in_heading",

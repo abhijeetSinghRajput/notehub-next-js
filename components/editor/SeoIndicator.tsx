@@ -78,6 +78,145 @@ const SEVERITY_ORDER = {
   pass: 3, // checks
 } as Record<string, number>;
 
+// ── Heading Tree Visualizer Utilities ─────────────────────────────────────────
+
+interface UIHeadingNode {
+  level: number;
+  text: string;
+  missingBefore?: number;
+  index: number;
+  parent?: UIHeadingNode;
+  children: UIHeadingNode[];
+  isLastChild: boolean;
+}
+
+function buildHeadingTree(items: { level: number; text: string; missingBefore?: number }[]) {
+  const nodes: UIHeadingNode[] = items.map((item, index) => ({
+    level: item.level,
+    text: item.text,
+    missingBefore: item.missingBefore,
+    index,
+    children: [],
+    isLastChild: false,
+  }));
+
+  const activePath: UIHeadingNode[] = [];
+  const roots: UIHeadingNode[] = [];
+
+  for (const node of nodes) {
+    let parent: UIHeadingNode | undefined;
+    for (let j = activePath.length - 1; j >= 0; j--) {
+      if (activePath[j].level < node.level) {
+        parent = activePath[j];
+        break;
+      }
+    }
+
+    if (parent) {
+      node.parent = parent;
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+
+    while (activePath.length > 0 && activePath[activePath.length - 1].level >= node.level) {
+      activePath.pop();
+    }
+    activePath.push(node);
+  }
+
+  function markLast(n: UIHeadingNode) {
+    if (n.children.length > 0) {
+      for (let i = 0; i < n.children.length; i++) {
+        n.children[i].isLastChild = (i === n.children.length - 1);
+        markLast(n.children[i]);
+      }
+    }
+  }
+
+  for (let i = 0; i < roots.length; i++) {
+    roots[i].isLastChild = (i === roots.length - 1);
+    markLast(roots[i]);
+  }
+
+  return nodes;
+}
+
+function getPrefix(node: UIHeadingNode): string {
+  if (!node.parent) {
+    return "";
+  }
+
+  const ancestors: UIHeadingNode[] = [];
+  let curr = node.parent;
+  while (curr) {
+    ancestors.unshift(curr);
+    curr = curr.parent!;
+  }
+
+  let prefix = "";
+  for (let i = 1; i < ancestors.length; i++) {
+    const anc = ancestors[i];
+    prefix += anc.isLastChild ? "    " : "│   ";
+  }
+
+  if (ancestors.length === 1) {
+    prefix = " " + (node.isLastChild ? "└── " : "├── ");
+  } else {
+    prefix = " " + prefix + (node.isLastChild ? "└── " : "├── ");
+  }
+
+  return prefix;
+}
+
+const HeadingTreeVisualizer = ({ items }: { items: { level: number; text: string; missingBefore?: number }[] }) => {
+  const nodes = useMemo(() => {
+    const builtNodes = buildHeadingTree(items);
+    return builtNodes.map((node) => ({
+      ...node,
+      prefix: getPrefix(node),
+    }));
+  }, [items]);
+
+  return (
+    <div className="mt-2 p-3 rounded-lg border bg-zinc-950/90 dark:bg-zinc-950 font-mono text-[11px] text-zinc-300 overflow-x-auto leading-relaxed shadow-inner border-zinc-800/60 max-w-full">
+      <div className="text-[9px] uppercase font-extrabold tracking-widest text-zinc-500 mb-2 border-b border-zinc-800/80 pb-1 select-none">
+        Heading Structure
+      </div>
+      <div className="space-y-1">
+        {nodes.map((node) => (
+          <div key={node.index} className="flex items-center min-w-0 py-0.5">
+            {/* The structural connector tree prefix */}
+            <span className="text-zinc-600 shrink-0 select-none whitespace-pre font-mono">
+              {node.prefix}
+            </span>
+            {/* The heading tag and text */}
+            <span className="shrink-0 text-zinc-400 font-bold mr-1.5 select-none font-mono">
+              H{node.level}
+            </span>
+            <span 
+              className={cn(
+                "truncate font-mono flex-1 min-w-0 mr-1.5",
+                node.missingBefore ? "text-rose-400 font-semibold" : "text-zinc-500"
+              )}
+              style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+              title={node.text}
+            >
+              {node.text}
+            </span>
+            {/* Inline warning if skipped */}
+            {node.missingBefore && (
+              <span className="font-bold text-rose-500 shrink-0 select-none animate-pulse font-mono bg-rose-950/20 border border-rose-900/50 rounded px-1 text-[9px] py-0.5">
+                ❌ Missing H{node.missingBefore}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 interface SeoIndicatorProps {
   noteId: string;
 }
@@ -818,13 +957,16 @@ ${Object.entries(grouped)
                             return (
                               <div key={check.id} className="flex gap-3 py-3 pl-8 pr-4 transition-colors border-t border-border/40">
                                 <cfg.Icon className={cn("size-4", cfg.color)} />
-                                <div className="space-y-1 select-text text-left flex-1">
+                                <div className="space-y-1 select-text text-left flex-1 min-w-0">
                                   <h4 className="text-xs font-bold text-foreground leading-tight">
                                     {check.label}
                                   </h4>
                                   <p className="text-[11px] text-muted-foreground leading-snug">
                                     {check.message}
                                   </p>
+                                  {check.visual?.type === "heading-tree" && check.visual.items && (
+                                    <HeadingTreeVisualizer items={check.visual.items} />
+                                  )}
                                 </div>
                               </div>
                             );
