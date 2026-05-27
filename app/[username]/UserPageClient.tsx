@@ -42,7 +42,7 @@ const UserPageClient = ({
   const [contributions, setContributions] = useState<any | null>(githubData ?? null);
   const [isLoadingContributions, setIsLoadingContributions] = useState(false);
   const contributionsFetchedForRef = useRef<string | null>(null);
-  console.log(contributions);
+  
   useEffect(() => {
     const githubStatus = searchParams.get("github");
     const reason = searchParams.get("reason");
@@ -187,7 +187,7 @@ const UserPageClient = ({
       : "";
 
   if (!mounted) {
-    return <UserPageStatic user={initialUser} collections={initialCollections} />;
+    return <UserPageStatic user={initialUser} collections={initialCollections} githubData={githubData} />;
   }
 
   const isGithubConnected = !!user?.github?.username;
@@ -208,12 +208,12 @@ const UserPageClient = ({
 
       {isOwner && isAdmin && <AdminDashboardCard />}
 
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto max-w-3xl">
         {/* Case 1: GitHub is connected — show heatmap, spinner, or error */}
         {isGithubConnected && (
           <div className="mt-8">
             {isLoadingContributions ? (
-              <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
+              <div className="flex justify-center items-center gap-2 py-8 text-muted-foreground">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span className="text-sm">Loading contributions…</span>
               </div>
@@ -227,7 +227,7 @@ const UserPageClient = ({
                 onRefresh={handleRefetchContributions}
               />
             ) : (
-              <p className="text-sm text-center text-muted-foreground py-4">
+              <p className="py-4 text-muted-foreground text-sm text-center">
                 Could not load contribution data. Try refreshing.
               </p>
             )}
@@ -236,17 +236,17 @@ const UserPageClient = ({
 
         {/* Case 2: GitHub not connected AND this is the owner → show connect prompt */}
         {!isGithubConnected && isOwner && (
-          <Card className="p-6 mt-8 group">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Card className="group mt-8 p-6">
+            <div className="flex sm:flex-row flex-col justify-between items-center gap-4">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-muted group-hover:bg-emerald-500/10 transition-colors">
+                <div className="bg-muted group-hover:bg-emerald-500/10 p-3 rounded-2xl transition-colors">
                   <Github className="w-6 h-6 text-muted-foreground group-hover:text-emerald-500" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">
                     Showcase your GitHub activity
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Connect your GitHub account to display your contribution graph on your profile.
                   </p>
                 </div>
@@ -264,7 +264,7 @@ const UserPageClient = ({
         )}
       </div>
 
-      <div className="max-w-3xl mx-auto mt-8">
+      <div className="mx-auto mt-8 max-w-3xl">
         <CollectionsSection
           collections={collections}
           isOwner={isOwner}
