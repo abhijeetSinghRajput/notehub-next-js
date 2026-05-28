@@ -142,7 +142,7 @@ const NoteCard = ({
                   <File className="size-4 text-muted-foreground shrink-0" />
                   <TooltipWrapper message={note.name}>
                     <Link
-                      href={`/${username}/${collectionSlug}/${note.seo?.slug || note.slug}`}
+                      href={`/${username}/${collectionSlug}/${note.slug}`}
                       className="font-medium text-sm line-clamp-1 hover:underline flex-1"
                     >
                       {note.name}

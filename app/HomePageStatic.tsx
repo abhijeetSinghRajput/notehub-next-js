@@ -18,7 +18,7 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
           {notes.map((note: any) => {
             const author = note.userId;
             const collection = note.collectionId;
-            const noteHref = `/${author?.userName}/${collection?.slug}/${note.seo?.slug || note.slug}`;
+            const noteHref = `/${author?.userName}/${collection?.slug}/${note.slug}`;
             const collectionHref = `/${author?.userName}/${collection?.slug}`;
             const displayTitle = note.seo?.title || note.name;
             const displayDescription = note.seo?.description || note.content

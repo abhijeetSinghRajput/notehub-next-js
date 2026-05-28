@@ -128,7 +128,7 @@ export default function AdminUserEditPage() {
         });
       } else if (!cachedUser) {
         toast.error("User not found");
-        router.push("/admin/user-management");
+        router.push("/admin/users");
       }
     };
     if (username) fetchUser();
@@ -204,7 +204,7 @@ export default function AdminUserEditPage() {
       }
       // Redirect if username changed
       if (formData.userName !== username) {
-        router.replace(`/admin/user-management/${formData.userName}`);
+        router.replace(`/admin/users/${formData.userName}`);
       }
     } else {
       toast.error(result.message || "Failed to update user");
@@ -223,7 +223,7 @@ export default function AdminUserEditPage() {
     if (result.success) {
       toast.success(`Action ${action} successful`);
       if (action === "delete") {
-        router.push("/admin/user-management");
+        router.push("/admin/users");
       } else {
         setFormData(prev => ({ ...prev, isBanned: action === "ban" }));
         setConfirmDialog({ isOpen: false, action: "delete" });
@@ -317,20 +317,20 @@ export default function AdminUserEditPage() {
       <>
         <Card>
           <CardHeader className="flex flex-row items-start gap-4">
-            <Skeleton className="size-16 rounded-full" />
+            <Skeleton className="rounded-full size-16" />
             <div className="space-y-2">
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-4 w-48" />
+              <Skeleton className="w-32 h-6" />
+              <Skeleton className="w-48 h-4" />
             </div>
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="space-y-4">
-              <Skeleton className="h-4 w-full" />
-              <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
+              <Skeleton className="w-full h-4" />
+              <div className="gap-4 grid grid-cols-2">
+                <Skeleton className="w-full h-10" />
+                <Skeleton className="w-full h-10" />
               </div>
-              <Skeleton className="h-20 w-full" />
+              <Skeleton className="w-full h-20" />
             </div>
           </CardContent>
         </Card>
@@ -357,7 +357,7 @@ export default function AdminUserEditPage() {
         {/* COVER PHOTO */}
         <button
           onClick={() => user?.cover && setSelectedLightboxImage(user.cover)}
-          className="relative w-full aspect-4/1 bg-muted/30 overflow-hidden group/cover cursor-zoom-in"
+          className="group/cover relative bg-muted/30 w-full aspect-4/1 overflow-hidden cursor-zoom-in"
           aria-label="View cover photo"
         >
           <Image
@@ -365,52 +365,52 @@ export default function AdminUserEditPage() {
             alt="Cover"
             fill
             sizes="100vw"
-            className={cn("object-cover transition-transform duration-500 group-hover/cover:scale-105", !user?.cover && "opacity-20")}
+            className={cn("object-cover group-hover/cover:scale-105 transition-transform duration-500", !user?.cover && "opacity-20")}
             priority
           />
           {user?.cover && (
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
+            <div className="absolute inset-0 flex justify-center items-center bg-black/20 opacity-0 group-hover/cover:opacity-100 transition-opacity">
               <Plus className="size-8 text-white/80" />
             </div>
           )}
         </button>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <CardHeader className="relative border-b pb-0! pt-0">
+          <CardHeader className="relative pt-0 pb-0! border-b">
             <div className="flex flex-col gap-6 px-1 pb-6">
-              <div className="relative w-min -mt-12 sm:-mt-16">
+              <div className="relative -mt-12 sm:-mt-16 w-min">
                 <button
                   onClick={() => user?.avatar && setSelectedLightboxImage(user.avatar)}
-                  className="relative size-24 sm:size-32 rounded-full overflow-hidden border-4 border-card bg-muted shadow-lg group/avatar cursor-zoom-in"
+                  className="group/avatar relative bg-muted shadow-lg border-4 border-card rounded-full size-24 sm:size-32 overflow-hidden cursor-zoom-in"
                   aria-label="View profile photo"
                 >
-                  <Image src={user?.avatar || "/avatar.svg"} alt={user?.fullName || "User"} fill sizes="(max-width: 640px) 96px, 128px" className="object-cover transition-transform group-hover/avatar:scale-110" priority />
+                  <Image src={user?.avatar || "/avatar.svg"} alt={user?.fullName || "User"} fill sizes="(max-width: 640px) 96px, 128px" className="object-cover group-hover/avatar:scale-110 transition-transform" priority />
                   {user?.avatar && (
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="absolute inset-0 flex justify-center items-center bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
                       <Plus className="size-6 text-white" />
                     </div>
                   )}
                 </button>
                 {user?.role === "admin" && (
-                  <span className="absolute bottom-1 right-1 flex size-7 items-center justify-center rounded-full p-1 bg-card">
+                  <span className="right-1 bottom-1 absolute flex justify-center items-center bg-card p-1 rounded-full size-7">
                     <BadgeIcon className="size-5 text-blue-500" />
                   </span>
                 )}
               </div>
-              <div className="flex-1 min-w-0 pb-1">
-                <CardTitle className="text-2xl font-bold truncate mb-3">
+              <div className="flex-1 pb-1 min-w-0">
+                <CardTitle className="mb-3 font-bold text-2xl truncate">
                   {user?.fullName}
                 </CardTitle>
-                <CardDescription className="text-base flex flex-col space-y-2">
+                <CardDescription className="flex flex-col space-y-2 text-base">
                   <Link
                     href={`/${user?.userName}`}
-                    className="flex items-center gap-2 hover:underline underline-offset-4 group transition-colors text-muted-foreground hover:text-foreground"
+                    className="group flex items-center gap-2 text-muted-foreground hover:text-foreground hover:underline underline-offset-4 transition-colors"
                   >
                     <div className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-muted-foreground/15 bg-muted ring-1 ring-border ring-offset-1 ring-offset-background hover:text-foreground transition-colors [&_svg]:pointer-events-none [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-3">
                       <User2Icon />
                     </div>
                     @{user?.userName}
-                    <ArrowUpRight className="size-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <ArrowUpRight className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </Link>
                   <div className="flex items-center gap-2">
                     <div className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-muted-foreground/15 bg-muted ring-1 ring-border ring-offset-1 ring-offset-background hover:text-foreground transition-colors [&_svg]:pointer-events-none [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-3">
@@ -431,7 +431,7 @@ export default function AdminUserEditPage() {
                     {user?.isBanned ? "Banned" : "Active Account"}
                   </div>
                   {isSelf && (
-                    <div className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-purple-50 text-purple-700 border-purple-100">
+                    <div className="bg-purple-50 px-2.5 py-0.5 border border-purple-100 rounded-full font-bold text-[10px] text-purple-700 uppercase tracking-wider">
                       Viewing Your Profile
                     </div>
                   )}
@@ -445,7 +445,7 @@ export default function AdminUserEditPage() {
                         <Badge
                           key={skill}
                           variant="secondary"
-                          className="h-6 rounded-md transition-all duration-200 shrink-0"
+                          className="rounded-md h-6 transition-all duration-200 shrink-0"
                         >
                           <img
                             src={devicon?.icon || `/devicons/${skill}.svg`}
@@ -466,38 +466,38 @@ export default function AdminUserEditPage() {
             <TabsList
               ref={tabsListRef}
               variant="line"
-              className="w-full justify-start h-12 -mb-px overflow-x-auto flex-nowrap scrollbar-hide overflow-y-hidden"
+              className="flex-nowrap justify-start -mb-px w-full h-12 overflow-x-auto overflow-y-hidden scrollbar-hide"
               style={{ willChange: "scroll-position" }}
             >
-              <TabsTrigger value="profile" className="px-6 py-3 data-[state=active]:bg-transparent">
-                <User2Icon className="size-4 mr-2" />
+              <TabsTrigger value="profile" className="data-[state=active]:bg-transparent px-6 py-3">
+                <User2Icon className="mr-2 size-4" />
                 Profile Info
               </TabsTrigger>
-              <TabsTrigger value="photos" className="px-6 py-3 data-[state=active]:bg-transparent">
-                <Camera className="size-4 mr-2" />
+              <TabsTrigger value="photos" className="data-[state=active]:bg-transparent px-6 py-3">
+                <Camera className="mr-2 size-4" />
                 Photos
               </TabsTrigger>
-              <TabsTrigger value="security" className="px-6 py-3 data-[state=active]:bg-transparent">
-                <ShieldCheck className="size-4 mr-2" />
+              <TabsTrigger value="security" className="data-[state=active]:bg-transparent px-6 py-3">
+                <ShieldCheck className="mr-2 size-4" />
                 Security
               </TabsTrigger>
             </TabsList>
           </CardHeader>
 
-          <CardContent className="pt-8 px-6">
+          <CardContent className="px-6 pt-8">
             <TabsContent value="profile" className="space-y-10 mt-0 focus-visible:ring-0">
               {/* BASIC INFO */}
               <div>
-                <div className="flex items-center gap-6 pb-4 ">
-                  <span className="border-b flex-1"></span>
+                <div className="flex items-center gap-6 pb-4">
+                  <span className="flex-1 border-b"></span>
                   <div className="flex items-center gap-2">
                     <UserRoundPen className="size-4 text-muted-foreground" />
-                    <Label className="text-xs font-bold tracking-widest text-muted-foreground uppercase">BASIC INFO</Label>
+                    <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">BASIC INFO</Label>
                   </div>
-                  <span className="border-b flex-1"></span>
+                  <span className="flex-1 border-b"></span>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="gap-4 grid sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="fullName">Full Name</Label>
                     <Input
@@ -524,7 +524,7 @@ export default function AdminUserEditPage() {
                       )}
                     />
                     {usernameError && (
-                      <p className="text-[10px] text-destructive animate-in fade-in slide-in-from-top-1">
+                      <p className="slide-in-from-top-1 text-[10px] text-destructive animate-in fade-in">
                         {usernameError}
                       </p>
                     )}
@@ -540,7 +540,7 @@ export default function AdminUserEditPage() {
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     maxLength={250}
-                    className="resize-none bg-muted/30 focus:bg-background transition-colors"
+                    className="bg-muted/30 focus:bg-background transition-colors resize-none"
                   />
                   <p className="text-[10px] text-muted-foreground text-right">
                     {formData.bio.length}/250 characters
@@ -557,19 +557,19 @@ export default function AdminUserEditPage() {
 
               {/* SOCIAL LINKS */}
               <div className="space-y-4">
-                <div className="flex items-center gap-6 pb-4 ">
-                  <span className="border-b flex-1"></span>
+                <div className="flex items-center gap-6 pb-4">
+                  <span className="flex-1 border-b"></span>
                   <div className="flex items-center gap-2">
                     <LinkIcon className="size-4 text-muted-foreground" />
-                    <Label className="text-xs font-bold tracking-widest text-muted-foreground uppercase">SOCIAL LINKS</Label>
+                    <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">SOCIAL LINKS</Label>
                   </div>
-                  <span className="border-b flex-1"></span>
+                  <span className="flex-1 border-b"></span>
                 </div>
 
                 {formData.socials.map((social: { url: string }, index: number) => (
-                  <div key={index} className="flex items-center gap-2 group animate-in fade-in slide-in-from-left-2 duration-200">
+                  <div key={index} className="group flex items-center gap-2 slide-in-from-left-2 animate-in duration-200 fade-in">
                     <div className="relative flex items-center w-full">
-                      <div className="absolute left-3 text-muted-foreground">
+                      <div className="left-3 absolute text-muted-foreground">
                         {(() => {
                           const Icon = getPlatformIcon(social.url);
                           return <Icon size={16} className="size-4" />;
@@ -585,7 +585,7 @@ export default function AdminUserEditPage() {
                           newSocials[index].url = e.target.value;
                           setFormData({ ...formData, socials: newSocials });
                         }}
-                        className="flex-1 pl-9 bg-muted/30 focus:bg-background transition-colors"
+                        className="flex-1 bg-muted/30 focus:bg-background pl-9 transition-colors"
                       />
                     </div>
 
@@ -597,7 +597,7 @@ export default function AdminUserEditPage() {
                         const newSocials = formData.socials.filter((_: any, i: number) => i !== index);
                         setFormData({ ...formData, socials: newSocials });
                       }}
-                      className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      className="hover:bg-destructive/10 text-muted-foreground hover:text-destructive shrink-0"
                     >
                       <Trash2 className="size-4" />
                     </Button>
@@ -618,15 +618,15 @@ export default function AdminUserEditPage() {
 
               {/* ACCOUNT SETTINGS */}
               <div>
-                <div className="flex items-center gap-6 pb-4 ">
-                  <span className="border-b flex-1"></span>
+                <div className="flex items-center gap-6 pb-4">
+                  <span className="flex-1 border-b"></span>
                   <div className="flex items-center gap-2">
                     <UserRoundPen className="size-4 text-muted-foreground" />
-                    <Label className="text-xs font-bold tracking-widest text-muted-foreground uppercase">ACCOUNT SETTINGS</Label>
+                    <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">ACCOUNT SETTINGS</Label>
                   </div>
-                  <span className="border-b flex-1"></span>
+                  <span className="flex-1 border-b"></span>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="gap-4 grid grid-cols-2">
                   <div className="space-y-3">
                     <Label>Account Role</Label>
                     <Select disabled={isSelf} value={formData.role} onValueChange={(val: "user" | "admin") => setFormData({ ...formData, role: val })}>
@@ -649,9 +649,9 @@ export default function AdminUserEditPage() {
                           isBanned: !formData.isBanned,
                         })
                       }
-                      className="cursor-pointer flex h-10 w-full items-center justify-between rounded-md border border-input bg-background p-3 shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:hover:bg-input/50"
+                      className="flex justify-between items-center bg-background hover:bg-accent dark:bg-input/30 dark:hover:bg-input/50 shadow-xs p-3 border border-input rounded-md w-full h-10 transition-colors hover:text-accent-foreground cursor-pointer"
                     >
-                      <span className="text-sm font-medium">{formData.isBanned ? "Banned" : "Active"}</span>
+                      <span className="font-medium text-sm">{formData.isBanned ? "Banned" : "Active"}</span>
                       <Switch
                         disabled={isSelf}
                         checked={formData.isBanned}
@@ -668,23 +668,23 @@ export default function AdminUserEditPage() {
               {/* AVATAR */}
               <div className="space-y-4">
                 <div className="flex items-center gap-6 pb-4">
-                  <span className="border-b flex-1"></span>
+                  <span className="flex-1 border-b"></span>
                   <div className="flex items-center gap-2">
                     <Camera className="size-4 text-muted-foreground" />
-                    <Label className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Profile Photo</Label>
+                    <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">Profile Photo</Label>
                   </div>
-                  <span className="border-b flex-1"></span>
+                  <span className="flex-1 border-b"></span>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
+                <div className="flex sm:flex-row flex-col items-start sm:items-center gap-8">
                   <div className="relative size-36 shrink-0">
                     <button
                       onClick={() => user?.avatar && setSelectedLightboxImage(user.avatar)}
-                      className="size-36 rounded-full overflow-hidden border-4 border-card bg-muted shadow-md group/avatarmain cursor-zoom-in relative block"
+                      className="group/avatarmain block relative bg-muted shadow-md border-4 border-card rounded-full size-36 overflow-hidden cursor-zoom-in"
                       aria-label="View profile photo"
                     >
-                      <Image src={user?.avatar || "/avatar.svg"} alt={user?.fullName || "Avatar"} fill sizes="144px" className="object-cover transition-transform group-hover/avatarmain:scale-105" />
+                      <Image src={user?.avatar || "/avatar.svg"} alt={user?.fullName || "Avatar"} fill sizes="144px" className="object-cover group-hover/avatarmain:scale-105 transition-transform" />
                       {user?.avatar && (
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/avatarmain:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 flex justify-center items-center bg-black/30 opacity-0 group-hover/avatarmain:opacity-100 transition-opacity">
                           <Plus className="size-8 text-white/80" />
                         </div>
                       )}
@@ -698,10 +698,10 @@ export default function AdminUserEditPage() {
                     <div className="flex gap-2">
                       <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" disabled={isUploadingAvatar} onChange={(e) => handlePhotoFileChange(e, "avatar")} />
                       <Button variant="default" size="sm" className="w-32" disabled={isUploadingAvatar} onClick={() => avatarInputRef.current?.click()}>
-                        {isUploadingAvatar ? <><Loader2 className="size-3.5 mr-1.5 animate-spin" />Uploading…</> : "Upload Photo"}
+                        {isUploadingAvatar ? <><Loader2 className="mr-1.5 size-3.5 animate-spin" />Uploading…</> : "Upload Photo"}
                       </Button>
                       <Button size="icon" variant="secondary" className="size-9" disabled={isRemovingAvatar || !user?.avatar} onClick={handleRemoveAvatar}>
-                        {isRemovingAvatar ? <Loader2 className="animate-spin size-4" /> : <Trash2 className="size-4" />}
+                        {isRemovingAvatar ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
                       </Button>
                     </div>
                   </div>
@@ -711,29 +711,29 @@ export default function AdminUserEditPage() {
               {/* COVER */}
               <div className="space-y-4">
                 <div className="flex items-center gap-6 pb-4">
-                  <span className="border-b flex-1"></span>
+                  <span className="flex-1 border-b"></span>
                   <div className="flex items-center gap-2">
                     <ImageIcon className="size-4 text-muted-foreground" />
-                    <Label className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Cover Photo</Label>
+                    <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">Cover Photo</Label>
                   </div>
-                  <span className="border-b flex-1"></span>
+                  <span className="flex-1 border-b"></span>
                 </div>
                 <div className="flex flex-col gap-5">
                   <button
                     onClick={() => user?.cover && setSelectedLightboxImage(user.cover)}
-                    className="relative w-full aspect-4/1 rounded-xl overflow-hidden bg-muted/30 group/covermain cursor-zoom-in"
+                    className="group/covermain relative bg-muted/30 rounded-xl w-full aspect-4/1 overflow-hidden cursor-zoom-in"
                     aria-label="View cover photo"
                   >
                     <Image
                       src={user?.cover || "/placeholder.svg"}
                       alt="Cover"
                       fill
-                      className={cn("object-cover transition-transform duration-500 group-hover/covermain:scale-105", !user?.cover && "opacity-20")}
+                      className={cn("object-cover group-hover/covermain:scale-105 transition-transform duration-500", !user?.cover && "opacity-20")}
                       sizes="100vw"
                       onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/placeholder.svg"; }}
                     />
                     {user?.cover && (
-                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/covermain:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="absolute inset-0 flex justify-center items-center bg-black/20 opacity-0 group-hover/covermain:opacity-100 transition-opacity">
                         <Plus className="size-10 text-white/70" />
                       </div>
                     )}
@@ -746,10 +746,10 @@ export default function AdminUserEditPage() {
                     <div className="flex gap-2">
                       <input ref={coverInputRef} type="file" accept="image/*" className="hidden" disabled={isUploadingCover} onChange={(e) => handlePhotoFileChange(e, "cover")} />
                       <Button variant="default" size="sm" className="w-32" disabled={isUploadingCover} onClick={() => coverInputRef.current?.click()}>
-                        {isUploadingCover ? <><Loader2 className="size-3.5 mr-1.5 animate-spin" />Uploading…</> : "Upload Cover"}
+                        {isUploadingCover ? <><Loader2 className="mr-1.5 size-3.5 animate-spin" />Uploading…</> : "Upload Cover"}
                       </Button>
                       <Button size="icon" variant="secondary" className="size-9" disabled={isRemovingCover || !user?.cover} onClick={handleRemoveCover}>
-                        {isRemovingCover ? <Loader2 className="animate-spin size-4" /> : <Trash2 className="size-4" />}
+                        {isRemovingCover ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
                       </Button>
                     </div>
                   </div>
@@ -760,44 +760,44 @@ export default function AdminUserEditPage() {
             <TabsContent value="security" className="space-y-10 mt-0 focus-visible:ring-0">
               {/* ACTIVE SESSIONS */}
               <div>
-                <div className="flex items-center gap-6 pb-4 ">
-                  <span className="border-b flex-1"></span>
+                <div className="flex items-center gap-6 pb-4">
+                  <span className="flex-1 border-b"></span>
                   <div className="flex items-center gap-2">
                     <Monitor className="size-4 text-muted-foreground" />
-                    <Label className="text-xs font-bold tracking-widest text-muted-foreground uppercase">ACTIVE SESSIONS</Label>
+                    <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">ACTIVE SESSIONS</Label>
                   </div>
-                  <span className="border-b flex-1"></span>
+                  <span className="flex-1 border-b"></span>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Connected Devices ({sessions.length})</p>
+                  <div className="flex justify-between items-center">
+                    <p className="font-bold text-[10px] text-muted-foreground uppercase tracking-wider">Connected Devices ({sessions.length})</p>
                     {sessions.length > 0 && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleTerminateAll}
                         disabled={isTerminatingAll}
-                        className="h-7 px-2 text-[10px] font-bold uppercase tracking-wider text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="hover:bg-destructive/10 px-2 h-7 font-bold text-[10px] text-destructive hover:text-destructive uppercase tracking-wider"
                       >
-                        {isTerminatingAll ? <Loader2 className="size-3 animate-spin mr-1.5" /> : <LogOut className="size-3 mr-1.5" />}
+                        {isTerminatingAll ? <Loader2 className="mr-1.5 size-3 animate-spin" /> : <LogOut className="mr-1.5 size-3" />}
                         Logout all other devices
                       </Button>
                     )}
                   </div>
 
                   {sessions.length === 0 ? (
-                    <div className="py-12 text-center border rounded-xl border-dashed bg-muted/20">
-                      <div className="inline-flex size-12 items-center justify-center rounded-full bg-muted mb-3">
+                    <div className="bg-muted/20 py-12 border border-dashed rounded-xl text-center">
+                      <div className="inline-flex justify-center items-center bg-muted mb-3 rounded-full size-12">
                         <Monitor className="size-6 text-muted-foreground/50" />
                       </div>
-                      <p className="text-sm text-muted-foreground">No active sessions found for this user.</p>
+                      <p className="text-muted-foreground text-sm">No active sessions found for this user.</p>
                     </div>
                   ) : (
-                    <div className="grid gap-3">
+                    <div className="gap-3 grid">
                       {sessions.map((s) => (
-                        <div key={s.sessionId} className="flex items-center gap-4 p-4 rounded-xl border bg-card/50 hover:bg-card transition-colors group">
-                          <div className="size-10 rounded-full bg-muted flex items-center justify-center shrink-0 group-hover:bg-background transition-colors">
+                        <div key={s.sessionId} className="group flex items-center gap-4 bg-card/50 hover:bg-card p-4 border rounded-xl transition-colors">
+                          <div className="flex justify-center items-center bg-muted group-hover:bg-background rounded-full size-10 transition-colors shrink-0">
                             {s.deviceName.toLowerCase().includes("mobile") || s.deviceName.toLowerCase().includes("phone") || s.deviceName.toLowerCase().includes("android") || s.deviceName.toLowerCase().includes("iphone") ? (
                               <Smartphone className="size-5 text-muted-foreground" />
                             ) : (
@@ -806,24 +806,24 @@ export default function AdminUserEditPage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-semibold truncate">{s.deviceName}</p>
+                              <p className="font-semibold text-sm truncate">{s.deviceName}</p>
                               {s.isCurrent && (
-                                <span className="px-1.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-[10px] font-bold text-green-700 dark:text-green-400">Current</span>
+                                <span className="bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded-full font-bold text-[10px] text-green-700 dark:text-green-400">Current</span>
                               )}
                             </div>
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
                               <span className="flex items-center text-[11px] text-muted-foreground">
-                                <MapPin className="size-3 mr-1 opacity-70" /> {s.location}
+                                <MapPin className="opacity-70 mr-1 size-3" /> {s.location}
                               </span>
                               <span className="flex items-center text-[11px] text-muted-foreground">
-                                <Clock className="size-3 mr-1 opacity-70" /> {new Date(s.lastActiveAt).toLocaleString()}
+                                <Clock className="opacity-70 mr-1 size-3" /> {new Date(s.lastActiveAt).toLocaleString()}
                               </span>
                             </div>
                           </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            className="hover:bg-destructive/10 size-8 text-muted-foreground hover:text-destructive"
                             disabled={isTerminatingSession === s.sessionId}
                             onClick={() => handleTerminateSession(s.sessionId)}
                           >
@@ -842,22 +842,22 @@ export default function AdminUserEditPage() {
 
               {/* SECURITY SETTINGS */}
               <div>
-                <div className="flex items-center gap-6 pb-4 ">
-                  <span className="border-b flex-1"></span>
+                <div className="flex items-center gap-6 pb-4">
+                  <span className="flex-1 border-b"></span>
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="size-4 text-muted-foreground" />
-                    <Label className="text-xs font-bold tracking-widest text-muted-foreground uppercase">SECURITY SETTINGS</Label>
+                    <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">SECURITY SETTINGS</Label>
                   </div>
-                  <span className="border-b flex-1"></span>
+                  <span className="flex-1 border-b"></span>
                 </div>
 
-                <div className="p-6 rounded-xl border bg-card/50 space-y-4">
+                <div className="space-y-4 bg-card/50 p-6 border rounded-xl">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <KeyRound className="size-4 text-muted-foreground" />
                       <Label htmlFor="newPassword">Reset User Password</Label>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex sm:flex-row flex-col gap-3">
                       <Input
                         id="newPassword"
                         type="password"
@@ -872,7 +872,7 @@ export default function AdminUserEditPage() {
                         onClick={handlePasswordUpdate}
                         className="shadow-sm"
                       >
-                        {isUpdatingPassword ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
+                        {isUpdatingPassword ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
                         Update Password
                       </Button>
                     </div>
@@ -886,29 +886,29 @@ export default function AdminUserEditPage() {
           </CardContent>
         </Tabs>
 
-        <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-t p-6 gap-4 bg-muted/10">
-          <div className="flex flex-col sm:flex-row gap-2">
+        <CardFooter className="flex sm:flex-row flex-col justify-between items-stretch sm:items-center gap-4 bg-muted/10 p-6 border-t">
+          <div className="flex sm:flex-row flex-col gap-2">
             <Button
               variant="destructive"
               disabled={isSelf}
               onClick={() => { setConfirmDialog({ isOpen: true, action: "delete" }); setConfirmInput(""); }}
-              className="w-full sm:w-auto shadow-sm"
+              className="shadow-sm w-full sm:w-auto"
             >
-              <Trash className="w-4 h-4 mr-2" /> Delete Account
+              <Trash className="mr-2 w-4 h-4" /> Delete Account
             </Button>
             {!formData.isBanned ? (
               <Button
                 variant="outline"
                 disabled={isSelf}
-                className="w-full sm:w-auto border-orange-200 text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                className="hover:bg-orange-50 dark:hover:bg-orange-900/20 border-orange-200 w-full sm:w-auto text-orange-700"
                 onClick={() => { setConfirmDialog({ isOpen: true, action: "ban" }); setConfirmInput(""); }}
               >
-                <Ban className="w-4 h-4 mr-2" /> Ban User
+                <Ban className="mr-2 w-4 h-4" /> Ban User
               </Button>
             ) : (
               <Button
                 variant="outline"
-                className="w-full sm:w-auto border-green-200 text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                className="hover:bg-green-50 dark:hover:bg-green-900/20 border-green-200 w-full sm:w-auto text-green-700"
                 onClick={() => { setConfirmDialog({ isOpen: true, action: "unban" }); setConfirmInput(""); }}
               >
                 Unban User
@@ -916,10 +916,10 @@ export default function AdminUserEditPage() {
             )}
           </div>
 
-          <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto shadow-md">
+          <Button onClick={handleSave} disabled={isSaving} className="shadow-md w-full sm:w-auto">
             {isSaving ? (
               <>
-                <Loader2 className="size-4 mr-2 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
                 Saving...
               </>
             ) : (
@@ -943,7 +943,7 @@ export default function AdminUserEditPage() {
 
           {(confirmDialog.action === "delete" || confirmDialog.action === "ban") && (
             <div className="my-4">
-              <p className="text-sm mb-2">Please type <strong>{confirmDialog.action}</strong> to confirm.</p>
+              <p className="mb-2 text-sm">Please type <strong>{confirmDialog.action}</strong> to confirm.</p>
               <Input
                 value={confirmInput}
                 onChange={(e) => setConfirmInput(e.target.value)}

@@ -112,7 +112,6 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
     content = "",
     keywords: rawKeywords = [],
     images = [],
-    canonicalUrl = "",
     ogTitle = "",
     ogDescription = "",
     twitterTitle = "",
@@ -586,17 +585,6 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
 
   // ── Technical checks ──────────────────────────────────────────────────────
   checks.push({
-    id: "canonical_url",
-    group: "Technical",
-    label: "Canonical URL set",
-    pass: canonicalUrl.trim().length > 0,
-    severity: "warning",
-    message: canonicalUrl.trim().length > 0
-      ? `Canonical: ${canonicalUrl}`
-      : "Set a canonical URL to avoid duplicate content issues.",
-  });
-
-  checks.push({
     id: "has_author",
     group: "Technical",
     label: "Author is specified",
@@ -764,10 +752,6 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
 
       // Technical
       case "canonical_url":
-        if (canonicalUrl.trim().length === 0) {
-          penaltyTotal += 4;
-        }
-        break;
       case "has_tags":
         penaltyTotal += 3;
         break;
@@ -775,11 +759,6 @@ export function analyzeSEO(data: SEOInputData): { checks: SEODiagnostic[]; score
       default:
         break;
     }
-  }
-
-  // Localhost canonical check: +15 penalty (realistic environment audit)
-  if (canonicalUrl.toLowerCase().includes("localhost")) {
-    penaltyTotal += 15;
   }
 
   const score = Math.max(0, 100 - penaltyTotal);

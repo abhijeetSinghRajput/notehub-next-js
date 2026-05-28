@@ -37,7 +37,7 @@ const NoteRedirectPage = () => {
           const found = collection.notes?.find((n) => String(n._id) === noteId);
           if (found) {
             router.replace(
-              `/${authUser.userName}/${collection.slug}/${found.seo?.slug || found.slug}`
+              `/${authUser.userName}/${collection.slug}/${found.slug}`
             );
             return;
           }
@@ -67,7 +67,7 @@ const NoteRedirectPage = () => {
         return;
       }
 
-      router.replace(`/${userName}/${collectionSlug}/${note.seo?.slug || note.slug}`);
+      router.replace(`/${userName}/${collectionSlug}/${note.slug}`);
     };
 
     resolve();

@@ -415,7 +415,7 @@ export function SearchButton() {
                             className="flex border-b border-primary/20 hover:bg-primary/10 items-start gap-3 p-2 px-4 group cursor-pointer"
                             onClick={() => {
                               NProgress.start();
-                              const finalSlug = note.seo?.slug || note.slug;
+                              const finalSlug = note.slug;
                               router.push(
                                 `/${(note.userId as IUser)?.userName}/${(note.collectionId as any)?.slug}/${finalSlug}`,
                               );

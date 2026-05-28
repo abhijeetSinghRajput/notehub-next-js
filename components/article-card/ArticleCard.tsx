@@ -41,7 +41,7 @@ export const ArticleCard = memo<ArticleCardProps>(function ArticleCard({
 
   const isOwner = author?.userName === authUser?.userName;
 
-  const finalNoteSlug = note.seo?.slug || note.slug;
+  const finalNoteSlug = note.slug;
   const noteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/${author?.userName}/${collection.slug}/${finalNoteSlug}`;
   const noteHref = `/${author?.userName}/${collection.slug}/${finalNoteSlug}`;
   const collectionHref = `/${author?.userName}/${collection.slug}`;

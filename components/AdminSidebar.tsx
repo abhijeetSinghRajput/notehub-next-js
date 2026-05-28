@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, LayoutDashboard, Users } from "lucide-react";
+import { FileText, LayoutDashboard, Send, UserRoundCheck, Users } from "lucide-react";
 
 import {
   Sidebar,
@@ -13,9 +13,8 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-  useSidebar,
+  SidebarMenuItem, SidebarRail,
+  useSidebar
 } from "@/components/ui/sidebar";
 import NavUser from "./dashboard/NavUser";
 
@@ -24,9 +23,14 @@ import LogoIcon from "@/components/icons/logo/LogoIcon";
 
 const adminNavItems = [
   { title: "Overview", href: "/admin", icon: LayoutDashboard },
-  { title: "User Management", href: "/admin/user-management", icon: Users },
-  { title: "Notification", href: "/admin/notification", icon: Bell },
+  { title: "Users", href: "/admin/users", icon: Users },
 ];
+
+const mailerNavItems = [
+  { title: "Campaigns", href: "/admin/campaign", icon: Send, },
+  { title: "Templates", href: "/admin/template", icon: FileText, },
+  { title: "Contacts", href: "/admin/contact", icon: UserRoundCheck, },
+]
 
 export function AdminSidebar({
   ...props
@@ -46,12 +50,10 @@ export function AdminSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/admin" onClick={handleMenuClick} className="gap-3">
-                <div className="bg-white flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <LogoIcon size={20} />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <LogoText className="truncate text-sm w-18" />
-                  <span className="truncate text-xs text-muted-foreground">Admin Panel</span>
+                <LogoIcon className="size-8!" />
+                <div className="flex-1 grid text-sm text-left leading-tight">
+                  <LogoText className="w-18 text-sm truncate" />
+                  <span className="text-muted-foreground text-xs truncate">Admin Panel</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -74,7 +76,7 @@ export function AdminSidebar({
                     asChild
                     isActive={isActive}
                     tooltip={item.title}
-                    className="h-10 px-4 rounded-lg"
+                    className="px-4 rounded-lg h-10"
                   >
                     <Link href={item.href} onClick={handleMenuClick}>
                       <item.icon />
@@ -86,6 +88,35 @@ export function AdminSidebar({
             })}
           </SidebarMenu>
         </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Mailer</SidebarGroupLabel>
+          <SidebarMenu>
+            {mailerNavItems.map((item) => {
+              const isActive =
+                item.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname?.startsWith(item.href);
+
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.title}
+                    className="px-4 rounded-lg h-10"
+                  >
+                    <Link href={item.href} onClick={handleMenuClick}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+
       </SidebarContent>
       <SidebarFooter className="border-t">
         <NavUser />

@@ -227,6 +227,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
   const { galleryImages, getImages } = useImageStore();
   const { drafts, setDraft } = useDraftStore();
   const { authUser } = useAuthStore();
+  const collections = useNoteStore((state) => state.collections);
 
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("fields");
@@ -301,7 +302,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
       .trim();
     const firstPara = fallbackText.slice(0, 155);
 
-    setSeoSlug(activeNote.seo?.slug || activeNote.slug || "");
+    setSeoSlug(activeNote.slug || "");
     setSeoTitle(activeNote.seo?.title || activeNote.name || "");
     setSeoDescription(activeNote.seo?.description || firstPara || "");
     setSeoKeywords(Array.isArray(activeNote.seo?.keywords) ? [...activeNote.seo.keywords] : []);
@@ -342,16 +343,32 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
       .trim();
     const firstPara = fallbackText.slice(0, 160);
 
+    const userName =
+      typeof activeNote?.userId === "object" && activeNote.userId
+        ? activeNote.userId.userName
+        : authUser?.userName || "";
+
+    const collectionSlug =
+      typeof activeNote?.collectionId === "object" && activeNote.collectionId
+        ? activeNote.collectionId.slug
+        : collections.find((collection) =>
+            Array.isArray(collection.notes) && collection.notes.some((collectionNote) => collectionNote._id === activeNote?._id),
+          )?.slug || "";
+
+    const noteSlug = seoSlug || activeNote?.slug || "";
+    const canonicalUrl =
+      typeof window !== "undefined" && userName && collectionSlug && noteSlug
+        ? `${window.location.origin}/${userName}/${collectionSlug}/${noteSlug}`
+        : "";
+
     return {
       title: seoTitle || activeNote?.name || "",
       description: seoDescription || firstPara || "",
-      slug: seoSlug || activeNote?.slug || "",
+      slug: noteSlug,
       content: contentStr,
       keywords: seoKeywords,
       images: editorImages || [],
-      canonicalUrl: typeof window !== "undefined"
-        ? `https://${process.env.NEXT_PUBLIC_DOMAIN || "notehub-official.vercel.app"}/${authUser?.userName || "user"}/${seoSlug || activeNote?.slug || ""}`
-        : "",
+      canonicalUrl,
       ogTitle: seoTitle || activeNote?.name || "",
       ogDescription: seoDescription || firstPara || "",
       twitterTitle: seoTitle || activeNote?.name || "",
@@ -362,7 +379,39 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
       tags: seoKeywords,
       seoImageUrl,
     };
-  }, [activeNote, seoSlug, seoTitle, seoDescription, seoKeywords, seoImageUrl, editorContent, editorImages, authUser]);
+  }, [activeNote, seoSlug, seoTitle, seoDescription, seoKeywords, seoImageUrl, editorContent, editorImages, authUser, collections]);
+
+  useEffect(() => {
+    if (!activeNote || !authUser?._id) return;
+
+    const normalizedSlug = seoSlug.trim().toLowerCase();
+    const nextSeo = {
+      title: seoTitle.trim(),
+      description: seoDescription.trim(),
+      keywords: seoKeywords,
+      image: {
+        url: seoImageUrl.trim(),
+        alt: seoImageAlt.trim(),
+      },
+    };
+
+    const currentSeo = activeNote.seo ?? {};
+    const slugMatches = (activeNote.slug || "") === normalizedSlug;
+    const seoMatches =
+      (currentSeo.title || "") === nextSeo.title &&
+      (currentSeo.description || "") === nextSeo.description &&
+      JSON.stringify(currentSeo.keywords || []) === JSON.stringify(nextSeo.keywords) &&
+      (currentSeo.image?.url || "") === nextSeo.image.url &&
+      (currentSeo.image?.alt || "") === nextSeo.image.alt;
+
+    if (slugMatches && seoMatches) return;
+
+    setDraft(noteId, {
+      ...activeNote,
+      slug: normalizedSlug || activeNote.slug || "",
+      seo: nextSeo,
+    });
+  }, [activeNote, authUser?._id, noteId, seoSlug, seoTitle, seoDescription, seoKeywords, seoImageUrl, seoImageAlt, setDraft]);
 
   // Real-time throttled analysis & score calculation
   const { score, grouped, summary } = useSEOChecker(seoInputData, 600);
@@ -375,7 +424,6 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
     setIsSaving(true);
 
     const seoObject = {
-      slug: seoSlug.trim().toLowerCase(),
       title: seoTitle.trim(),
       description: seoDescription.trim(),
       keywords: seoKeywords,           // already a string[]
@@ -392,12 +440,14 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
       if (isDraftNote && userId) {
         setDraft(noteId, {
           ...activeNote,
+          slug: seoSlug.trim().toLowerCase(),
           seo: seoObject,
         });
         toast.success("Draft SEO settings updated locally");
       } else {
         // First update server note
         await updateNote(noteId, {
+          slug: seoSlug.trim().toLowerCase(),
           seo: seoObject,
         });
 
@@ -405,6 +455,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
         if (userId && drafts[userId]?.[noteId]) {
           setDraft(noteId, {
             ...activeNote,
+            slug: seoSlug.trim().toLowerCase(),
             seo: seoObject,
           });
         }
@@ -630,10 +681,10 @@ ${Object.entries(grouped)
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
             <TabsList variant="line" className="p-0 grid w-full grid-cols-2">
-              <TabsTrigger value="fields" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:!bg-sidebar-accent rounded-none">
+              <TabsTrigger value="fields" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:bg-sidebar-accent! rounded-none">
                 <Settings className="size-3.5" /> Meta Fields
               </TabsTrigger>
-              <TabsTrigger value="diagnostics" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:!bg-sidebar-accent rounded-none">
+              <TabsTrigger value="diagnostics" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:bg-sidebar-accent! rounded-none">
                 <Activity className="size-3.5" /> SEO Audit
               </TabsTrigger>
             </TabsList>
@@ -658,7 +709,7 @@ ${Object.entries(grouped)
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="seo-slug" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    SEO Custom URL Slug
+                    Note URL Slug
                   </Label>
                   <span className={cn(
                     "text-[10px] font-semibold",
@@ -671,12 +722,12 @@ ${Object.entries(grouped)
                   id="seo-slug"
                   value={seoSlug}
                   onChange={(e) => setSeoSlug(e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""))}
-                  placeholder={activeNote?.slug || "enter-custom-seo-slug..."}
+                  placeholder={activeNote?.slug || "enter-note-slug..."}
                   maxLength={75}
                   className="h-10 text-sm font-semibold"
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  Overrides standard URL routing for better SEO. Formatted automatically to lowercase with hyphens.
+                  Updates the note slug used for routing and canonical URLs. Formatted automatically to lowercase with hyphens.
                 </p>
               </div>
 
@@ -832,9 +883,9 @@ ${Object.entries(grouped)
 
                 {/* Preview Selected Image */}
                 {seoImageUrl ? (
-                  <div className="relative border rounded-lg overflow-hidden bg-muted/20 aspect-[1200/630] flex flex-col justify-end">
+                  <div className="relative border rounded-lg overflow-hidden bg-muted/20 aspect-1200/630 flex flex-col justify-end">
                     <img src={seoImageUrl} alt="SEO Preview" className="absolute inset-0 size-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/10 to-transparent" />
                     <div className="relative p-3 flex justify-between items-center text-white z-10">
                       <span className="text-[10px] font-bold bg-primary/95 text-primary-foreground px-2 py-0.5 rounded uppercase tracking-wider">
                         Active SEO Cover

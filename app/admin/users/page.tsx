@@ -112,8 +112,8 @@ export default function UserManagementPage() {
   return (
     <>
       <h1 className="sr-only">User Management</h1>
-      <Card className="border-none shadow-none bg-background sm:bg-card sm:border sm:shadow-md relative">
-        <CardHeader className="p-0 pb-6 sm:p-6 flex flex-row items-center justify-between">
+      <Card className="relative bg-background sm:bg-card shadow-none sm:shadow-md sm:border border-none">
+        <CardHeader className="flex flex-row justify-between items-center p-0 sm:p-6 pb-6">
           <div>
             <CardTitle>User Management</CardTitle>
             <CardDescription>Manage your platform users, assign roles, and handle bans.</CardDescription>
@@ -128,7 +128,7 @@ export default function UserManagementPage() {
           />
 
           {/* ── DESKTOP TABLE (sm and above) ── */}
-          <div className="hidden sm:block rounded-lg border">
+          <div className="hidden sm:block border rounded-lg">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -153,184 +153,184 @@ export default function UserManagementPage() {
                 {(isLoadingUsers && users.length === 0) ? (
                   Array.from({ length: itemsPerPage }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell><Skeleton className="h-5 w-5 rounded-sm mx-auto" /></TableCell>
+                      <TableCell><Skeleton className="mx-auto rounded-sm w-5 h-5" /></TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <Skeleton className="size-8 rounded-full" />
-                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="rounded-full size-8" />
+                          <Skeleton className="w-24 h-4" />
                         </div>
                       </TableCell>
-                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-16 rounded-full" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="w-32 h-4" /></TableCell>
+                      <TableCell><Skeleton className="w-40 h-4" /></TableCell>
+                      <TableCell><Skeleton className="w-12 h-4" /></TableCell>
+                      <TableCell><Skeleton className="rounded-full w-16 h-4" /></TableCell>
+                      <TableCell><Skeleton className="w-8 h-4" /></TableCell>
+                      <TableCell><Skeleton className="w-8 h-4" /></TableCell>
+                      <TableCell><Skeleton className="w-20 h-4" /></TableCell>
                     </TableRow>
                   ))
                 ) : (
                   users.map((user) => {
-                  // user._id typing is standard in mongoose models
-                  const isChecked = selectedIds.includes(user._id as string);
-                  return (
-                    <TableRow key={user._id} className={isChecked ? "bg-muted/50" : ""}>
-                      <TableCell className="text-center">
-                        <Checkbox
-                          checked={isChecked}
-                          onCheckedChange={() => toggleSelectUser(user._id as string)}
-                          aria-label={`Select ${user.userName}`}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Link href={`/admin/user-management/${user.userName}`} className="flex items-center gap-3 hover:underline">
-                          <div className="relative size-8 shrink-0">
-                            <div className="relative size-8 shrink-0 rounded-full overflow-hidden bg-muted">
-                              <Image
-                                src={user.avatar || "/avatar.svg"}
-                                alt={user.fullName || "User"}
-                                fill
-                                sizes="32px"
-                                className="object-cover"
-                                referrerPolicy="no-referrer"
-                              />
+                    // user._id typing is standard in mongoose models
+                    const isChecked = selectedIds.includes(user._id as string);
+                    return (
+                      <TableRow key={user._id} className={isChecked ? "bg-muted/50" : ""}>
+                        <TableCell className="text-center">
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={() => toggleSelectUser(user._id as string)}
+                            aria-label={`Select ${user.userName}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Link href={`/admin/users/${user.userName}`} className="flex items-center gap-3 hover:underline">
+                            <div className="relative size-8 shrink-0">
+                              <div className="relative bg-muted rounded-full size-8 overflow-hidden shrink-0">
+                                <Image
+                                  src={user.avatar || "/avatar.svg"}
+                                  alt={user.fullName || "User"}
+                                  fill
+                                  sizes="32px"
+                                  className="object-cover"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                              {user.role === "admin" && (
+                                <span className="-right-1 -bottom-1 absolute flex justify-center items-center bg-background shadow-sm p-0.5 border border-background rounded-full size-4">
+                                  <BadgeIcon className="size-3 text-blue-500" />
+                                </span>
+                              )}
                             </div>
-                            {user.role === "admin" && (
-                              <span className="absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full p-0.5 bg-background shadow-sm border border-background">
-                                <BadgeIcon className="size-3 text-blue-500" />
-                              </span>
-                            )}
-                          </div>
-                          <p className="max-w-44 truncate font-medium">
-                            {user.userName}
-                          </p>
-                        </Link>
-                      </TableCell>
-                      <TableCell className="max-w-56 truncate">{user.fullName}</TableCell>
-                      <TableCell className="max-w-60 truncate text-muted-foreground">{user.email}</TableCell>
-                      <TableCell className="capitalize text-muted-foreground">{user.role}</TableCell>
-                      <TableCell>
-                        {user.isDeleted ? (
-                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400">
-                            Deleted
-                          </span>
-                        ) : user.isBanned ? (
-                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                            Banned
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                            Active
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{user.notesCount || 0}</TableCell>
-                      <TableCell className="text-muted-foreground">{user.collectionsCount || 0}</TableCell>
-                      <TableCell className="text-muted-foreground whitespace-nowrap">
-                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
+                            <p className="max-w-44 font-medium truncate">
+                              {user.userName}
+                            </p>
+                          </Link>
+                        </TableCell>
+                        <TableCell className="max-w-56 truncate">{user.fullName}</TableCell>
+                        <TableCell className="max-w-60 text-muted-foreground truncate">{user.email}</TableCell>
+                        <TableCell className="text-muted-foreground capitalize">{user.role}</TableCell>
+                        <TableCell>
+                          {user.isDeleted ? (
+                            <span className="inline-flex items-center bg-gray-100 dark:bg-gray-900/30 px-2 py-0.5 rounded-full font-medium text-gray-700 dark:text-gray-400 text-xs">
+                              Deleted
+                            </span>
+                          ) : user.isBanned ? (
+                            <span className="inline-flex items-center bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full font-medium text-red-700 dark:text-red-400 text-xs">
+                              Banned
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full font-medium text-green-700 dark:text-green-400 text-xs">
+                              Active
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{user.notesCount || 0}</TableCell>
+                        <TableCell className="text-muted-foreground">{user.collectionsCount || 0}</TableCell>
+                        <TableCell className="text-muted-foreground whitespace-nowrap">
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
 
                 {!isLoadingUsers && users.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-20 text-center text-muted-foreground">
+                    <TableCell colSpan={9} className="h-20 text-muted-foreground text-center">
                       No users found.
                     </TableCell>
                   </TableRow>
                 )}
 
                 {isLoadingUsers && users.length > 0 && (
-                   <TableRow>
-                     <TableCell colSpan={9} className="h-10 text-center text-xs text-muted-foreground bg-muted/30">
-                       <div className="flex items-center justify-center gap-2">
-                         <Loader2 className="size-3 animate-spin" />
-                         Refreshing users...
-                       </div>
-                     </TableCell>
-                   </TableRow>
+                  <TableRow>
+                    <TableCell colSpan={9} className="bg-muted/30 h-10 text-muted-foreground text-xs text-center">
+                      <div className="flex justify-center items-center gap-2">
+                        <Loader2 className="size-3 animate-spin" />
+                        Refreshing users...
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>
           </div>
 
-          <div className="flex flex-col sm:hidden">
+          <div className="sm:hidden flex flex-col">
             <div className="flex items-center gap-2 p-2 border-b">
               <Checkbox
                 checked={users.length > 0 && selectedIds.length === users.length}
                 onCheckedChange={toggleSelectAll}
                 id="select-all-mobile"
               />
-              <label htmlFor="select-all-mobile" className="text-sm text-muted-foreground">Select All on Page</label>
+              <label htmlFor="select-all-mobile" className="text-muted-foreground text-sm">Select All on Page</label>
             </div>
-            
+
             {isLoadingUsers && users.length === 0 ? (
-               Array.from({ length: 5 }).map((_, i) => (
+              Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-1 py-3 border-b">
-                  <Skeleton className="h-5 w-5 rounded-sm mx-auto" />
+                  <Skeleton className="mx-auto rounded-sm w-5 h-5" />
                   <div className="flex flex-1 items-center gap-3">
-                    <Skeleton className="size-11 rounded-full" />
+                    <Skeleton className="rounded-full size-11" />
                     <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-3 w-40" />
-                      <Skeleton className="h-2 w-32" />
+                      <Skeleton className="w-24 h-4" />
+                      <Skeleton className="w-40 h-3" />
+                      <Skeleton className="w-32 h-2" />
                     </div>
                   </div>
                 </div>
               ))
             ) : (
               users.map((user, index) => {
-               const isChecked = selectedIds.includes(user._id as string);
-               return (
-                <div key={user._id} className={`flex items-center gap-3 px-1 py-3 ${index !== users.length - 1 ? "border-b" : ""} ${isChecked ? "bg-muted/30" : ""}`}>
-                  <Checkbox
-                    checked={isChecked}
-                    onCheckedChange={() => toggleSelectUser(user._id as string)}
-                  />
-                  <Link href={`/admin/user-management/${user.userName}`} className="flex flex-1 items-center gap-3 min-w-0">
-                    <div className="relative shrink-0">
-                      <div className="relative size-11 shrink-0 rounded-full overflow-hidden">
-                        <Image src={user.avatar || "/avatar.svg"} alt={user?.fullName || "User"} fill sizes="44px" className="object-cover" priority />
+                const isChecked = selectedIds.includes(user._id as string);
+                return (
+                  <div key={user._id} className={`flex items-center gap-3 px-1 py-3 ${index !== users.length - 1 ? "border-b" : ""} ${isChecked ? "bg-muted/30" : ""}`}>
+                    <Checkbox
+                      checked={isChecked}
+                      onCheckedChange={() => toggleSelectUser(user._id as string)}
+                    />
+                    <Link href={`/admin/users/${user.userName}`} className="flex flex-1 items-center gap-3 min-w-0">
+                      <div className="relative shrink-0">
+                        <div className="relative rounded-full size-11 overflow-hidden shrink-0">
+                          <Image src={user.avatar || "/avatar.svg"} alt={user?.fullName || "User"} fill sizes="44px" className="object-cover" priority />
+                        </div>
+                        {user.role === "admin" && (
+                          <span className="-right-0.5 -bottom-0.5 absolute flex justify-center items-center bg-background p-0.5 rounded-full size-4.5">
+                            <BadgeIcon className="size-4 text-blue-500" />
+                          </span>
+                        )}
                       </div>
-                      {user.role === "admin" && (
-                        <span className="absolute -bottom-0.5 -right-0.5 flex size-4.5 items-center justify-center rounded-full p-0.5 bg-background">
-                          <BadgeIcon className="size-4 text-blue-500" />
-                        </span>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium leading-tight flex items-center gap-2">
-                        {user.fullName}
-                        {user.isBanned && <span className="size-2 rounded-full bg-red-500" title="Banned"></span>}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-                      <p className="truncate text-[10px] text-muted-foreground mt-1 font-medium">
-                        {user.notesCount || 0} Notes • {user.collectionsCount || 0} Collections • Joined {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
-                      </p>
-                    </div>
-                  </Link>
-                </div>
-              );
-            })
-          )}
+                      <div className="flex-1 min-w-0">
+                        <p className="flex items-center gap-2 font-medium text-sm truncate leading-tight">
+                          {user.fullName}
+                          {user.isBanned && <span className="bg-red-500 rounded-full size-2" title="Banned"></span>}
+                        </p>
+                        <p className="text-muted-foreground text-xs truncate">{user.email}</p>
+                        <p className="mt-1 font-medium text-[10px] text-muted-foreground truncate">
+                          {user.notesCount || 0} Notes • {user.collectionsCount || 0} Collections • Joined {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
+                        </p>
+                      </div>
+                    </Link>
+                  </div>
+                );
+              })
+            )}
 
             {!isLoadingUsers && users.length === 0 && (
-              <div className="py-10 text-center text-sm text-muted-foreground">No users found.</div>
+              <div className="py-10 text-muted-foreground text-sm text-center">No users found.</div>
             )}
 
             {isLoadingUsers && users.length > 0 && (
-              <div className="py-4 text-center text-xs text-muted-foreground animate-pulse">
+              <div className="py-4 text-muted-foreground text-xs text-center animate-pulse">
                 Refreshing list...
               </div>
             )}
           </div>
 
-          {usersError && <p className="text-xs text-destructive">{usersError}</p>}
+          {usersError && <p className="text-destructive text-xs">{usersError}</p>}
 
           {/* ── PAGINATION ── */}
-          <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+          <div className="flex justify-between items-center gap-3 text-muted-foreground text-xs">
             <div className="flex items-center gap-2">
               <p>
                 {(pagination.currentPage - 1) * pagination.itemsPerPage + (users.length ? 1 : 0)} –
@@ -340,7 +340,7 @@ export default function UserManagementPage() {
                 value={itemsPerPage.toString()}
                 onValueChange={(value) => { setItemsPerPage(Number(value)); setCurrentPage(1); }}
               >
-                <SelectTrigger className="h-7 w-16 text-xs">
+                <SelectTrigger className="w-16 h-7 text-xs">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
                 <SelectContent className="text-xs">
@@ -353,7 +353,7 @@ export default function UserManagementPage() {
               </Select>
             </div>
 
-            <Pagination className="mx-0 w-auto justify-end">
+            <Pagination className="justify-end mx-0 w-auto">
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious
@@ -394,24 +394,24 @@ export default function UserManagementPage() {
 
           {/* ── BATCH ACTIONS BAR ── */}
           {selectedIds.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 p-3 bg-card border rounded-md sticky bottom-0 z-10 shadow-sm transition-all animate-in fade-in slide-in-from-bottom-2">
-              <span className="text-sm font-medium mr-auto pl-2">
+            <div className="bottom-0 slide-in-from-bottom-2 z-10 sticky flex flex-wrap items-center gap-2 bg-card shadow-sm p-3 border rounded-md transition-all animate-in fade-in">
+              <span className="mr-auto pl-2 font-medium text-sm">
                 {selectedIds.length} user(s) selected
               </span>
               <Button variant="outline" size="sm" onClick={() => openConfirmDialog("assignRole", "admin")} className="h-8">
-                <Shield className="w-4 h-4 mr-2" /> Make Admin
+                <Shield className="mr-2 w-4 h-4" /> Make Admin
               </Button>
               <Button variant="outline" size="sm" onClick={() => openConfirmDialog("assignRole", "user")} className="h-8">
-                <UserIcon className="w-4 h-4 mr-2" /> Make User
+                <UserIcon className="mr-2 w-4 h-4" /> Make User
               </Button>
-              <Button variant="outline" size="sm" onClick={() => openConfirmDialog("unban")} className="h-8 border-green-200 text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20">
-                <CheckCircle className="w-4 h-4 mr-2" /> Unban
+              <Button variant="outline" size="sm" onClick={() => openConfirmDialog("unban")} className="hover:bg-green-50 dark:hover:bg-green-900/20 border-green-200 h-8 text-green-700">
+                <CheckCircle className="mr-2 w-4 h-4" /> Unban
               </Button>
-              <Button variant="outline" size="sm" onClick={() => openConfirmDialog("ban")} className="h-8 border-orange-200 text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20">
-                <Ban className="w-4 h-4 mr-2" /> Ban
+              <Button variant="outline" size="sm" onClick={() => openConfirmDialog("ban")} className="hover:bg-orange-50 dark:hover:bg-orange-900/20 border-orange-200 h-8 text-orange-700">
+                <Ban className="mr-2 w-4 h-4" /> Ban
               </Button>
               <Button variant="destructive" size="sm" onClick={() => openConfirmDialog("delete")} className="h-8">
-                <Trash className="w-4 h-4 mr-2" /> Delete
+                <Trash className="mr-2 w-4 h-4" /> Delete
               </Button>
             </div>
           )}
@@ -433,7 +433,7 @@ export default function UserManagementPage() {
           {/* Require input for destructive actions */}
           {(confirmDialog.action === "delete" || confirmDialog.action === "ban") && (
             <div className="my-4">
-              <p className="text-sm mb-2">Please type <strong>{confirmDialog.action}</strong> to confirm.</p>
+              <p className="mb-2 text-sm">Please type <strong>{confirmDialog.action}</strong> to confirm.</p>
               <Input
                 value={confirmInput}
                 onChange={(e) => setConfirmInput(e.target.value)}

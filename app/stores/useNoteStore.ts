@@ -66,7 +66,7 @@ export interface NoteStore {
   getAllCollections: (params: { userId: string; guest?: boolean; force?: boolean }) => Promise<ICollection[] | null>;
 
   // ── Writes (all optimistic) ──
-  updateContent: (data: { noteId: string; content: string }) => Promise<INote | null>;
+  updateContent: (data: { noteId: string; content: string; slug?: string; seo?: INote["seo"] }) => Promise<INote | null>;
   createCollection: (data: Partial<ICollection>) => Promise<ICollection | null>;
   deleteCollection: (collectionId: string) => Promise<void>;
   renameCollection: (data: { _id: string; newName: string; newSlug?: string }) => Promise<void>;
@@ -287,24 +287,29 @@ const createNoteStore: StateCreator<NoteStore> = (set, get) => {
 
     // ── Writes (Optimistic) ──────────────────────────────────────────────────
 
-    updateContent: async ({ noteId, content }) => {
+    updateContent: async ({ noteId, content, slug, seo }) => {
       // Optimistic
       const prev = get().noteCache[noteId]?.data;
-      set((s) => ({ ...patchNote(s, noteId, { content }) }));
+      set((s) => ({ ...patchNote(s, noteId, { content, ...(slug !== undefined ? { slug } : {}), ...(seo !== undefined ? { seo } : {}) }) }));
 
       return await withStatus("noteContent", "saving", async () => {
-        const res = await axiosInstance.put("/note/", { noteId, content });
+        const res = await axiosInstance.put("/note/", { noteId, content, slug, seo });
         const { note } = res.data as { note: INote; message?: string };
         // Sync with server truth
         set((s) => ({
-          ...patchNote(s, noteId, { content: note.content, contentUpdatedAt: note.contentUpdatedAt }),
+          ...patchNote(s, noteId, {
+            content: note.content,
+            slug: note.slug,
+            seo: note.seo,
+            contentUpdatedAt: note.contentUpdatedAt,
+          }),
           noteCache: { ...s.noteCache, [noteId]: { data: note, fetchedAt: Date.now() } },
         }));
         toast.success(res.data.message || "Note updated");
         return note;
       }).catch(() => {
         // Rollback
-        if (prev) set((s) => ({ ...patchNote(s, noteId, { content: prev.content }) }));
+        if (prev) set((s) => ({ ...patchNote(s, noteId, { content: prev.content, slug: prev.slug, seo: prev.seo }) }));
         toast.error("Failed to update content");
         return null;
       });

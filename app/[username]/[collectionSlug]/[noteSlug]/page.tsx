@@ -85,7 +85,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
 
     const ogImageUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/og-note?${ogImageParams.toString()}`;
-    const noteUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${note.seo?.slug || noteSlug}`;
+    const noteUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${username}/${collectionSlug}/${note.slug || noteSlug}`;
 
     const seoTitle = note.seo?.title || note.name || "Untitled Note";
     const seoDescription = note.seo?.description || plainText || "Read this note on NoteHub";
@@ -150,7 +150,7 @@ export default async function NotePage({ params }: Props) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const profileUrl = `${baseUrl}/${username}`;
     const collectionUrl = `${baseUrl}/${username}/${collectionSlug}`;
-    const noteUrl = `${baseUrl}/${username}/${collectionSlug}/${note.seo?.slug || noteSlug}`;
+    const noteUrl = `${baseUrl}/${username}/${collectionSlug}/${note.slug || noteSlug}`;
 
     const plainText = note.content
       .replace(/<[^>]*>/g, "")

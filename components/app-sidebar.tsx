@@ -20,7 +20,7 @@ import NavUser from "./dashboard/NavUser"
 
 const adminNavItems = [
   { title: "Overview", href: "/admin", icon: LayoutDashboard },
-  { title: "User Management", href: "/admin/user-management", icon: Users },
+  { title: "User Management", href: "/admin/users", icon: Users },
   { title: "Notification", href: "/admin/notification", icon: Bell },
 ]
 

@@ -191,7 +191,7 @@ export default async function CollectionPage({ params }: Props) {
           "@type": "ListItem",
           position: index + 1,
           name: note.name,
-          url: `${collectionUrl}/${note.seo?.slug || note.slug}`,
+          url: `${collectionUrl}/${note.slug}`,
         }),
       ),
     };

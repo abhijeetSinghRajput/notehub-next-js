@@ -133,8 +133,11 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
     if (isEmptyContent(content)) content = "";
 
     const isDraftNote = noteId.startsWith("draft-");
+    const draft = getDraft(noteId);
+    const seoPayload = draft?.seo;
+    const slugPayload = draft?.slug || undefined;
+
     if (isDraftNote) {
-      const draft = getDraft(noteId);
       const collectionId =
         typeof draft?.collectionId === "string"
           ? draft.collectionId
@@ -150,6 +153,9 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
         collectionId,
         content,
         visibility: draft.visibility || "private",
+        slug: slugPayload,
+        seo: seoPayload,
+        collaborators: draft.collaborators,
       });
 
       if (!createdNoteId) return;
@@ -170,6 +176,8 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
     const updatedNote = (await updateContent({
       content,
       noteId,
+      slug: slugPayload,
+      seo: seoPayload,
     })) as PopulatedNote;
     clearDraft(noteId);
 
@@ -178,7 +186,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
       updatedNote.userId?.userName &&
       updatedNote.collectionId?.slug
     ) {
-      const finalSlug = updatedNote.seo?.slug || updatedNote.slug;
+      const finalSlug = updatedNote.slug;
       if (finalSlug) {
         const path = `/${updatedNote.userId.userName}/${updatedNote.collectionId.slug}/${finalSlug}`;
         await revalidateNotePath(path);

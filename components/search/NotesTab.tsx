@@ -70,7 +70,7 @@ export function NotesTab({
               className="flex border-b border-primary/20 hover:bg-primary/10 items-start gap-3 p-2 px-4 group cursor-pointer"
               onClick={() => {
                 NProgress.start();
-                const finalSlug = note.seo?.slug || note.slug;
+                const finalSlug = note.slug;
                 router.push(
                   `/${author?.userName}/${collection?.slug}/${finalSlug}`,
                 );
