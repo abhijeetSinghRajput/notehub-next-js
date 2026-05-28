@@ -60,7 +60,7 @@
 
 .tiptap {
   tab-size: 2;
-  @apply p-5;
+  @apply p-2;
 }
 
 .tiptap .pre-wrapper {

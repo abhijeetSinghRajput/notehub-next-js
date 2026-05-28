@@ -51,9 +51,18 @@ export function useNoteInteractions({
     function handleWrapCode(btn: HTMLElement) {
       const pre = btn.closest(".pre-wrapper")?.querySelector("pre");
       if (!pre) return;
-      const isWrapped = pre.style.whiteSpace === "pre-wrap";
-      pre.style.whiteSpace = isWrapped ? "" : "pre-wrap";
-      pre.style.overflowX = isWrapped ? "" : "hidden";
+      const code = pre.querySelector("code");
+      const isWrapped = pre.classList.contains("wrap-enabled");
+
+      pre.classList.toggle("wrap-enabled", !isWrapped);
+      pre.style.whiteSpace = !isWrapped ? "pre-wrap" : "";
+      pre.style.overflowX = !isWrapped ? "hidden" : "";
+
+      if (code instanceof HTMLElement) {
+        code.style.whiteSpace = !isWrapped ? "pre-wrap" : "";
+        code.style.wordBreak = !isWrapped ? "break-word" : "";
+      }
+
       btn.style.color = isWrapped ? "" : "var(--color-text-info, #3b82f6)";
       btn.setAttribute("aria-pressed", String(!isWrapped));
     }

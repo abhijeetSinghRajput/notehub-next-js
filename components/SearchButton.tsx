@@ -10,6 +10,7 @@ import {
   Ghost,
   ArrowLeft,
   Folder,
+  Command,
 } from "lucide-react";
 import { EmptyState } from "@/components/collection/EmptyState";
 import { useAuthStore } from "@/app/stores/useAuthStore";
@@ -286,14 +287,15 @@ export function SearchButton() {
   return (
     <>
       <Button
-        tooltip="Ctrl + K"
         variant="ghost"
-        size="icon"
-        className="h-9 w-9 rounded-md"
+        className="h-9 rounded-md"
         onClick={() => setOpen(true)}
         aria-label="Search Notes and Users"
       >
         <Search className="h-4 w-4" />
+        <div className="flex items-center text-muted-foreground text-xs gap-1">
+          <Command className="size-3!" />K
+        </div>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
