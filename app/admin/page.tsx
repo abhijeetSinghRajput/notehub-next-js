@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAdminStore, type HealthFilter } from "@/app/stores/useAdminStore";
 import {
   Search,
@@ -25,8 +25,7 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardContent,
-  CardFooter,
+  CardContent
 } from "@/components/ui/card";
 
 // Recharts & Custom Chart Imports
@@ -40,11 +39,9 @@ import {
 import {
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-  type ChartConfig,
+  ChartTooltipContent, type ChartConfig
 } from "@/components/ui/chart";
+import { formatTimeAgo } from "@/lib/utils";
 
 const chartConfig = {
   healthy: {
@@ -644,14 +641,8 @@ export default function AdminOverviewPage() {
                     const blogPath = `/${username}/${collectionSlug}/${noteSlug}`;
                     const dateToFormat =
                       sortBy === "updated" ? blog.updatedAt : blog.createdAt;
-                    const formattedDate = new Date(
-                      dateToFormat,
-                    ).toLocaleDateString(undefined, {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    });
-
+                    const formattedDate = formatTimeAgo(dateToFormat?.toString?.() ?? "")
+                    
                     return (
                       <tr
                         key={blog._id}
