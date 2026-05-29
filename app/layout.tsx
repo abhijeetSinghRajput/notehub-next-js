@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import Script from "next/script";
 
 import "./globals.css";
 import "@/styles/theme.css";
@@ -140,11 +139,10 @@ export default function RootLayout({
           }}
         />
         {/* google ads */}
-        <Script
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2658197801329906"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
 
         {/* Backend warm-up */}

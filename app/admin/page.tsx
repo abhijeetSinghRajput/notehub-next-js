@@ -275,14 +275,14 @@ export default function AdminOverviewPage() {
             <h1 className="text-[22px] font-medium text-foreground leading-tight tracking-tight">
               Blogs health overview
             </h1>
-            <p className="text-[13px] text-muted-foreground/80 mt-1 leading-relaxed max-w-[500px]">
+            <p className="text-[13px] text-muted-foreground/80 mt-1 leading-relaxed max-w-125">
               SEO compliance, quality scores, and structural health across all
               published notes.
             </p>
           </div>
 
           {/* Premium Radial Stacked Semi-Circle Summary Chart */}
-          <Card className="flex flex-col max-w-[440px] w-full bg-card border border-border/60 shadow-sm shrink-0 select-none gap-0 py-3">
+          <Card className="flex flex-col max-w-110 w-full bg-card border border-border/60 shadow-sm shrink-0 select-none gap-0 py-3">
             <CardHeader className="items-start pb-2 pt-1 px-5">
               <CardTitle className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/75">
                 Health Summary
@@ -321,11 +321,11 @@ export default function AdminOverviewPage() {
               </div>
 
               {/* Radial Chart on the Right (overflow-visible to prevent tooltip clipping) */}
-              <div className="h-[90px] w-[165px] sm:h-[120px] sm:w-[220px] relative shrink-0 overflow-visible">
-                <div className="scale-75 sm:scale-100 origin-top-left absolute top-0 left-0 w-[220px] h-[220px] overflow-visible">
+              <div className="h-22.5 w-41.25 sm:h-30 sm:w-55 relative shrink-0 overflow-visible">
+                <div className="scale-75 sm:scale-100 origin-top-left absolute top-0 left-0 w-55 h-55 overflow-visible">
                   <ChartContainer
                     config={chartConfig}
-                    className="w-[220px] h-[220px] [&_svg]:overflow-visible"
+                    className="w-55 h-55 [&_svg]:overflow-visible"
                   >
                     <RadialBarChart
                       data={chartData}
@@ -570,14 +570,14 @@ export default function AdminOverviewPage() {
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 bg-card border border-border/60 rounded-lg p-3">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 max-w-2xl w-full">
             {/* Search Input */}
-            <div className="relative flex-1 max-w-[340px] w-full">
+            <div className="relative flex-1 max-w-85 w-full">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by title or SEO target…"
-                className="w-full pl-8 pr-2.5 py-1.5 text-[13px] rounded-md border border-border/60 bg-secondary/30 text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-border/100 focus:bg-secondary/40"
+                className="w-full pl-8 pr-2.5 py-1.5 text-[13px] rounded-md border border-border/60 bg-secondary/30 text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-border focus:bg-secondary/40"
               />
             </div>
 
@@ -603,7 +603,7 @@ export default function AdminOverviewPage() {
         {/* Table Container */}
         <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse table-fixed min-w-[700px]">
+            <table className="w-full border-collapse table-fixed min-w-175">
               <colgroup>
                 <col style={{ width: "38%" }} />
                 <col style={{ width: "18%" }} />

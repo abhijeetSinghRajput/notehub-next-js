@@ -47,6 +47,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "d3-force": "^3.0.0",
     "embla-carousel-react": "^8.6.0",
     "highlight.js": "^11.11.1",
     "input-otp": "^1.4.2",
@@ -62,6 +63,7 @@
     "react-dom": "^19.2.4",
     "react-easy-crop": "^5.5.7",
     "react-file-drop": "^3.1.6",
+    "react-force-graph-2d": "^1.29.1",
     "react-hook-form": "^7.71.1",
     "recharts": "^3.8.0",
     "rehype-parse": "^9.0.1",
@@ -80,6 +82,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/d3-force": "^3.0.10",
     "@types/hast": "^3.0.4",
     "@types/jsdom": "^28.0.1",
     "@types/node": "^20",

@@ -22,31 +22,42 @@ export const formatTime = (isoString: string): string => {
 // Time formatter
 export const formatTimeAgo = (
   date: string | Date,
-  // Optional fallback/format argument for future extensibility
-  _format?: string,
+  options?: {
+    addSuffix?: boolean;
+  },
 ): string => {
-  const targetDate = date instanceof Date ? date : new Date(date);
-  const seconds = Math.floor(
-    (Date.now() - targetDate.getTime()) / 1000,
-  );
+  const target = new Date(date).getTime();
+  const now = Date.now();
 
-  const intervals: Record<string, number> = {
-    year: 31536000,
-    month: 2592000,
-    week: 604800,
-    day: 86400,
-    hour: 3600,
-    minute: 60,
-  };
+  const diff = Math.floor((now - target) / 1000);
+  const absDiff = Math.abs(diff);
 
-  for (const [unit, secondsInUnit] of Object.entries(intervals)) {
-    const interval = Math.floor(seconds / secondsInUnit);
-    if (interval >= 1) {
-      const label = interval === 1 ? unit : `${unit}s`;
-      return `${interval} ${label} ago`;
+  const intervals = [
+    { label: "year", seconds: 31536000 },
+    { label: "month", seconds: 2592000 },
+    { label: "week", seconds: 604800 },
+    { label: "day", seconds: 86400 },
+    { label: "hour", seconds: 3600 },
+    { label: "minute", seconds: 60 },
+  ];
+
+  if (absDiff < 10) return "just now";
+
+  for (const { label, seconds } of intervals) {
+    const value = Math.floor(absDiff / seconds);
+
+    if (value >= 1) {
+      const text = `${value} ${label}${value > 1 ? "s" : ""}`;
+
+      if (options?.addSuffix === false) {
+        return text;
+      }
+
+      return diff >= 0 ? `${text} ago` : `in ${text}`;
     }
   }
-  return "Just now";
+
+  return "just now";
 };
 
 export const formatDate = (isoString: string): string => {
