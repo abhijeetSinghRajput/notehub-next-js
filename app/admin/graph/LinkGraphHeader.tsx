@@ -126,9 +126,9 @@ export function LinkGraphHeader({
               <Check className="h-3.5 w-3.5" />
             </span>
           )}
-          <Button onClick={onStartCrawl} disabled={isCrawling} size="sm" className="gap-2">
-            {isCrawling ? <Loader2 className="animate-spin" /> : <Play />}
-            {isCrawling ? "Crawling…" : "Start New Crawl"}
+          <Button onClick={onStartCrawl} disabled={isCrawling} size="sm" className="gap-2 w-28">
+            {isCrawling ? <Loader2 className="animate-spin" /> : <Play fill="currentColor" />}
+            {isCrawling ? "Crawling…" : "New Crawl"}
           </Button>
         </div>
       </div>
