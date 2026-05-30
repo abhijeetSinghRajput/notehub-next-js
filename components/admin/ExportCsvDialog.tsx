@@ -17,10 +17,11 @@ import { Download, FileSpreadsheet } from "lucide-react";
 import type { ILinkGraphCrawl } from "@/types/linkGraph.types";
 
 // ── Section keys ──────────────────────────────────────────────────────────────
-type SectionKey = "broken" | "orphans" | "deadends" | "http";
+type SectionKey = "broken" | "orphans" | "deadends" | "http" | "isolated";
 
 const SECTIONS: { key: SectionKey; label: string; description: string }[] = [
   { key: "broken",   label: "Broken links",     description: "Source slug + unresolved href" },
+  { key: "isolated", label: "Isolated notes",   description: "Notes with no internal incoming links" },
   { key: "orphans",  label: "Orphan notes",      description: "Notes with no incoming links" },
   { key: "deadends", label: "Dead end notes",    description: "Notes with no outgoing links" },
   { key: "http",     label: "HTTP link notes",   description: "Notes containing http:// links" },
@@ -29,7 +30,6 @@ const SECTIONS: { key: SectionKey; label: string; description: string }[] = [
 // ── CSV builders ──────────────────────────────────────────────────────────────
 function escapeCell(value: string | number | boolean): string {
   const str = String(value);
-  // Wrap in quotes if contains comma, quote, or newline
   if (/[",\n\r]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
   return str;
 }
@@ -49,6 +49,21 @@ function buildBrokenCsv(crawl: ILinkGraphCrawl): string {
       bl.href,
     ]));
   });
+  return rows.join("\n");
+}
+
+function buildIsolatedCsv(crawl: ILinkGraphCrawl): string {
+  const rows = ["Title,Slug,Full Path,Outgoing Links"];
+  crawl.nodes
+    ?.filter((n) => Boolean((n as any).isIsolated))
+    .forEach((n) => {
+      rows.push(buildRow([
+        n.title ?? "",
+        n.slug,
+        n.fullPath ? `/${n.fullPath}` : "",
+        n.outgoingCount,
+      ]));
+    });
   return rows.join("\n");
 }
 
@@ -99,6 +114,7 @@ function buildHttpCsv(crawl: ILinkGraphCrawl): string {
 
 const CSV_BUILDERS: Record<SectionKey, (crawl: ILinkGraphCrawl) => string> = {
   broken:   buildBrokenCsv,
+  isolated: buildIsolatedCsv,
   orphans:  buildOrphansCsv,
   deadends: buildDeadEndsCsv,
   http:     buildHttpCsv,
@@ -124,7 +140,7 @@ interface ExportCsvDialogProps {
 
 export function ExportCsvDialog({ open, onOpenChange, crawl }: ExportCsvDialogProps) {
   const [selected, setSelected] = useState<Set<SectionKey>>(
-    new Set(["broken", "orphans", "deadends", "http"])
+    new Set(["broken", "isolated", "orphans", "deadends", "http"])
   );
 
   const allChecked = selected.size === SECTIONS.length;
@@ -145,23 +161,20 @@ export function ExportCsvDialog({ open, onOpenChange, crawl }: ExportCsvDialogPr
   // Row counts for each section — shown as hint next to label
   const counts: Record<SectionKey, number> = {
     broken:   crawl.brokenLinks?.length ?? 0,
+    isolated: crawl.nodes?.filter((n) => Boolean((n as any).isIsolated)).length ?? 0,
     orphans:  crawl.nodes?.filter((n) => n.isOrphan).length ?? 0,
     deadends: crawl.nodes?.filter((n) => n.isDeadEnd).length ?? 0,
     http:     crawl.nodes?.filter((n) => n.hasHttp).length ?? 0,
   };
 
   function handleExport() {
-    const crawledAt = (crawl.completedAt ?? crawl.createdAt ?? "")
-      .slice(0, 10); // YYYY-MM-DD
+    const crawledAt = (crawl.completedAt ?? crawl.createdAt ?? "").slice(0, 10); // YYYY-MM-DD
 
     if (selected.size === 1) {
-      // Single section → one file
       const [key] = [...selected] as [SectionKey];
       const csv = CSV_BUILDERS[key](crawl);
       downloadCsv(csv, `notehub-${key}-${crawledAt}.csv`);
     } else {
-      // Multiple sections → one file per section, staggered by 80ms so
-      // browsers don't suppress duplicate download dialogs
       [...selected].forEach((key, i) => {
         setTimeout(() => {
           const csv = CSV_BUILDERS[key as SectionKey](crawl);

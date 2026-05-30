@@ -293,9 +293,9 @@ export function SearchButton() {
         aria-label="Search Notes and Users"
       >
         <Search className="h-4 w-4" />
-        <div className="flex items-center text-muted-foreground text-xs gap-1">
+        <kbd className="flex items-center text-muted-foreground text-xs gap-1">
           <Command className="size-3!" />K
-        </div>
+        </kbd>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>

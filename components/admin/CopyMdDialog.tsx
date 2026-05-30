@@ -18,11 +18,12 @@ import { Check, Copy, FileText } from "lucide-react";
 import type { ILinkGraphCrawl } from "@/types/linkGraph.types";
 
 // ── Section keys ──────────────────────────────────────────────────────────────
-type SectionKey = "summary" | "broken" | "orphans" | "deadends" | "http";
+type SectionKey = "summary" | "broken" | "isolated" | "orphans" | "deadends" | "http";
 
 const SECTIONS: { key: SectionKey; label: string }[] = [
   { key: "summary",  label: "Summary stats" },
   { key: "broken",   label: "Broken links" },
+  { key: "isolated",   label: "Isolated links" },
   { key: "orphans",  label: "Orphan notes" },
   { key: "deadends", label: "Dead end notes" },
   { key: "http",     label: "HTTP link notes" },
@@ -63,6 +64,22 @@ function buildMarkdown(crawl: ILinkGraphCrawl, selected: Set<SectionKey>): strin
       lines.push(`| \`${source}\` | \`${bl.href}\` |`);
     });
     lines.push("");
+  }
+
+  // ── Isolated links ───────────────────────────────────────────────────────────
+  if (selected.has("isolated")) {
+    const isolated = crawl.nodes?.filter((n) => n.isIsolated) ?? [];
+    if (isolated.length) {
+      lines.push(`## Isolated Notes (${isolated.length})\n`);
+      lines.push(`> These notes have no incoming internal links.\n`);
+      lines.push(`| Title | Path |`);
+      lines.push(`|-------|------|`);
+      isolated.forEach((n) => {
+        const path = n.fullPath ? `/${n.fullPath}` : `/${n.slug}`;
+        lines.push(`| ${n.title || n.slug} | \`${path}\` |`);
+      });
+      lines.push("");
+    }
   }
 
   // ── Orphans ────────────────────────────────────────────────────────────────
@@ -125,7 +142,7 @@ interface CopyMdDialogProps {
 
 export function CopyMdDialog({ open, onOpenChange, crawl }: CopyMdDialogProps) {
   const [selected, setSelected] = useState<Set<SectionKey>>(
-    new Set(["summary", "broken", "orphans", "deadends", "http"])
+    new Set(["summary", "broken", "isolated", "orphans", "deadends", "http"])
   );
   const [copied, setCopied] = useState(false);
 

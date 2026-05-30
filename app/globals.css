@@ -65,7 +65,9 @@
   footer {
     a {
       color: var(--muted-foreground);
-      text-decoration: underline;
+    }
+    a:hover{
+      text-decoration: underline dotted;
     }
   }
 

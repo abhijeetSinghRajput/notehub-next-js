@@ -17,6 +17,7 @@ export interface IGraphNode {
   incomingCount: number;
   outgoingCount: number;
   isOrphan: boolean;
+  isIsolated: boolean;
   isDeadEnd: boolean;
   hasBrokenLinks: boolean;
   hasHttp: boolean;

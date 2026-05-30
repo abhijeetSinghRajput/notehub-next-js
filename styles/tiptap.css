@@ -291,7 +291,12 @@ to reserver the h1 for page title
 
 .tiptap a {
   color: #0066ff;
-  text-decoration: underline;
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+.tiptap a:hover {
+  text-decoration: underline dotted;
 }
 
 
