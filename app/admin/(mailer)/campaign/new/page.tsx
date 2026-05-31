@@ -921,9 +921,10 @@ export default function NewCampaignPage() {
                     const markers = monaco.editor
                       .getModelMarkers({})
                       .filter(
-                        (m) => m.resource.toString() === model.uri.toString(),
+                        (m: monacoEditor.IMarker) =>
+                          m.resource.toString() === model.uri.toString(),
                       )
-                      .map((m) => ({
+                      .map((m: monacoEditor.IMarker) => ({
                         ...m,
                         severity: monaco.MarkerSeverity.Error,
                       }));
