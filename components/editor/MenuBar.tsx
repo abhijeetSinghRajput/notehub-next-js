@@ -120,6 +120,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
 
 
   const handleContentSave = async () => {
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL;
     if (!noteId) return;
 
     let content = editor
@@ -129,6 +130,21 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
       .replace(/<\/table>/g, "</table></div>")
       .replace(/<pre/g, "<div className='relative pre-wrapper'><pre")
       .replace(/<\/pre>/g, "</pre></div>");
+
+    content = content.replace(
+      /<a([^>]*?)href="([^"]+)"([^>]*?)>/gi,
+      (match, before, href, after) => {
+        const isInternal =
+          href.startsWith("/") ||
+          href.startsWith(APP_URL);
+
+        if (!isInternal) return match;
+        console.log({before, href, after})
+        return match
+          .replace(/\s*target="_blank"/gi, "")
+          .replace(/\s*rel="noopener noreferrer"/gi, "");
+      }
+    );
 
     if (isEmptyContent(content)) content = "";
 
@@ -226,9 +242,9 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
   };
 
   return (
-    <div className="controll-group sticky top-16 z-10 bg-background border-b border-input">
+    <div className="controll-group top-16 z-10 sticky bg-background border-input border-b">
       <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-        <div className="p-2 Button-group flex gap-1 w-max mx-auto">
+        <div className="Button-group flex gap-1 mx-auto p-2 w-max">
           <Button
             tooltip={"Ctrl + S"}
             disabled={
@@ -247,7 +263,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             Save
           </Button>
 
-          <div className="hidden md:flex gap-0.5 border-r pr-1">
+          <div className="hidden md:flex gap-0.5 pr-1 border-r">
             {FORMATTING_BUTTONS.map(
               ({ icon, command, tooltip, name }, index) => (
                 <Button
@@ -277,7 +293,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
           <ListDropdown editor={editor} />
           <TextAlignDropdown editor={editor} />
 
-          <div className="hidden md:flex gap-0.5 border-l pl-1">
+          <div className="hidden md:flex gap-0.5 pl-1 border-l">
             {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
               <Button
                 tooltip={tooltip}
@@ -307,7 +323,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
             triggerIcon={<TableIcon />}
           />
 
-          <span className="h-10 bg-border w-px" />
+          <span className="bg-border w-px h-10" />
 
           {CONTROL_BUTTONS.map(({ icon, command, tooltip }, index) => (
             <Button

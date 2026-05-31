@@ -633,7 +633,7 @@ export default function AdminOverviewPage() {
               <tbody className="divide-y divide-border/60">
                 {blogs.length > 0 ? (
                   blogs.map((blog) => {
-                    const score = blog.seo?.score ?? 100;
+                    const score = blog.seoScore ?? 100;
                     const username = blog.userId?.userName || "user";
                     const collectionSlug =
                       blog.collectionId?.slug || "collection";
