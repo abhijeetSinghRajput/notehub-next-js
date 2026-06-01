@@ -47,7 +47,7 @@ const socialLinks = [
     label: "GitHub",
   },
   {
-    href: "https://www.linkedin.com/in/abhijeet-singh-rajput1/",
+    href: "https://www.linkedin.com/in/abhijeet-singh27/",
     icon: LinkedinIcon,
     label: "LinkedIn",
   },

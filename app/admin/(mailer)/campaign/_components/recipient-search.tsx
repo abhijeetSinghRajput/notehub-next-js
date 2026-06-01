@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { User } from "../new/page";
 import Image from "next/image";
 import { Loader2, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/app/stores/useAuthStore";
+import type { IUser as User } from "@/types/model";
 
 interface RecipientSearchProps {
   selected: User[];
@@ -68,35 +68,6 @@ const RecipientSearch = ({
 
   return (
     <div className="space-y-3">
-      {/* Selected chips */}
-      {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {selected.map((u) => (
-            <div
-              key={u._id}
-              className="flex items-center gap-1.5 bg-muted py-0.5 pr-2 pl-1 rounded-full"
-            >
-              <div className="relative rounded-full size-5 overflow-hidden shrink-0">
-                <Image
-                  src={u.avatar || "/avatar.svg"}
-                  alt={u.fullName}
-                  fill
-                  sizes="20px"
-                  className="object-cover"
-                />
-              </div>
-              <span className="font-medium text-xs">{u.fullName}</span>
-              <button
-                onClick={() => onRemove(u._id)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Search */}
       <div className="relative">
         <Search className="top-1/2 left-2.5 absolute w-4 h-4 text-muted-foreground -translate-y-1/2" />

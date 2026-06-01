@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Users } from "lucide-react";
+import { Loader2, Plus, RefreshCcw, Trash2, Users } from "lucide-react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
@@ -39,7 +40,7 @@ interface Contact {
   _id: string;
   label: string;
   description: string;
-  userIds: string[];
+  emails: string[];
   createdAt: string;
 }
 
@@ -47,12 +48,14 @@ export default function ContactPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
   // form state
   const [label, setLabel] = useState("");
   const [description, setDescription] = useState("");
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedEmails, setselectedEmails] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [usersLoading, setUsersLoading] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -104,29 +107,30 @@ export default function ContactPage() {
     debouncedFetchUsers(search);
   }, [search, open, debouncedFetchUsers]);
 
-  const toggleUser = (id: string) => {
-    setSelectedIds((prev) => {
+  const toggleUser = (email: string) => {
+    setselectedEmails((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      next.has(email) ? next.delete(email) : next.add(email);
       return next;
     });
   };
 
   const handleCreate = async () => {
     if (!label.trim()) return toast.error("Label is required");
-    if (selectedIds.size === 0) return toast.error("Select at least one user");
+    if (selectedEmails.size === 0)
+      return toast.error("Select at least one user");
     setCreating(true);
     try {
       await axiosInstance.post("/mailer/contacts", {
         label,
         description,
-        userIds: Array.from(selectedIds),
+        emails: Array.from(selectedEmails),
       });
       toast.success("Contact group created");
       setOpen(false);
       setLabel("");
       setDescription("");
-      setSelectedIds(new Set());
+      setselectedEmails(new Set());
       fetchContacts();
     } catch {
       toast.error("Failed to create contact group");
@@ -143,6 +147,11 @@ export default function ContactPage() {
     } catch {
       toast.error("Failed to delete");
     }
+  };
+
+  const openContactDetails = (contact: Contact) => {
+    setSelectedContact(contact);
+    setDetailsOpen(true);
   };
 
   return (
@@ -186,18 +195,23 @@ export default function ContactPage() {
                     <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                   </div>
                 ) : users.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-6">
-                    No users found
-                  </p>
+                  <div className="flex flex-col items-center gap-2 border bg-muted p-4">
+                    <p className="text-sm text-muted-foreground text-center">
+                      No users found
+                    </p>
+                    <Button size="sm" onClick={() => fetchUsers()}>
+                      <RefreshCcw />
+                      Retry
+                    </Button>
+                  </div>
                 ) : (
-                  0177
                   users.map((user) => (
                     <div
                       key={user._id}
                       className="flex items-center gap-3 px-3 py-2 hover:bg-muted cursor-pointer"
-                      onClick={() => toggleUser(user._id)}
+                      onClick={() => toggleUser(user.email)}
                     >
-                      <Checkbox checked={selectedIds.has(user._id)} />
+                      <Checkbox checked={selectedEmails.has(user.email)} />
                       <div className="min-w-0 flex gap-2">
                         <div className="relative size-9 shrink-0 rounded-full overflow-hidden">
                           <CloudinaryImage
@@ -223,11 +237,10 @@ export default function ContactPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">
-                  {selectedIds.size} select
-                  ]-976
+                  {selectedEmails.size} selected
                 </span>
                 <Button size="sm" onClick={handleCreate} disabled={creating}>
-  *=====--09998765fbeating && (
+                  {creating && (
                     <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                   )}
                   Create
@@ -248,42 +261,94 @@ export default function ContactPage() {
           <p className="text-sm">No contact groups yet</p>
         </div>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Label</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Users</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {contacts.map((c) => (
-              <TableRow key={c._id}>
-                <TableCell className="font-medium">{c.label}</TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {c.description || "—"}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{c.userIds.length} users</Badge>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(c.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(c._id)}
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </TableCell>
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Label</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Users</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead />
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {contacts.map((c) => (
+                <TableRow
+                  key={c._id}
+                  className="cursor-pointer"
+                  onClick={() => openContactDetails(c)}
+                >
+                  <TableCell className="font-medium">{c.label}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {c.description || "—"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{c.emails.length} users</Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {new Date(c.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDelete(c._id);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>{selectedContact?.label}</DialogTitle>
+                <DialogDescription>
+                  {selectedContact?.description || "—"}
+                </DialogDescription>
+              </DialogHeader>
+              {selectedContact && (
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <div className="flex justify-between gap-2 items-center">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Emails
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">
+                          {selectedContact.emails.length} emails
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          Created{" "}
+                          {new Date(
+                            selectedContact.createdAt,
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto rounded-md border">
+                      {selectedContact.emails.map((email) => (
+                        <div
+                          key={email}
+                          className="hover:bg-muted/30 px-3 py-2 text-sm break-all"
+                        >
+                          {email}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </>
       )}
     </div>
   );

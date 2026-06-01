@@ -236,7 +236,7 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
         </TabsContent>
 
         <TabsContent value="preview">
-          <div className="border rounded-md overflow-hidden min-h-72">
+          <div className="border rounded-md overflow-hidden h-100">
             {previewLoading ? (
               <div className="flex items-center justify-center h-72">
                 <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
@@ -244,7 +244,7 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
             ) : (
               <iframe
                 srcDoc={previewHtml}
-                className="w-full min-h-72 border-0"
+                className="w-full h-100 border"
                 title="Email preview"
               />
             )}

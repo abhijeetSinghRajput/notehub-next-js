@@ -9,6 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 interface PreviewSheetProps {
   open: boolean;
@@ -20,11 +21,7 @@ interface PreviewSheetProps {
   }[];
 }
 
-const PreviewSheet = ({
-  open,
-  onOpenChange,
-  previews,
-}: PreviewSheetProps) => {
+const PreviewSheet = ({ open, onOpenChange, previews }: PreviewSheetProps) => {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -41,7 +38,7 @@ const PreviewSheet = ({
       >
         <SheetHeader className="px-4 py-3 border-b shrink-0">
           <div className="flex justify-between items-center">
-            <SheetTitle className="font-medium text-sm">Preview</SheetTitle>
+            <SheetTitle className="font-medium">Preview</SheetTitle>
             {previews.length > 1 && (
               <div className="flex items-center gap-1 pr-10">
                 <Button
@@ -53,9 +50,10 @@ const PreviewSheet = ({
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <span className="w-16 text-muted-foreground text-xs text-center">
-                  {current?.label}
-                </span>
+
+                <p className="text-muted-foreground text-xs w-20 text-center">
+                  {index + 1} / {previews.length}
+                </p>
                 <Button
                   variant="outline"
                   size="icon"
@@ -69,20 +67,21 @@ const PreviewSheet = ({
             )}
           </div>
           {previews.length > 1 && (
-            <p className="text-muted-foreground text-xs">
-              {index + 1} of {previews.length} recipients
-            </p>
+            <p className="text-muted-foreground text-sm">{current?.label}</p>
           )}
         </SheetHeader>
-        <div className="flex-1 overflow-hidden">
-          <div className="p-2 font-normal text-muted-foreground">
-            {current?.subject || "No subject"}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="py-3 px-4 font-normal space-y-1 border-b">
+            <Label>Subject</Label>
+            <div className="text-muted-foreground">
+              {current?.subject || "No subject"}
+            </div>
           </div>
           {current ? (
             <iframe
               key={index}
               srcDoc={current.html}
-              className="border-0 w-full h-full"
+              className="border-0 w-full flex-1"
               title="Email preview"
             />
           ) : (

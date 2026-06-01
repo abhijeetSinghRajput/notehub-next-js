@@ -22,6 +22,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -47,8 +55,8 @@ import {
   AlertCircle,
   BarChart3,
   RefreshCw,
-  LucideDivide,
-  ExternalLink,
+  ChevronDown,
+  ChevronUp,
   Check,
 } from "lucide-react";
 import Link from "next/link";
@@ -61,22 +69,20 @@ interface Campaign {
   _id: string;
   name: string;
   subject: string;
+  htmlBody: string;
+
+  emails: string[];
+
   status: "draft" | "sending" | "done" | "failed";
-  templateId: {
-    _id: string;
-    name: string;
-    subject: string;
-    htmlBody: string;
-    mode: "shared" | "per_recipient";
-  } | null;
-  contactId: {
-    _id: string;
-    label: string;
-    userIds: string[];
-    description: string;
-  } | null;
+
   extraJson: Record<string, unknown>;
-  stats: { total: number; sent: number; failed: number };
+
+  stats: {
+    total: number;
+    sent: number;
+    failed: number;
+  };
+
   sentAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -212,7 +218,9 @@ export default function CampaignDetailPage() {
   const StatusIcon = statusInfo.icon;
   const canSend =
     campaign.status === "draft" || campaign.status === "failed";
-  const hasStats = campaign.stats.total > 0;
+  const emails = campaign.emails ?? [];
+  const emailCount = emails.length;
+  const hasStats = campaign.status !== "draft";
   const sentPercent = hasStats
     ? Math.round((campaign.stats.sent / campaign.stats.total) * 100)
     : 0;
@@ -220,7 +228,7 @@ export default function CampaignDetailPage() {
     ? Math.round((campaign.stats.failed / campaign.stats.total) * 100)
     : 0;
 
-  const jsonString = JSON.stringify(campaign.extraJson, null, 2);
+  const jsonString = JSON.stringify(campaign.extraJson ?? {}, null, 2);
 
   const highlighted = hljs.highlight(jsonString, {
     language: "json",
@@ -354,24 +362,52 @@ export default function CampaignDetailPage() {
             <div className="gap-y-2.5 grid grid-cols-[100px_1fr] text-sm">
               <span className="text-muted-foreground">Subject</span>
               <span className="font-medium">
-                {campaign.subject || campaign.templateId?.subject || "—"}
+                {campaign.subject || "—"}
               </span>
 
-              <span className="text-muted-foreground">Template</span>
-              <Link href={`/admin/template/${campaign.templateId?._id}`} className="flex items-center gap-2 text-primary hover:underline">
-                {campaign.templateId?.name ?? "—"}
-                <ExternalLink className="size-3"/>
-              </Link>
-
-              <span className="text-muted-foreground">Contact</span>
-              <span className="flex items-center gap-1.5">
-                {campaign.contactId?.label ?? "—"}
-                {campaign.contactId && (
-                  <Badge variant="secondary" className="text-xs">
-                    {campaign.contactId.userIds.length} users
-                  </Badge>
-                )}
-              </span>
+              <span className="text-muted-foreground">Recipients</span>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center justify-between gap-2 text-left font-medium text-foreground hover:text-foreground/80 transition-colors"
+                  >
+                    <span>
+                      {emailCount} recipient{emailCount === 1 ? "" : "s"}
+                    </span>
+                    <span className="flex flex-col leading-none text-muted-foreground">
+                      <ChevronUp className="w-3.5 h-3.5 -mb-0.5" />
+                      <ChevronDown className="w-3.5 h-3.5 -mt-0.5" />
+                    </span>
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Recipients</DialogTitle>
+                    <DialogDescription>
+                      All email addresses included in this campaign.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="max-h-80 overflow-y-auto rounded-md border bg-muted/20 p-3">
+                    {emailCount > 0 ? (
+                      <div className="space-y-1.5">
+                        {emails.map((email, index) => (
+                          <div
+                            key={`${email}-${index}`}
+                            className="rounded-md border bg-background px-3 py-2 text-sm"
+                          >
+                            {email}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="py-6 text-center text-sm text-muted-foreground">
+                        No recipients available
+                      </p>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               <span className="text-muted-foreground">Sent At</span>
               <span>
@@ -399,7 +435,7 @@ export default function CampaignDetailPage() {
               dangerouslySetInnerHTML={{ __html: highlighted }}
             />
           ) : (
-            <p className="text-muted-foreground text-sm">No extra data</p>
+            <p className="text-muted-foreground text-sm p-4 text-center">No extra data</p>
           )}
         </div>
 
@@ -498,7 +534,7 @@ export default function CampaignDetailPage() {
                               )
                               : "—"}
                           </TableCell>
-                          <TableCell className="max-w-[200px] text-muted-foreground text-xs truncate">
+                          <TableCell className="max-w-50 text-muted-foreground text-xs truncate">
                             {job.error ?
                               <Popover>
                                 <PopoverTrigger asChild>

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -15,27 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Send, Eye, FileText, Users } from "lucide-react";
+import { Loader2, Send, Eye, FileText, Users, Code2, Braces } from "lucide-react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import Editor from "@monaco-editor/react";
 import { Liquid } from "liquidjs";
-import type { editor as monacoEditor } from "monaco-editor";
 import PreviewSheet from "../_components/preview-sheet";
 import RecipientsDialog from "../_components/recipients-dialog";
+import { cn } from "@/lib/utils";
 
-const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex justify-center items-center bg-muted rounded-md h-52">
-      <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
-    </div>
-  ),
-});
-
-const liquidEngine = new Liquid({
-  strictFilters: false,
-  strictVariables: false,
-});
+const liquidEngine = new Liquid({ strictFilters: false, strictVariables: false });
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -44,72 +31,82 @@ export interface Template {
   name: string;
   subject: string;
   htmlBody: string;
-  mode: "shared" | "per_recipient";
 }
 
 export interface Contact {
   _id: string;
   label: string;
-  userIds: string[];
+  emails: string[];
 }
-
-export interface User {
-  _id: string;
-  fullName: string;
-  userName: string;
-  email: string;
-  avatar: string;
-}
-
-// ─── JSON Validation ──────────────────────────────────────────
 
 export interface JsonError {
   message: string;
-  line?: number;
-  col?: number;
 }
 
-function validateExtraJson(
-  raw: string,
-  mode: "shared" | "per_recipient",
-): JsonError[] {
+// ─── JSON validation ──────────────────────────────────────────
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateExtraJson(raw: string): { errors: JsonError[]; isPerRecipient: boolean } {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
   } catch (e) {
-    return [
-      { message: `Invalid JSON: ${(e as Error).message}`, line: 1, col: 1 },
-    ];
+    return {
+      errors: [{ message: `Invalid JSON: ${(e as Error).message}` }],
+      isPerRecipient: false,
+    };
   }
 
-  if (mode === "per_recipient") {
-    if (!Array.isArray(parsed)) {
-      return [
-        {
-          message: "Per-recipient mode requires a JSON array [ ... ]",
-          line: 1,
-          col: 1,
-        },
-      ];
-    }
+  if (Array.isArray(parsed)) {
     const errors: JsonError[] = [];
     (parsed as unknown[]).forEach((entry, i) => {
-      if (
-        typeof entry !== "object" ||
-        entry === null ||
-        !("userId" in (entry as object))
-      ) {
-        // find approximate line by scanning for nth opening brace
+      if (typeof entry !== "object" || entry === null) {
+        errors.push({ message: `Entry [${i}] must be an object` });
+        return;
+      }
+      const e = entry as Record<string, unknown>;
+      if (typeof e.email !== "string" || !EMAIL_RE.test(e.email)) {
         errors.push({
-          message: `Entry [${i}] is missing required field "userId"`,
+          message: `Entry [${i}] is missing a valid "email" field`,
         });
       }
     });
-    return errors;
+    return { errors, isPerRecipient: true };
   }
 
-  return [];
+  if (typeof parsed === "object" && parsed !== null) {
+    return { errors: [], isPerRecipient: false };
+  }
+
+  return {
+    errors: [{ message: "Extra JSON must be an object { } or an array [ ]" }],
+    isPerRecipient: false,
+  };
 }
+
+// ─── Monaco JSON markers ──────────────────────────────────────
+
+function setMonacoJsonMarkers(
+  monaco: typeof import("monaco-editor"),
+  model: import("monaco-editor").editor.ITextModel,
+  errors: JsonError[]
+) {
+  const markers = errors.map((e, i) => ({
+    severity: monaco.MarkerSeverity.Error,
+    startLineNumber: 1,
+    startColumn: 1,
+    endLineNumber: 1,
+    endColumn: 1,
+    message: e.message,
+    source: "campaign",
+  }));
+  monaco.editor.setModelMarkers(model, "campaign", markers);
+}
+
+// ─── Tab types ────────────────────────────────────────────────
+
+type EditorTab = "html" | "json";
 
 // ─── Main Page ────────────────────────────────────────────────
 
@@ -120,31 +117,56 @@ export default function NewCampaignPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // editor state
+  const [activeTab, setActiveTab] = useState<EditorTab>("html");
+  const [htmlBody, setHtmlBody] = useState("<p>Hello {{ extra.name }},</p>\n");
+  const [extraJson, setExtraJson] = useState("{}");
+  const [jsonErrors, setJsonErrors] = useState<JsonError[]>([]);
+  const [isPerRecipient, setIsPerRecipient] = useState(false);
+
+  // monaco refs
+  const monacoRef = useRef<typeof import("monaco-editor") | null>(null);
+  const jsonModelRef = useRef<import("monaco-editor").editor.ITextModel | null>(null);
+
   // preview
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previews, setPreviews] = useState<
-    {
-      label: string;
-      html: string;
-      subject: string;
-    }[]
-  >([]);
+  const [previews, setPreviews] = useState<{ label: string; html: string; subject: string }[]>([]);
   const [previewBuilding, setPreviewBuilding] = useState(false);
 
-  // recipients dialog
+  // recipients (manual select — disabled when per-recipient extraJson is active)
   const [recipientsDialogOpen, setRecipientsDialogOpen] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [contactId, setContactId] = useState("");
+  const [manualEmails, setManualEmails] = useState<string[]>([]);
 
   // form
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
   const [templateId, setTemplateId] = useState("");
-  const [extraJson, setExtraJson] = useState("{\n  \n}");
-  const [jsonErrors, setJsonErrors] = useState<JsonError[]>([]);
-  const [devMode, setDevMode] = useState(false);
-  const editorRef = useRef<monacoEditor.IStandaloneCodeEditor | null>(null);
-  const monacoRef = useRef<typeof import("monaco-editor") | null>(null);
+
+  // ─── Derived recipient list ──────────────────────────────────
+
+  const derivedEmails = useCallback((): string[] => {
+    if (!isPerRecipient) return manualEmails;
+    try {
+      const parsed = JSON.parse(extraJson);
+      if (Array.isArray(parsed)) {
+        return [
+          ...new Set(
+            parsed
+              .map((e: Record<string, unknown>) =>
+                typeof e.email === "string" ? e.email.trim().toLowerCase() : null
+              )
+              .filter(Boolean) as string[]
+          ),
+        ];
+      }
+    } catch {}
+    return [];
+  }, [isPerRecipient, extraJson, manualEmails]);
+
+  const recipientEmails = derivedEmails();
+  const recipientCount = recipientEmails.length;
+
+  // ─── Load data ───────────────────────────────────────────────
 
   useEffect(() => {
     const load = async () => {
@@ -164,146 +186,94 @@ export default function NewCampaignPage() {
     load();
   }, []);
 
-  const selectedTemplate = templates.find((t) => t._id === templateId);
-  const selectedContact = contacts.find((c) => c._id === contactId);
-
-  const recipientCount =
-    selectedUsers.length > 0
-      ? selectedUsers.length
-      : (selectedContact?.userIds.length ?? 0);
-
-  const recipientLabel =
-    selectedUsers.length > 0
-      ? `${selectedUsers.length} user${selectedUsers.length !== 1 ? "s" : ""}`
-      : selectedContact
-        ? `${selectedContact.label} (${selectedContact.userIds.length})`
-        : null;
-
-  // auto-fill subject from template
-  const handleTemplateChange = (id: string) => {
-    setTemplateId(id);
-    const t = templates.find((t) => t._id === id);
-    if (t && !subject) setSubject(t.subject);
-    // reset json scaffold based on mode
-    if (t?.mode === "per_recipient") {
-      setExtraJson('[\n  {\n    "userId": "",\n    \n  }\n]');
-    } else {
-      setExtraJson("{\n  \n}");
-    }
-    setJsonErrors([]);
-  };
-
-  // validate + push monaco markers
-  const runValidation = useCallback(
-    (raw: string) => {
-      if (!selectedTemplate) {
-        setJsonErrors([]);
-        return;
-      }
-      const errors = validateExtraJson(raw, selectedTemplate.mode);
-      setJsonErrors(errors);
-
-      // push to monaco if mounted
-      if (editorRef.current && monacoRef.current) {
-        const model = editorRef.current.getModel();
-        if (model) {
-          monacoRef.current.editor.setModelMarkers(
-            model,
-            "campaign",
-            errors.map((e) => ({
-              startLineNumber: e.line ?? 1,
-              startColumn: e.col ?? 1,
-              endLineNumber: e.line ?? 1,
-              endColumn: 100,
-              message: e.message,
-              severity: monacoRef.current!.MarkerSeverity.Error,
-            })),
-          );
-        }
-      }
-    },
-    [selectedTemplate],
-  );
+  // ─── JSON validation effect ──────────────────────────────────
 
   useEffect(() => {
-    runValidation(extraJson);
-  }, [extraJson, runValidation]);
+    const { errors, isPerRecipient: ipr } = validateExtraJson(extraJson);
+    setJsonErrors(errors);
+    setIsPerRecipient(ipr);
 
-  // build previews using liquidjs
+    // Update Monaco markers if model is mounted
+    if (monacoRef.current && jsonModelRef.current) {
+      setMonacoJsonMarkers(monacoRef.current, jsonModelRef.current, errors);
+    }
+  }, [extraJson]);
+
+  // ─── Template insert (one-time) ──────────────────────────────
+
+  const handleTemplateChange = (id: string) => {
+    const t = templates.find((t) => t._id === id);
+    if (!t) return;
+    setHtmlBody(t.htmlBody);
+    if (!subject) setSubject(t.subject);
+    setActiveTab("html");
+    setTemplateId(""); // reset selector immediately
+    toast.success(`Template "${t.name}" inserted`);
+  };
+
+  // ─── Monaco mount handlers ───────────────────────────────────
+
+  const handleJsonEditorMount = (
+    editor: import("monaco-editor").editor.IStandaloneCodeEditor,
+    monaco: typeof import("monaco-editor")
+  ) => {
+    monacoRef.current = monaco;
+    jsonModelRef.current = editor.getModel();
+
+    // Run initial validation
+    const { errors } = validateExtraJson(extraJson);
+    if (jsonModelRef.current) {
+      setMonacoJsonMarkers(monaco, jsonModelRef.current, errors);
+    }
+  };
+
+  // ─── Preview ─────────────────────────────────────────────────
+
   const buildPreviews = useCallback(async () => {
-    if (!selectedTemplate) return toast.error("Select a template first");
-    setPreviewBuilding(true);
+    const { errors, isPerRecipient: ipr } = validateExtraJson(extraJson);
+    if (errors.length > 0) return toast.error("Fix JSON errors first");
 
+    setPreviewBuilding(true);
     try {
-      let extra: unknown;
+      let parsed: unknown;
       try {
-        extra = JSON.parse(extraJson);
+        parsed = JSON.parse(extraJson);
       } catch {
         return toast.error("Fix JSON first");
       }
 
-      const results: {
-        label: string;
-        html: string;
-        subject: string;
-      }[] = [];
+      const results: { label: string; html: string; subject: string }[] = [];
 
-      if (selectedTemplate.mode === "per_recipient" && Array.isArray(extra)) {
-        // render one preview per entry in the array
-        for (let i = 0; i < Math.min((extra as unknown[]).length, 10); i++) {
-          const entry = (extra as Record<string, unknown>[])[i];
-          const ctx = {
-            user: {
-              fullName: entry.userId ? `User ${i + 1}` : "Unknown",
-              userName: `user${i + 1}`,
-              email: "",
-              avatar: "",
-              bio: "",
-              skills: [],
-            },
-            extra: entry,
-          };
-          const renderedSubject = await liquidEngine.parseAndRender(
-            subject,
-            ctx,
-          );
+      if (ipr && Array.isArray(parsed)) {
+        // One preview per unique email — exactly what will be dispatched
+        const seen = new Set<string>();
+        for (const entry of parsed as Record<string, unknown>[]) {
+          const email =
+            typeof entry.email === "string" ? entry.email.trim().toLowerCase() : null;
+          if (!email || seen.has(email)) continue;
+          seen.add(email);
 
-          const html = await liquidEngine.parseAndRender(
-            selectedTemplate.htmlBody,
-            ctx,
-          );
+          const ctx = { extra: entry };
+          const renderedSubject = await liquidEngine.parseAndRender(subject, ctx);
+          const renderedHtml = await liquidEngine.parseAndRender(htmlBody, ctx);
+          results.push({ label: email, html: renderedHtml, subject: renderedSubject });
 
-          results.push({
-            label: `Entry ${i + 1}`,
-            html,
-            subject: renderedSubject,
-          });
+          if (results.length >= 20) break; // cap at 20 previews
         }
       } else {
-        // shared mode — one preview with a sample user
-        const ctx = {
-          user: {
-            fullName: "Preview User",
-            userName: "preview",
-            email: "preview@notehub.com",
-            avatar: "",
-            bio: "",
-            skills: [],
-          },
-          extra: extra as Record<string, unknown>,
-        };
+        const ctx = { extra: parsed as Record<string, unknown> };
         const renderedSubject = await liquidEngine.parseAndRender(subject, ctx);
+        const renderedHtml = await liquidEngine.parseAndRender(htmlBody, ctx);
 
-        const html = await liquidEngine.parseAndRender(
-          selectedTemplate.htmlBody,
-          ctx,
-        );
-
-        results.push({
-          label: "Preview",
-          html,
-          subject: renderedSubject,
-        });
+        if (recipientEmails.length > 0) {
+          // Shared mode still needs one preview per selected recipient.
+          for (const email of recipientEmails) {
+            results.push({ label: email, html: renderedHtml, subject: renderedSubject });
+            if (results.length >= 20) break; // cap at 20 previews
+          }
+        } else {
+          results.push({ label: "Preview", html: renderedHtml, subject: renderedSubject });
+        }
       }
 
       setPreviews(results);
@@ -313,16 +283,16 @@ export default function NewCampaignPage() {
     } finally {
       setPreviewBuilding(false);
     }
-  }, [selectedTemplate, extraJson]);
+  }, [htmlBody, extraJson, recipientEmails, subject]);
+
+  // ─── Save / Send ─────────────────────────────────────────────
 
   const handleSend = async (andSend = false) => {
     if (!name.trim()) return toast.error("Campaign name is required");
-    if (!templateId) return toast.error("Select a template");
     if (!subject.trim()) return toast.error("Subject is required");
-    if (selectedUsers.length === 0 && !contactId)
-      return toast.error("Select recipients");
-    if (jsonErrors.length > 0)
-      return toast.error("Fix JSON errors before sending");
+    if (!htmlBody.trim()) return toast.error("HTML body is required");
+    if (recipientEmails.length === 0) return toast.error("Add at least one recipient");
+    if (jsonErrors.length > 0) return toast.error("Fix JSON errors before sending");
 
     let parsed: unknown;
     try {
@@ -333,23 +303,12 @@ export default function NewCampaignPage() {
 
     setSaving(true);
     try {
-      let resolvedContactId = contactId;
-
-      if (selectedUsers.length > 0) {
-        const { data } = await axiosInstance.post("/mailer/contacts", {
-          label: `__campaign_${Date.now()}`,
-          userIds: selectedUsers.map((r) => r._id),
-          description: "auto-generated",
-        });
-        resolvedContactId = data.contact._id;
-      }
-
       const { data } = await axiosInstance.post("/mailer/campaigns", {
         name,
-        templateId,
-        contactId: resolvedContactId,
-        extraJson: parsed,
         subject,
+        htmlBody,
+        emails: recipientEmails,
+        extraJson: parsed,
       });
 
       if (andSend) {
@@ -367,29 +326,22 @@ export default function NewCampaignPage() {
     }
   };
 
+  // ─── Render ───────────────────────────────────────────────────
+
+  const tabs: { id: EditorTab; label: string; icon: React.ReactNode }[] = [
+    { id: "html", label: "email.html", icon: <Code2 className="w-3.5 h-3.5" /> },
+    { id: "json", label: "extra.json", icon: <Braces className="w-3.5 h-3.5" /> },
+  ];
+
   return (
     <>
-      <PreviewSheet
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        previews={previews}
-      />
+      <PreviewSheet open={previewOpen} onOpenChange={setPreviewOpen} previews={previews} />
 
       <RecipientsDialog
         open={recipientsDialogOpen}
         onOpenChange={setRecipientsDialogOpen}
         contacts={contacts}
-        selectedUsers={selectedUsers}
-        selectedContactId={contactId}
-        onAddUser={(u) => setSelectedUsers((prev) => [u, ...prev])}
-        onRemoveUser={(id) =>
-          setSelectedUsers((prev) => prev.filter((r) => r._id !== id))
-        }
-        onSelectContact={(id) => {
-          setContactId(id);
-          setSelectedUsers([]);
-        }}
-        onConfirm={() => setRecipientsDialogOpen(false)}
+        onConfirm={setManualEmails}
       />
 
       {/* Header */}
@@ -400,7 +352,7 @@ export default function NewCampaignPage() {
             variant="outline"
             size="sm"
             onClick={buildPreviews}
-            disabled={!templateId || previewBuilding}
+            disabled={previewBuilding || !htmlBody.trim()}
           >
             {previewBuilding ? (
               <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
@@ -408,6 +360,11 @@ export default function NewCampaignPage() {
               <Eye className="mr-1.5 w-4 h-4" />
             )}
             Show preview
+            {recipientCount > 0 && isPerRecipient && (
+              <Badge variant="secondary" className="ml-1.5 text-xs">
+                {recipientCount}
+              </Badge>
+            )}
           </Button>
           <Button size="sm" onClick={() => handleSend(true)} disabled={saving}>
             {saving ? (
@@ -422,217 +379,182 @@ export default function NewCampaignPage() {
 
       {/* Compose card */}
       <div className="bg-background mt-4 border rounded-lg divide-y">
+        {/* Campaign name */}
+        <Label htmlFor="campaign-name" className="flex items-center gap-4 px-4 py-3">
+          <span className="w-20 text-muted-foreground text-sm shrink-0">
+            Name <span className="text-destructive">*</span>
+          </span>
+          <Input
+            id="campaign-name"
+            placeholder="Enter your campaign name"
+            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Label>
+
         {/* From */}
         <div className="flex items-center gap-4 px-4 py-3">
-          <span className="w-20 text-muted-foreground text-sm shrink-0">
-            From
-          </span>
+          <span className="w-20 text-muted-foreground text-sm shrink-0">From</span>
           <span className="text-sm">NoteHub</span>
         </div>
 
         {/* To */}
         <div className="flex items-center gap-4 px-4 py-3">
           <span className="w-20 text-muted-foreground text-sm shrink-0">
-            To
+            To <span className="text-destructive">*</span>
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setRecipientsDialogOpen(true)}
+            disabled={isPerRecipient}
+            title={isPerRecipient ? "Recipients are derived from extra.json" : undefined}
           >
             <Users className="mr-1.5 w-3.5 h-3.5" />
-            {recipientLabel ? recipientLabel : "Select recipients"}
+            {isPerRecipient
+              ? `${recipientCount} recipient${recipientCount !== 1 ? "s" : ""} (from JSON)`
+              : recipientCount > 0
+              ? `${recipientCount} recipient${recipientCount !== 1 ? "s" : ""}`
+              : "Select recipients"}
           </Button>
-          {recipientCount > 0 && (
-            <Badge variant="secondary">
-              {recipientCount} recipient{recipientCount !== 1 ? "s" : ""}
+          {isPerRecipient && (
+            <Badge variant="default" className="text-xs">
+              driven by extra.json
             </Badge>
           )}
         </div>
 
         {/* Subject */}
-        <div className="flex items-center gap-4 px-4 py-3">
+        <Label htmlFor="subject" className="flex items-center gap-4 px-4 py-3">
           <span className="w-20 text-muted-foreground text-sm shrink-0">
-            Subject
+            Subject <span className="text-destructive">*</span>
           </span>
           <Input
-            placeholder="Enter subject — supports {{ user.fullName }}"
+            id="subject"
+            placeholder="Enter your email subject"
+            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
           />
-        </div>
+        </Label>
 
-        {/* Campaign name */}
+        {/* Template — one-time insert */}
         <div className="flex items-center gap-4 px-4 py-3">
-          <span className="w-20 text-muted-foreground text-sm shrink-0">
-            Name
-          </span>
-          <Input
-            placeholder="Internal campaign name (e.g. June SEO Warning)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <span className="w-20 text-muted-foreground text-sm shrink-0">Template</span>
+          <Select value={templateId} onValueChange={handleTemplateChange}>
+            <SelectTrigger disabled={loading} className="max-w-72">
+              {loading && <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />}
+              <SelectValue placeholder="Insert a template…" />
+            </SelectTrigger>
+            <SelectContent>
+              {templates.map((t) => (
+                <SelectItem key={t._id} value={t._id}>
+                  {t.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Template */}
-        <div className="flex items-center gap-4 px-4 py-3">
-          <span className="w-20 text-muted-foreground text-sm shrink-0">
-            Template
-          </span>
-          <div className="flex flex-1 items-center gap-2">
-            <Select value={templateId} onValueChange={handleTemplateChange}>
-              <SelectTrigger disabled={loading}>
-                {loading && <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />}
-                <SelectValue placeholder="Select a template" />
-              </SelectTrigger>
-              <SelectContent>
-                {templates.map((t) => (
-                  <SelectItem key={t._id} value={t._id}>
-                    <span>{t.name}</span>
-                    <Badge
-                      variant={
-                        t.mode === "per_recipient" ? "default" : "secondary"
-                      }
-                      className="ml-2 text-xs"
-                    >
-                      {t.mode === "per_recipient" ? "per recipient" : "shared"}
-                    </Badge>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Extra JSON */}
-        <div className="space-y-2 px-4 py-3">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">Extra JSON</span>
-              {selectedTemplate && (
-                <Badge
-                  variant={
-                    selectedTemplate.mode === "per_recipient"
-                      ? "default"
-                      : "secondary"
-                  }
-                  className="text-xs"
-                >
-                  {selectedTemplate.mode === "per_recipient"
-                    ? "array · userId required"
-                    : "shared object"}
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Label
-                htmlFor="dev-mode"
-                className="text-muted-foreground text-xs"
+        {/* Monaco editor — VS Code tabs */}
+        <div className="flex flex-col">
+          {/* Tab bar */}
+          <div className="flex items-center border-b bg-muted/30 px-1 pt-1 gap-0.5">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-t-sm transition-colors border border-transparent",
+                  activeTab === tab.id
+                    ? "bg-background border-border border-b-background text-foreground -mb-px"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                )}
               >
-                Monaco
-              </Label>
-              <Switch
-                id="dev-mode"
-                checked={devMode}
-                onCheckedChange={setDevMode}
-              />
-            </div>
+                {tab.icon}
+                {tab.label}
+                {tab.id === "json" && jsonErrors.length > 0 && (
+                  <span className="ml-1 w-1.5 h-1.5 rounded-full bg-destructive inline-block" />
+                )}
+              </button>
+            ))}
           </div>
 
-          {devMode ? (
-            <div className="border rounded-md overflow-hidden">
-              <MonacoEditor
-                height="220px"
-                language="json"
-                value={extraJson}
-                onChange={(val) => setExtraJson(val ?? "{}")}
-                onMount={(editor, monaco) => {
-                  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-                    validate: true,
-                    allowComments: false,
-                    schemas: [
-                      {
-                        uri: "campaign-schema.json",
-                        fileMatch: ["*"],
-                        schema: {
-                          type: "array",
-                          items: {
-                            type: "object",
-                            required: ["userId"],
-                            additionalProperties: true,
-                            properties: {
-                              userId: {
-                                type: "string",
-                                minLength: 1,
-                              },
-                            },
-                          },
-                        },
-                      },
-                    ],
-                  });
-
-                  editorRef.current = editor;
-                  monacoRef.current = monaco;
-
-                  const model = editor.getModel();
-                  if (!model) return;
-
-                  const syncJsonErrors = () => {
-                    const owner = "campaign-json";
-
-                    const markers = monaco.editor
-                      .getModelMarkers({})
-                      .filter(
-                        (m: monacoEditor.IMarker) =>
-                          m.resource.toString() === model.uri.toString(),
-                      )
-                      .map((m: monacoEditor.IMarker) => ({
-                        ...m,
-                        severity: monaco.MarkerSeverity.Error,
-                      }));
-
-                    monaco.editor.setModelMarkers(model, owner, markers);
-                  };
-
-                  syncJsonErrors();
-
-                  const disposable = monaco.editor.onDidChangeMarkers(() => {
-                    syncJsonErrors();
-                  });
-
-                  editor.onDidDispose(() => {
-                    disposable.dispose();
-                  });
-                }}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 13,
-                  lineNumbers: "on",
-                  scrollBeyondLastLine: false,
-                  wordWrap: "on",
-                  tabSize: 2,
-                  formatOnPaste: true,
-                }}
-                theme="vs-dark"
-              />
-            </div>
-          ) : (
-            <textarea
-              className="bg-background p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-ring w-full min-h-32 font-mono text-sm resize-none"
-              value={extraJson}
-              onChange={(e) => setExtraJson(e.target.value)}
+          {/* HTML editor */}
+          <div className={cn("h-100", activeTab !== "html" && "hidden")}>
+            <Editor
+              height="100%"
+              language="html"
+              value={htmlBody}
+              onChange={(v) => setHtmlBody(v ?? "")}
+              theme="vs-dark"
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: "on",
+                scrollBeyondLastLine: false,
+                wordWrap: "on",
+                padding: { top: 8, bottom: 8 },
+                renderLineHighlight: "none",
+                overviewRulerLanes: 0,
+                hideCursorInOverviewRuler: true,
+                scrollbar: { vertical: "auto", horizontal: "auto" },
+              }}
             />
-          )}
+          </div>
 
-          {/* Error banner */}
-          {jsonErrors.length > 0 && (
-            <div className="space-y-1 bg-destructive/5 px-3 py-2 border border-destructive/40 rounded-md">
+          {/* JSON editor */}
+          <div className={cn("h-100", activeTab !== "json" && "hidden")}>
+            <Editor
+              height="100%"
+              language="json"
+              value={extraJson}
+              onChange={(v) => setExtraJson(v ?? "{}")}
+              onMount={handleJsonEditorMount}
+              theme="vs-dark"
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: "on",
+                scrollBeyondLastLine: false,
+                wordWrap: "off",
+                padding: { top: 8, bottom: 8 },
+                renderLineHighlight: "none",
+                overviewRulerLanes: 0,
+                hideCursorInOverviewRuler: true,
+                scrollbar: { vertical: "auto", horizontal: "auto" },
+              }}
+            />
+          </div>
+
+          {/* JSON error banner */}
+          {activeTab === "json" && jsonErrors.length > 0 && (
+            <div className="space-y-1 bg-destructive/5 px-3 py-2 border-t border-destructive/30">
               {jsonErrors.map((e, i) => (
-                <p key={i} className="text-destructive text-xs">
+                <p key={i} className="text-destructive text-xs font-mono">
                   ❌ {e.message}
                 </p>
               ))}
+            </div>
+          )}
+
+          {/* JSON mode hint */}
+          {activeTab === "json" && jsonErrors.length === 0 && (
+            <div className="px-3 py-1.5 border-t bg-muted/20 flex items-center gap-2">
+              <Badge
+                variant={isPerRecipient ? "default" : "secondary"}
+                className="text-xs"
+              >
+                {isPerRecipient
+                  ? `per-recipient · ${recipientCount} unique email${recipientCount !== 1 ? "s" : ""}`
+                  : "shared object"}
+              </Badge>
+              {isPerRecipient && (
+                <span className="text-muted-foreground text-xs">
+                  Recipients list driven by this JSON
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -640,11 +562,7 @@ export default function NewCampaignPage() {
 
       {/* Bottom actions */}
       <div className="flex justify-between items-center pt-2">
-        <Button
-          variant="outline"
-          onClick={() => handleSend(false)}
-          disabled={saving}
-        >
+        <Button variant="outline" onClick={() => handleSend(false)} disabled={saving}>
           {saving ? (
             <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
           ) : (
