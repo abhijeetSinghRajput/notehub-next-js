@@ -13,14 +13,17 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface PreviewSheetProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  previews: { label: string; html: string }[];
-  subject: string;
+  previews: {
+    label: string;
+    html: string;
+    subject: string;
+  }[];
 }
+
 const PreviewSheet = ({
   open,
   onOpenChange,
   previews,
-  subject,
 }: PreviewSheetProps) => {
   const [index, setIndex] = useState(0);
 
@@ -73,7 +76,7 @@ const PreviewSheet = ({
         </SheetHeader>
         <div className="flex-1 overflow-hidden">
           <div className="p-2 font-normal text-muted-foreground">
-            {subject || "No subject"}
+            {current?.subject || "No subject"}
           </div>
           {current ? (
             <iframe

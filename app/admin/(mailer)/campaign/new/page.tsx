@@ -14,28 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import {
-  Loader2,
-  Send,
-  Eye,
-  X,
-  Search,
-  FileText, Users
-} from "lucide-react";
+import { Loader2, Send, Eye, FileText, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { Liquid } from "liquidjs";
 import type { editor as monacoEditor } from "monaco-editor";
 import PreviewSheet from "../_components/preview-sheet";
+import RecipientsDialog from "../_components/recipients-dialog";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -53,7 +39,7 @@ const liquidEngine = new Liquid({
 
 // ─── Types ────────────────────────────────────────────────────
 
-interface Template {
+export interface Template {
   _id: string;
   name: string;
   subject: string;
@@ -61,13 +47,13 @@ interface Template {
   mode: "shared" | "per_recipient";
 }
 
-interface Contact {
+export interface Contact {
   _id: string;
   label: string;
   userIds: string[];
 }
 
-interface User {
+export interface User {
   _id: string;
   fullName: string;
   userName: string;
@@ -77,7 +63,7 @@ interface User {
 
 // ─── JSON Validation ──────────────────────────────────────────
 
-interface JsonError {
+export interface JsonError {
   message: string;
   line?: number;
   col?: number;
@@ -125,256 +111,6 @@ function validateExtraJson(
   return [];
 }
 
-// ─── useDebounce ──────────────────────────────────────────────
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debouncedValue;
-}
-
-// ─── RecipientSearch ──────────────────────────────────────────
-
-interface RecipientSearchProps {
-  selected: User[];
-  onAdd: (user: User) => void;
-  onRemove: (id: string) => void;
-}
-
-const RecipientSearch = ({
-  selected,
-  onAdd,
-  onRemove,
-}: RecipientSearchProps) => {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<User[]>([]);
-  const [searching, setSearching] = useState(false);
-  const debouncedQuery = useDebounce(query, 400);
-
-  const search = useCallback(
-    async (q: string) => {
-      if (!q.trim()) {
-        setResults([]);
-        return;
-      }
-      setSearching(true);
-      try {
-        const { data } = await axiosInstance.get("/mailer/users", {
-          params: { search: q, limit: 10 },
-        });
-        setResults(
-          data.users.filter(
-            (u: User) => !selected.some((s) => s._id === u._id),
-          ),
-        );
-      } finally {
-        setSearching(false);
-      }
-    },
-    [selected],
-  );
-
-  useEffect(() => {
-    search(debouncedQuery);
-  }, [debouncedQuery, search]);
-
-  return (
-    <div className="space-y-3">
-      {/* Selected chips */}
-      {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {selected.map((u) => (
-            <div
-              key={u._id}
-              className="flex items-center gap-1.5 bg-muted py-0.5 pr-2 pl-1 rounded-full"
-            >
-              <div className="relative rounded-full size-5 overflow-hidden shrink-0">
-                <Image
-                  src={u.avatar || "/avatar.svg"}
-                  alt={u.fullName}
-                  fill
-                  sizes="20px"
-                  className="object-cover"
-                />
-              </div>
-              <span className="font-medium text-xs">{u.fullName}</span>
-              <button
-                onClick={() => onRemove(u._id)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="top-1/2 left-2.5 absolute w-4 h-4 text-muted-foreground -translate-y-1/2" />
-        <Input
-          className="pr-8 pl-8"
-          placeholder="Search by name, username or email..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {(query || searching) && (
-          <button
-            onClick={() => {
-              setQuery("");
-              setResults([]);
-            }}
-            className="top-1/2 right-2.5 absolute text-muted-foreground hover:text-foreground -translate-y-1/2"
-          >
-            {searching ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <X className="w-4 h-4" />
-            )}
-          </button>
-        )}
-        {results.length > 0 && (
-          <div className="top-[calc(100%+4px)] z-50 absolute bg-background shadow-lg border rounded-md w-full max-h-52 overflow-y-auto">
-            {results.map((user) => (
-              <div
-                key={user._id}
-                onClick={() => {
-                  onAdd(user);
-                  setQuery("");
-                  setResults([]);
-                }}
-                className="flex items-center gap-2.5 hover:bg-muted px-3 py-2 cursor-pointer"
-              >
-                <div className="relative rounded-full size-8 overflow-hidden shrink-0">
-                  <Image
-                    src={user.avatar || "/avatar.svg"}
-                    alt={user.fullName}
-                    fill
-                    sizes="32px"
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">{user.fullName}</p>
-                  <p className="text-muted-foreground text-xs">
-                    @{user.userName} · {user.email}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// ─── Recipients Dialog ────────────────────────────────────────
-
-interface RecipientsDialogProps {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  contacts: Contact[];
-  selectedUsers: User[];
-  selectedContactId: string;
-  onAddUser: (u: User) => void;
-  onRemoveUser: (id: string) => void;
-  onSelectContact: (id: string) => void;
-  onConfirm: () => void;
-}
-
-const RecipientsDialog = ({
-  open,
-  onOpenChange,
-  contacts,
-  selectedUsers,
-  selectedContactId,
-  onAddUser,
-  onRemoveUser,
-  onSelectContact,
-  onConfirm,
-}: RecipientsDialogProps) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-lg">
-      <DialogHeader>
-        <DialogTitle>Select Recipients</DialogTitle>
-      </DialogHeader>
-      <Tabs defaultValue="users">
-        <TabsList className="w-full">
-          <TabsTrigger value="users" className="flex-1">
-            Users
-            {selectedUsers.length > 0 && (
-              <Badge variant="secondary" className="ml-1.5">
-                {selectedUsers.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="contact" className="flex-1">
-            Contact Group
-            {selectedContactId && (
-              <Badge variant="secondary" className="ml-1.5">
-                1
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="users" className="mt-4">
-          <RecipientSearch
-            selected={selectedUsers}
-            onAdd={onAddUser}
-            onRemove={onRemoveUser}
-          />
-          {selectedUsers.length === 0 && (
-            <p className="py-6 text-muted-foreground text-xs text-center">
-              Search and add individual users
-            </p>
-          )}
-        </TabsContent>
-
-        <TabsContent value="contact" className="space-y-2 mt-4">
-          {contacts.length === 0 ? (
-            <p className="py-6 text-muted-foreground text-xs text-center">
-              No contact groups yet
-            </p>
-          ) : (
-            contacts.map((c) => (
-              <div
-                key={c._id}
-                onClick={() =>
-                  onSelectContact(c._id === selectedContactId ? "" : c._id)
-                }
-                className={`flex items-center justify-between px-3 py-2.5 rounded-md border cursor-pointer transition-colors ${
-                  selectedContactId === c._id
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:bg-muted"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-medium text-sm">{c.label}</span>
-                </div>
-                <Badge variant="secondary">{c.userIds.length} users</Badge>
-              </div>
-            ))
-          )}
-        </TabsContent>
-      </Tabs>
-
-      <div className="flex justify-end pt-2">
-        <Button size="sm" onClick={onConfirm}>
-          Confirm
-        </Button>
-      </div>
-    </DialogContent>
-  </Dialog>
-);
-
-
-
 // ─── Main Page ────────────────────────────────────────────────
 
 export default function NewCampaignPage() {
@@ -386,9 +122,13 @@ export default function NewCampaignPage() {
 
   // preview
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previews, setPreviews] = useState<{ label: string; html: string }[]>(
-    [],
-  );
+  const [previews, setPreviews] = useState<
+    {
+      label: string;
+      html: string;
+      subject: string;
+    }[]
+  >([]);
   const [previewBuilding, setPreviewBuilding] = useState(false);
 
   // recipients dialog
@@ -439,7 +179,6 @@ export default function NewCampaignPage() {
         ? `${selectedContact.label} (${selectedContact.userIds.length})`
         : null;
 
-        
   // auto-fill subject from template
   const handleTemplateChange = (id: string) => {
     setTemplateId(id);
@@ -503,7 +242,11 @@ export default function NewCampaignPage() {
         return toast.error("Fix JSON first");
       }
 
-      const results: { label: string; html: string }[] = [];
+      const results: {
+        label: string;
+        html: string;
+        subject: string;
+      }[] = [];
 
       if (selectedTemplate.mode === "per_recipient" && Array.isArray(extra)) {
         // render one preview per entry in the array
@@ -520,11 +263,21 @@ export default function NewCampaignPage() {
             },
             extra: entry,
           };
+          const renderedSubject = await liquidEngine.parseAndRender(
+            subject,
+            ctx,
+          );
+
           const html = await liquidEngine.parseAndRender(
             selectedTemplate.htmlBody,
             ctx,
           );
-          results.push({ label: `Entry ${i + 1}`, html });
+
+          results.push({
+            label: `Entry ${i + 1}`,
+            html,
+            subject: renderedSubject,
+          });
         }
       } else {
         // shared mode — one preview with a sample user
@@ -539,11 +292,18 @@ export default function NewCampaignPage() {
           },
           extra: extra as Record<string, unknown>,
         };
+        const renderedSubject = await liquidEngine.parseAndRender(subject, ctx);
+
         const html = await liquidEngine.parseAndRender(
           selectedTemplate.htmlBody,
           ctx,
         );
-        results.push({ label: "Preview", html });
+
+        results.push({
+          label: "Preview",
+          html,
+          subject: renderedSubject,
+        });
       }
 
       setPreviews(results);
@@ -613,7 +373,6 @@ export default function NewCampaignPage() {
         open={previewOpen}
         onOpenChange={setPreviewOpen}
         previews={previews}
-        subject={subject}
       />
 
       <RecipientsDialog
@@ -788,7 +547,6 @@ export default function NewCampaignPage() {
                 value={extraJson}
                 onChange={(val) => setExtraJson(val ?? "{}")}
                 onMount={(editor, monaco) => {
-                  
                   monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
                     validate: true,
                     allowComments: false,

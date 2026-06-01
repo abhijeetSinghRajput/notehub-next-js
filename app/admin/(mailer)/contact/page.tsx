@@ -23,6 +23,9 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, Users } from "lucide-react";
+import { useAuthStore } from "@/app/stores/useAuthStore";
+import { useDebounceCallback } from "@/hooks/useDebounceCallback";
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 
 interface User {
   _id: string;
@@ -53,6 +56,7 @@ export default function ContactPage() {
   const [search, setSearch] = useState("");
   const [usersLoading, setUsersLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const { getAllUsers } = useAuthStore();
 
   const fetchContacts = async () => {
     try {
@@ -67,25 +71,38 @@ export default function ContactPage() {
 
   const fetchUsers = async (q = "") => {
     setUsersLoading(true);
+
     try {
-      const { data } = await axiosInstance.get("/mailer/users", {
-        params: { search: q, limit: 30 },
+      const response = await getAllUsers({
+        page: 1,
+        limit: 30,
+        filter: "all",
+        search: q,
       });
-      setUsers(data.users);
+
+      setUsers(response.users);
     } catch {
       toast.error("Failed to load users");
     } finally {
       setUsersLoading(false);
     }
   };
+  const debouncedFetchUsers = useDebounceCallback(fetchUsers, 400);
 
   useEffect(() => {
     fetchContacts();
   }, []);
 
   useEffect(() => {
-    if (open) fetchUsers(search);
-  }, [search, open]);
+    if (!open) return;
+
+    if (!search.trim()) {
+      fetchUsers("");
+      return;
+    }
+
+    debouncedFetchUsers(search);
+  }, [search, open, debouncedFetchUsers]);
 
   const toggleUser = (id: string) => {
     setSelectedIds((prev) => {
@@ -180,13 +197,24 @@ export default function ContactPage() {
                       onClick={() => toggleUser(user._id)}
                     >
                       <Checkbox checked={selectedIds.has(user._id)} />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {user.fullName}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          @{user.userName} · {user.email}
-                        </p>
+                      <div className="min-w-0 flex gap-2">
+                        <div className="relative size-9 shrink-0 rounded-full overflow-hidden">
+                          <CloudinaryImage
+                            src={user.avatar || "/avatar.svg"}
+                            alt={user?.fullName || "User"}
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium truncate">
+                            {user.fullName}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            @{user.userName} · {user.email}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))
