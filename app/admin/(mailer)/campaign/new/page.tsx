@@ -21,6 +21,7 @@ import { Liquid } from "liquidjs";
 import PreviewSheet from "../_components/preview-sheet";
 import RecipientsDialog from "../_components/recipients-dialog";
 import { cn } from "@/lib/utils";
+import { TEMPLATE_GLOBALS } from "@/lib/mailer-globals";
 
 const liquidEngine = new Liquid({ strictFilters: false, strictVariables: false });
 
@@ -253,7 +254,7 @@ export default function NewCampaignPage() {
           if (!email || seen.has(email)) continue;
           seen.add(email);
 
-          const ctx = { extra: entry };
+          const ctx = {...TEMPLATE_GLOBALS, extra: entry };
           const renderedSubject = await liquidEngine.parseAndRender(subject, ctx);
           const renderedHtml = await liquidEngine.parseAndRender(htmlBody, ctx);
           results.push({ label: email, html: renderedHtml, subject: renderedSubject });
@@ -261,7 +262,7 @@ export default function NewCampaignPage() {
           if (results.length >= 20) break; // cap at 20 previews
         }
       } else {
-        const ctx = { extra: parsed as Record<string, unknown> };
+        const ctx = {...TEMPLATE_GLOBALS, extra: parsed as Record<string, unknown> };
         const renderedSubject = await liquidEngine.parseAndRender(subject, ctx);
         const renderedHtml = await liquidEngine.parseAndRender(htmlBody, ctx);
 

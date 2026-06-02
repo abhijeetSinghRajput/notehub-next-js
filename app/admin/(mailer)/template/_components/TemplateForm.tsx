@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Liquid } from "liquidjs";
 import dynamic from "next/dynamic";
+import { TEMPLATE_GLOBALS } from "@/lib/mailer-globals";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -97,11 +98,9 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
 
         const ctx =
           form.mode === "per_recipient" && Array.isArray(extra)
-            ? {
-                user: SAMPLE_SHARED.user,
-                extra: (extra as Record<string, unknown>[])[0] ?? {},
-              }
-            : { user: SAMPLE_SHARED.user, extra };
+            ? { ...TEMPLATE_GLOBALS, user: SAMPLE_SHARED.user, extra: (extra as Record<string, unknown>[])[0] ?? {}, unsubscribe_url: "[unsubscribe_url]" }
+            : { ...TEMPLATE_GLOBALS, user: SAMPLE_SHARED.user, extra, unsubscribe_url: "[unsubscribe_url]" };
+
 
         const html = await liquidEngine.parseAndRender(form.htmlBody, ctx);
         if (!cancelled) setPreviewHtml(html);
