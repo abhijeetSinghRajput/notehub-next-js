@@ -42,6 +42,7 @@ import {
   ChartTooltipContent, type ChartConfig
 } from "@/components/ui/chart";
 import { formatTimeAgo } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 const chartConfig = {
   healthy: {
@@ -567,17 +568,17 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Control Bar */}
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 bg-card border border-border/60 rounded-lg p-3">
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 max-w-2xl w-full">
             {/* Search Input */}
             <div className="relative flex-1 max-w-85 w-full">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-              <input
+              <Input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by title or SEO target…"
-                className="w-full pl-8 pr-2.5 py-1.5 text-[13px] rounded-md border border-border/60 bg-secondary/30 text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-border focus:bg-secondary/40"
+                className="pl-8"
               />
             </div>
 
@@ -601,7 +602,7 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Table Container */}
-        <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-sm">
+        <div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse table-fixed min-w-175">
               <colgroup>

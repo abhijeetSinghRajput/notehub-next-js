@@ -7,8 +7,7 @@ import {
   FileText,
   LayoutDashboard,
   Send,
-  UserRoundCheck,
-  Users,
+  UserRoundCheck, UsersRound
 } from "lucide-react";
 
 import {
@@ -49,7 +48,7 @@ const GraphIcon = () => (
 const adminNavItems = [
   { title: "Overview", href: "/admin", icon: LayoutDashboard },
   { title: "Link Graph", href: "/admin/graph", icon: GraphIcon },
-  { title: "Users", href: "/admin/users", icon: Users },
+  { title: "Users", href: "/admin/users", icon: UsersRound },
 ];
 
 const mailerNavItems = [

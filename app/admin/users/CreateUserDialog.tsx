@@ -217,7 +217,7 @@ export function CreateUserDialog() {
   return (
     <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) resetForm(); }}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
+        <Button size="sm" className="gap-2">
           <Plus className="w-4 h-4" />
           Create User
         </Button>
