@@ -288,12 +288,12 @@ export function SearchButton() {
     <>
       <Button
         variant="ghost"
-        className="h-9 rounded-md"
+        className="h-9 w-9 sm:w-auto rounded-md"
         onClick={() => setOpen(true)}
         aria-label="Search Notes and Users"
       >
         <Search className="h-4 w-4" />
-        <kbd className="flex items-center text-muted-foreground text-xs gap-1">
+        <kbd className="hidden sm:flex items-center text-muted-foreground text-xs gap-1">
           <Command className="size-3!" />K
         </kbd>
       </Button>

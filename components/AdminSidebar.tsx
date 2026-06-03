@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Ban,
   FileText,
   LayoutDashboard,
   Send,
@@ -55,6 +56,7 @@ const mailerNavItems = [
   { title: "Campaigns", href: "/admin/campaign", icon: Send },
   { title: "Templates", href: "/admin/template", icon: FileText },
   { title: "Contacts", href: "/admin/contact", icon: UserRoundCheck },
+  { title: "Unsubscribers", href: "/admin/unsubscribers", icon: Ban },
 ];
 
 export function AdminSidebar({

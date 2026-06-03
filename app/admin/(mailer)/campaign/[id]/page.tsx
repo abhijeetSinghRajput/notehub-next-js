@@ -486,7 +486,6 @@ export default function CampaignDetailPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>User</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Processed At</TableHead>
@@ -496,16 +495,6 @@ export default function CampaignDetailPage() {
                     <TableBody>
                       {jobs.map((job) => (
                         <TableRow key={job._id}>
-                          <TableCell className="font-medium text-sm">
-                            <div>
-                              <p>{job.userId?.fullName ?? "—"}</p>
-                              {job.userId?.userName && (
-                                <p className="text-muted-foreground text-xs">
-                                  @{job.userId.userName}
-                                </p>
-                              )}
-                            </div>
-                          </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
                             {job.email}
                           </TableCell>
