@@ -20,9 +20,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Users, X, Mail } from "lucide-react";
 import type { IUser as User } from "@/types/model";
-import { Contact } from "../new/page";
 import RecipientSearch from "./recipient-search";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
+import { Contact } from "@/types/mailer.types";
 
 interface RecipientsDialogProps {
   open: boolean;

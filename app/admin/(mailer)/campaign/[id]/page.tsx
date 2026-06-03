@@ -7,28 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,63 +30,18 @@ import {
   ArrowLeft,
   Send,
   Trash2,
-  Mail,
-  Users,
   FileText,
-  Clock,
   CheckCircle2,
   XCircle,
   AlertCircle,
   BarChart3,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp,
   Check,
 } from "lucide-react";
 import Link from "next/link";
-import hljs from "highlight.js";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-// ─── Types ─────────────────────────────────────────────────────
-
-interface Campaign {
-  _id: string;
-  name: string;
-  subject: string;
-  htmlBody: string;
-
-  emails: string[];
-
-  status: "draft" | "sending" | "done" | "failed";
-
-  extraJson: Record<string, unknown>;
-
-  stats: {
-    total: number;
-    sent: number;
-    failed: number;
-  };
-
-  sentAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface Job {
-  _id: string;
-  email: string;
-  status: "pending" | "sent" | "failed";
-  userId: {
-    _id: string;
-    fullName: string;
-    userName: string;
-    email: string;
-    avatar: string;
-  } | null;
-  error: string | null;
-  processedAt: string | null;
-  createdAt: string;
-}
+import JsonPreviewCard from "../_components/json-preview-card";
+import DeliveryReport from "../_components/delivery-report";
+import CampaignDetails from "../_components/CampaignDetails";
+import { Campaign, Job } from "@/types/mailer.types";
 
 const statusConfig: Record<
   string,
@@ -159,7 +98,12 @@ export default function CampaignDetailPage() {
   }, [fetchCampaign]);
 
   useEffect(() => {
-    if (campaign && (campaign.status === "done" || campaign.status === "failed" || campaign.status === "sending")) {
+    if (
+      campaign &&
+      (campaign.status === "done" ||
+        campaign.status === "failed" ||
+        campaign.status === "sending")
+    ) {
       fetchJobs();
     }
   }, [campaign?.status, fetchJobs]);
@@ -216,10 +160,7 @@ export default function CampaignDetailPage() {
 
   const statusInfo = statusConfig[campaign.status];
   const StatusIcon = statusInfo.icon;
-  const canSend =
-    campaign.status === "draft" || campaign.status === "failed";
-  const emails = campaign.emails ?? [];
-  const emailCount = emails.length;
+  const canSend = campaign.status === "draft" || campaign.status === "failed";
   const hasStats = campaign.status !== "draft";
   const sentPercent = hasStats
     ? Math.round((campaign.stats.sent / campaign.stats.total) * 100)
@@ -227,12 +168,6 @@ export default function CampaignDetailPage() {
   const failedPercent = hasStats
     ? Math.round((campaign.stats.failed / campaign.stats.total) * 100)
     : 0;
-
-  const jsonString = JSON.stringify(campaign.extraJson ?? {}, null, 2);
-
-  const highlighted = hljs.highlight(jsonString, {
-    language: "json",
-  }).value;
 
   // ─── Render ───────────────────────────────────────────────────
 
@@ -251,7 +186,8 @@ export default function CampaignDetailPage() {
             </Badge>
           </div>
           <p className="text-muted-foreground text-sm">
-            Created {new Date(campaign.createdAt).toLocaleDateString("en-US", {
+            Created{" "}
+            {new Date(campaign.createdAt).toLocaleDateString("en-US", {
               year: "numeric",
               month: "short",
               day: "numeric",
@@ -263,18 +199,24 @@ export default function CampaignDetailPage() {
 
         <div className="flex items-center gap-2 shrink-0">
           {canSend && (
-            <Button size="icon" onClick={handleSend} tooltip="send" disabled={sending}>
-              {sending ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Send />
-              )}
+            <Button
+              size="icon"
+              onClick={handleSend}
+              tooltip="send"
+              disabled={sending}
+            >
+              {sending ? <Loader2 className="animate-spin" /> : <Send />}
             </Button>
           )}
           {campaign.status !== "sending" && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" tooltip="delete" size="icon" disabled={deleting}>
+                <Button
+                  variant="destructive"
+                  tooltip="delete"
+                  size="icon"
+                  disabled={deleting}
+                >
                   <Trash2 />
                 </Button>
               </AlertDialogTrigger>
@@ -282,8 +224,8 @@ export default function CampaignDetailPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete campaign?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete &ldquo;{campaign.name}&rdquo; and all its
-                    delivery jobs. This action cannot be undone.
+                    This will permanently delete &ldquo;{campaign.name}&rdquo;
+                    and all its delivery jobs. This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -330,7 +272,9 @@ export default function CampaignDetailPage() {
               <p className="font-bold text-emerald-600 text-2xl">
                 {campaign.stats.sent}
               </p>
-              <p className="text-muted-foreground text-xs">{sentPercent}% success</p>
+              <p className="text-muted-foreground text-xs">
+                {sentPercent}% success
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -343,211 +287,26 @@ export default function CampaignDetailPage() {
               <p className="font-bold text-red-600 text-2xl">
                 {campaign.stats.failed}
               </p>
-              <p className="text-muted-foreground text-xs">{failedPercent}% failure</p>
+              <p className="text-muted-foreground text-xs">
+                {failedPercent}% failure
+              </p>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Campaign info */}
       <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
-        {/* Details card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-1.5 font-medium text-sm">
-              <Mail className="w-4 h-4" /> Campaign Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="gap-y-2.5 grid grid-cols-[100px_1fr] text-sm">
-              <span className="text-muted-foreground">Subject</span>
-              <span className="font-medium">
-                {campaign.subject || "—"}
-              </span>
-
-              <span className="text-muted-foreground">Recipients</span>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <button
-                    type="button"
-                    className="flex items-center justify-between gap-2 text-left font-medium text-foreground hover:text-foreground/80 transition-colors"
-                  >
-                    <span>
-                      {emailCount} recipient{emailCount === 1 ? "" : "s"}
-                    </span>
-                    <span className="flex flex-col leading-none text-muted-foreground">
-                      <ChevronUp className="w-3.5 h-3.5 -mb-0.5" />
-                      <ChevronDown className="w-3.5 h-3.5 -mt-0.5" />
-                    </span>
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Recipients</DialogTitle>
-                    <DialogDescription>
-                      All email addresses included in this campaign.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="max-h-80 overflow-y-auto rounded-md border bg-muted/20 p-3">
-                    {emailCount > 0 ? (
-                      <div className="space-y-1.5">
-                        {emails.map((email, index) => (
-                          <div
-                            key={`${email}-${index}`}
-                            className="rounded-md border bg-background px-3 py-2 text-sm"
-                          >
-                            {email}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="py-6 text-center text-sm text-muted-foreground">
-                        No recipients available
-                      </p>
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <span className="text-muted-foreground">Sent At</span>
-              <span>
-                {campaign.sentAt
-                  ? new Date(campaign.sentAt).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                  : "—"}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Extra JSON card */}
-        <div className="flex flex-col border rounded-md max-h-60 overflow-hidden">
-          <div className="top-0 sticky bg-[#222222] p-2 border-[#444] border-b text-muted-foreground text-xs">Extra Data (JSON)</div>
-          {campaign.extraJson &&
-            Object.keys(campaign.extraJson).length > 0 ? (
-            <pre
-              className="flex-1 bg-[#181818] p-3 overflow-auto font-mono text-white text-xs break-all leading-relaxed whitespace-pre-wrap"
-              dangerouslySetInnerHTML={{ __html: highlighted }}
-            />
-          ) : (
-            <p className="text-muted-foreground text-sm p-4 text-center">No extra data</p>
-          )}
-        </div>
-
+        <CampaignDetails campaign={campaign} />
+        <JsonPreviewCard json={campaign.extraJson} />
       </div>
 
-      {/* Delivery Jobs */}
-      {(campaign.status === "done" ||
-        campaign.status === "failed" ||
-        campaign.status === "sending") && (
-          <div>
-            <div className="mb-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-1.5 font-medium text-sm">
-                  <Users className="w-4 h-4" /> Delivery Report
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={fetchJobs}
-                  disabled={jobsLoading}
-                >
-                  <RefreshCw
-                    className={`w-3.5 h-3.5 mr-1.5 ${jobsLoading ? "animate-spin" : ""}`}
-                  />
-                  Refresh
-                </Button>
-              </div>
-              {jobs.length > 0 && (
-                <div className="text-muted-foreground text-sm">
-                  {jobs.filter((j) => j.status === "sent").length} sent ·{" "}
-                  {jobs.filter((j) => j.status === "failed").length} failed ·{" "}
-                  {jobs.filter((j) => j.status === "pending").length} pending
-                </div>
-              )}
-            </div>
-            <div className="bg-card">
-              {jobsLoading && jobs.length === 0 ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-                </div>
-              ) : jobs.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
-                  <Clock className="w-6 h-6" />
-                  <p className="text-sm">No delivery jobs yet</p>
-                </div>
-              ) : (
-                <div className="border rounded-md overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Processed At</TableHead>
-                        <TableHead>Error</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {jobs.map((job) => (
-                        <TableRow key={job._id}>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {job.email}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                job.status === "sent"
-                                  ? "default"
-                                  : job.status === "failed"
-                                    ? "destructive"
-                                    : "secondary"
-                              }
-                            >
-                              {job.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {job.processedAt
-                              ? new Date(job.processedAt).toLocaleTimeString(
-                                "en-US",
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  second: "2-digit",
-                                }
-                              )
-                              : "—"}
-                          </TableCell>
-                          <TableCell className="max-w-50 text-muted-foreground text-xs truncate">
-                            {job.error ?
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <AlertCircle />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent align="end" className="w-auto max-w-md">
-                                  <p className="text-destructive text-sm">{job.error}</p>
-                                </PopoverContent>
-                              </Popover>
-                              : "—"
-                            }
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
+      {["done", "failed", "sending"].includes(campaign.status) && (
+        <DeliveryReport
+          jobs={jobs}
+          jobsLoading={jobsLoading}
+          onRefresh={fetchJobs}
+        />
+      )}
     </div>
   );
 }

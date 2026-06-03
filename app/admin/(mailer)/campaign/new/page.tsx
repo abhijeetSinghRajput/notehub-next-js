@@ -22,23 +22,11 @@ import PreviewSheet from "../_components/preview-sheet";
 import RecipientsDialog from "../_components/recipients-dialog";
 import { cn } from "@/lib/utils";
 import { TEMPLATE_GLOBALS } from "@/lib/mailer-globals";
+import { Contact, Template } from "@/types/mailer.types";
 
 const liquidEngine = new Liquid({ strictFilters: false, strictVariables: false });
 
 // ─── Types ────────────────────────────────────────────────────
-
-export interface Template {
-  _id: string;
-  name: string;
-  subject: string;
-  htmlBody: string;
-}
-
-export interface Contact {
-  _id: string;
-  label: string;
-  emails: string[];
-}
 
 export interface JsonError {
   message: string;

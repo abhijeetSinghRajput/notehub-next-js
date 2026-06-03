@@ -27,6 +27,7 @@ import { Loader2, Plus, RefreshCcw, Trash2, Users } from "lucide-react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
+import { Contact } from "@/types/mailer.types";
 
 interface User {
   _id: string;
@@ -34,14 +35,6 @@ interface User {
   userName: string;
   email: string;
   avatar: string;
-}
-
-interface Contact {
-  _id: string;
-  label: string;
-  description: string;
-  emails: string[];
-  createdAt: string;
 }
 
 export default function ContactPage() {

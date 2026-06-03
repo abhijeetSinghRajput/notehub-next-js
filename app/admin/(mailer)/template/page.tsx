@@ -16,14 +16,8 @@ import { toast } from "sonner";
 import { FileText, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Template } from "@/types/mailer.types";
 
-interface Template {
-  _id: string;
-  name: string;
-  subject: string;
-  mode: "shared" | "per_recipient";
-  createdAt: string;
-}
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);

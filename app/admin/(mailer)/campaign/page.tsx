@@ -37,32 +37,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-interface CampaignStats {
-  total: number;
-  sent: number;
-  failed: number;
-}
-
-interface Campaign {
-  _id: string;
-  name: string;
-  status: "draft" | "sending" | "done" | "failed";
-  templateId: { name: string } | null;
-  contactId: { label: string } | null;
-  stats: CampaignStats;
-  sentAt: string | null;
-  createdAt: string;
-}
-
-interface Job {
-  _id: string;
-  email: string;
-  status: "pending" | "sent" | "failed";
-  userId: { fullName: string; userName: string } | null;
-  error: string | null;
-  processedAt: string | null;
-}
+import { Campaign, CampaignStats, Job } from "@/types/mailer.types";
+import DeliveryReport from "./_components/delivery-report";
 
 const statusBadge: Record<
   string,
@@ -211,8 +187,7 @@ export default function CampaignPage() {
       toast.error("Failed to delete");
     }
   };
-
-  const openJobs = async (id: string) => {
+  const fetchJobs = async (id: string) => {
     setJobsDialog(id);
     setJobsLoading(true);
     try {
@@ -255,8 +230,6 @@ export default function CampaignPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Template</TableHead>
-              <TableHead>Contact</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Progress</TableHead>
               <TableHead>Sent At</TableHead>
@@ -271,12 +244,6 @@ export default function CampaignPage() {
                 onClick={() => router.push(`/admin/campaign/${c._id}`)}
               >
                 <TableCell className="font-medium">{c.name}</TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {c.templateId?.name ?? "—"}
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {c.contactId?.label ?? "—"}
-                </TableCell>
                 <TableCell>
                   <Badge variant={statusBadge[c.status]}>
                     {c.status === "sending" && (
@@ -343,7 +310,7 @@ export default function CampaignPage() {
                         )}
 
                         {(c.status === "done" || c.status === "failed") && (
-                          <DropdownMenuItem onClick={() => openJobs(c._id)}>
+                          <DropdownMenuItem onClick={() => fetchJobs(c._id)}>
                             <Eye className="w-4 h-4" /> View Jobs
                           </DropdownMenuItem>
                         )}
@@ -366,50 +333,16 @@ export default function CampaignPage() {
       )}
 
       <Dialog open={!!jobsDialog} onOpenChange={() => setJobsDialog(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Delivery Report</DialogTitle>
-          </DialogHeader>
-          {jobsLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Error</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {jobs.map((job) => (
-                  <TableRow key={job._id}>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {job.email}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          job.status === "sent"
-                            ? "default"
-                            : job.status === "failed"
-                              ? "destructive"
-                              : "secondary"
-                        }
-                      >
-                        {job.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {job.error ?? "—"}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto pt-10">
+          <DeliveryReport
+            jobs={jobs}
+            jobsLoading={jobsLoading}
+            onRefresh={() => {
+              if (jobsDialog) {
+                fetchJobs(jobsDialog);
+              }
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>
