@@ -15,7 +15,15 @@ const CollaboratorsDialog = dynamic(
   { ssr: false }
 );
 
-const NO_SHELL_ROUTES = ["/login", "/signup", "/forgot-password", "/oauth"];
+const NO_SHELL_ROUTES = [
+  "/login", 
+  "/signup", 
+  "/forgot-password", 
+  "/oauth", 
+  "/about", 
+  "/contact", 
+  "/privacy-policy"
+];
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();

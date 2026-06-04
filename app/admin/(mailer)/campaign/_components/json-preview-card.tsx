@@ -35,9 +35,9 @@ export default function JsonPreviewCard({ json }: { json: unknown }) {
         <span>Extra Data (JSON)</span>
 
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
-          className="h-6 w-6 text-muted-foreground hover:text-foreground"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground"
           onClick={handleCopyExtraJson}
         >
           {copied ? (

@@ -112,11 +112,11 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
   }, [campaign]);
 
   return (
-    <Card>
-      <CardHeader className="flex justify-between items-center gap-2">
-        <CardTitle className="flex items-center gap-1.5 font-medium text-sm">
-          <Mail className="w-4 h-4" /> Campaign Details
-        </CardTitle>
+    <div className="bg-muted/50 rounded-lg overflow-hidden">
+      <div className="p-2 bg-muted border-b flex justify-between items-center gap-2">
+        <div className="text-xs text-muted-foreground">
+          Campaign Details
+        </div>
         <Button
           variant="outline"
           size="sm"
@@ -128,8 +128,8 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
           ) : null}
           Preview
         </Button>
-      </CardHeader>
-      <CardContent className="space-y-3">
+      </div>
+      <div className="space-y-3 p-3">
         <div className="gap-y-2.5 grid grid-cols-[100px_1fr] text-sm">
           <span className="text-muted-foreground">Subject</span>
           <span className="font-medium">{campaign.subject || "—"}</span>
@@ -185,13 +185,13 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
               : "—"}
           </span>
         </div>
-      </CardContent>
+      </div>
       <PreviewSheet
         open={previewOpen}
         onOpenChange={setPreviewOpen}
         previews={previews}
       />
-    </Card>
+    </div>
   );
 };
 
