@@ -130,68 +130,9 @@ export default function ContactPage() {
       {/* Body */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-          {/* Sidebar */}
-          <aside className="lg:col-span-2 space-y-8">
-            {/* Direct email */}
-            <div>
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-3">
-                Email
-              </p>
-              <a
-                href="mailto:abhijeet62008@gmail.com"
-                className="inline-flex items-center gap-2 transition-colors group"
-              >
-                <Mail className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                abhijeet62008@gmail.com
-                <ExternalLink className="size-3.5"/>
-              </a>
-            </div>
-
-            <Separator />
-
-            {/* Response time */}
-            <div>
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-3">
-                Response time
-              </p>
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                Typically within 24–48 hours
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Socials */}
-            <div>
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-3">
-                Follow us
-              </p>
-              <ul className="space-y-3">
-                {socialLinks.map(({ label, href, icon: Icon, handle }) => (
-                  <li key={label}>
-                    <Link
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-sm text-foreground hover:text-primary transition-colors group"
-                    >
-                      <span className="w-8 h-8 rounded-md bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                        <Icon />
-                      </span>
-                      <span className="text-muted-foreground group-hover:text-primary transition-colors">
-                        {handle}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-          </aside>
 
           {/* Form */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 lg:order-2">
             {submitted ? (
               <SuccessState
                 name={formState.name}
@@ -252,7 +193,7 @@ export default function ContactPage() {
                       setFormState((prev) => ({ ...prev, reason: val }))
                     }
                   >
-                    <SelectTrigger id="reason">
+                    <SelectTrigger id="reason" className="w-full">
                       <SelectValue placeholder="What's this about?" />
                     </SelectTrigger>
                     <SelectContent>
@@ -343,6 +284,66 @@ export default function ContactPage() {
               </form>
             )}
           </div>
+
+          {/* Sidebar */}
+          <aside className="lg:col-span-2 space-y-8 order-2 lg:order-1">
+            {/* Direct email */}
+            <div>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-3">
+                Email
+              </p>
+              <a
+                href="mailto:abhijeet62008@gmail.com"
+                className="inline-flex items-center gap-2 transition-colors group"
+              >
+                <Mail className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                abhijeet62008@gmail.com
+                <ExternalLink className="size-3.5"/>
+              </a>
+            </div>
+
+            <Separator />
+
+            {/* Response time */}
+            <div>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-3">
+                Response time
+              </p>
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                Typically within 24–48 hours
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Socials */}
+            <div>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-3">
+                Follow us
+              </p>
+              <ul className="space-y-3">
+                {socialLinks.map(({ label, href, icon: Icon, handle }) => (
+                  <li key={label}>
+                    <Link
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 text-sm text-foreground hover:text-primary transition-colors group"
+                    >
+                      <span className="w-8 h-8 rounded-md bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                        <Icon />
+                      </span>
+                      <span className="text-muted-foreground group-hover:text-primary transition-colors">
+                        {handle}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+          </aside>
         </div>
       </section>
     </main>
