@@ -42,7 +42,7 @@ const NoteCard = ({
     let strokeColor = "stroke-emerald-500";
     if (score < 50) {
       strokeColor = "stroke-rose-500";
-    } else if (score < 80) {
+    } else if (score < 90) {
       strokeColor = "stroke-amber-500";
     }
 
