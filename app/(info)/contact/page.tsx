@@ -25,6 +25,7 @@ import {
   Lightbulb,
   HelpCircle,
   ExternalLink,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -148,6 +149,16 @@ export default function ContactPage() {
             Have a question, spotted a bug, or want to share an idea? We'd love
             to hear from you. Usually respond within 24–48 hours.
           </p>
+          <div className="flex flex-wrap gap-3 mt-8">
+            <Button asChild>
+              <Link href="/#articles">
+                Browse Notes <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/about">About us</Link>
+            </Button>
+          </div>
         </div>
       </section>
 

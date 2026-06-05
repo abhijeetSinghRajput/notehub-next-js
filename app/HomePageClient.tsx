@@ -167,7 +167,7 @@ const HomePageClient = ({ initialData }: Props) => {
   );
 
   return (
-    <div className="p-2">
+    <div className="p-4">
       <h1 className="sr-only">NoteHub — Explore Public Notes</h1>
 
       <div className="flex flex-col gap-4 mb-6 w-full lg:hidden">
