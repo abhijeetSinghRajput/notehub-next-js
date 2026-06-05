@@ -37,6 +37,7 @@ import {
 } from "@/components/Footer";
 import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
+import axios from "axios";
 
 const CONTACT_REASONS = [
   { value: "general", label: "General Enquiry", icon: MessageSquare },
@@ -116,7 +117,11 @@ export default function ContactPage() {
     } catch (error) {
       console.error(error);
 
-      toast.error(error.response?.data?.message || "Failed to send message.");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Failed to send message.");
+      } else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }
