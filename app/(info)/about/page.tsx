@@ -15,16 +15,13 @@ import {
   Bell,
   ShieldCheck,
   Search,
-  TrendingUp,
-  Youtube,
-  ExternalLink,
-  ArrowUpRight,
+  TrendingUp, ArrowUpRight
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import GithubIcon from "@/components/icons/githubIcon";
-import { LinkedinIcon, XIcon, YoutubeIcon } from "@/components/Footer";
+import { LinkedinIcon, XIcon } from "@/components/Footer";
+import HeroSection from "./_components/hero-section";
 
 export const metadata: Metadata = {
   title: "About – NoteHub",
@@ -335,33 +332,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="border-b border-border/60 bg-muted/30">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-          <Badge variant="secondary" className="mb-4 text-xs font-medium">
-            Our story
-          </Badge>
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground mb-5 max-w-2xl leading-tight">
-            Born in a classroom.
-            <br />
-            Built for the world.
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-            NoteHub started with a simple frustration — you can't listen and
-            write at the same time. So we built a platform where quality notes
-            are shared, ranked on Google, and read globally.
-          </p>
-          <div className="flex flex-wrap gap-3 mt-8">
-            <Button asChild>
-              <Link href="/">
-                Browse notes <ArrowRight className="w-4 h-4 ml-1.5" />
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/contact">Contact us</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <HeroSection/>
 
       {/* Stats */}
       <section className="border-b border-border/60">
@@ -528,7 +499,7 @@ export default function AboutPage() {
             <div className="flex flex-wrap gap-2 mt-5">
               <Button variant="outline" size="sm" asChild>
                 <Link
-                  href="https://x.com/abhijeetsinghrajput"
+                  href="https://x.com/abhijeet62008"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -548,7 +519,7 @@ export default function AboutPage() {
               </Button>
               <Button variant="outline" size="sm" asChild>
                 <Link
-                  href="https://www.youtube.com/@mrcodium"
+                  href="https://www.linkedin.com/in/abhijeet-singh27"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -576,7 +547,7 @@ export default function AboutPage() {
                   <span className="text-sm font-medium text-foreground">
                     {label}
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               ))}
             </div>

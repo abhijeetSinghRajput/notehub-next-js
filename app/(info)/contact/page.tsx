@@ -35,6 +35,8 @@ import {
   XIcon,
   YoutubeIcon,
 } from "@/components/Footer";
+import { axiosInstance } from "@/lib/axios";
+import { toast } from "sonner";
 
 const CONTACT_REASONS = [
   { value: "general", label: "General Enquiry", icon: MessageSquare },
@@ -96,11 +98,28 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    // Replace with your actual submission logic (API route, email service, etc.)
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setSubmitted(true);
+
+    try {
+      setLoading(true);
+
+      const { data } = await axiosInstance.post("/contact", {
+        name: formState.name,
+        email: formState.email,
+        reason: formState.reason,
+        subject: formState.subject,
+        message: formState.message,
+      });
+
+      if (data.success) {
+        setSubmitted(true);
+      }
+    } catch (error) {
+      console.error(error);
+
+      toast.error(error.response?.data?.message || "Failed to send message.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isValid =
@@ -130,7 +149,6 @@ export default function ContactPage() {
       {/* Body */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-
           {/* Form */}
           <div className="lg:col-span-3 lg:order-2">
             {submitted ? (
@@ -298,7 +316,7 @@ export default function ContactPage() {
               >
                 <Mail className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 abhijeet62008@gmail.com
-                <ExternalLink className="size-3.5"/>
+                <ExternalLink className="size-3.5" />
               </a>
             </div>
 
@@ -342,7 +360,6 @@ export default function ContactPage() {
                 ))}
               </ul>
             </div>
-
           </aside>
         </div>
       </section>

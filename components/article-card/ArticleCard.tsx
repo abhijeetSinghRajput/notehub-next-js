@@ -49,88 +49,91 @@ export const ArticleCard = memo<ArticleCardProps>(function ArticleCard({
   const displayTitle = note.seo?.title || note.name;
   const displayDescription = note.seo?.description || description;
   const displayImages = note.seo?.image?.url
-    ? [{ src: note.seo.image.url, alt: note.seo.image.alt || note.seo.title || note.name }]
+    ? [
+        {
+          src: note.seo.image.url,
+          alt: note.seo.image.alt || note.seo.title || note.name,
+        },
+      ]
     : images;
 
   return (
-    <Card className="w-full rounded-xl sm:rounded-2xl border-t border-border lg:border p-4 lg:p-6">
-      {/* ── Header: author info + rename input + options menu ── */}
-      <CardHeader className="p-0 mb-3 flex flex-row justify-between items-center">
-        {isRenaming ? (
-          <NoteTitle
-            note={note}
-            isRenaming={isRenaming}
-            onRename={setIsRenaming}
-          />
-        ) : (
-          <AuthorInfo
-            author={author}
-            note={note}
-            collection={collection}
-            isOwner={isOwner}
-          />
-        )}
-
-        {isOwner && (
-          <NotesOption
-            trigger={<MoreVertical className="size-4" />}
-            className="size-10 rounded-full"
-            note={note}
-            setIsRenaming={setIsRenaming}
-          />
-        )}
-      </CardHeader>
-
-      {/* ── Body: text + optional image carousel ── */}
-      <CardContent className="p-0">
-        <div className="flex flex-col items-start md:flex-row gap-4">
-          {/* Left: title, TOC, description, CTA */}
-          <div className="flex-1 w-full">
-            <CardTitle>
-              <h2 className="text-base sm:text-xl font-semibold mb-2">
-                <Link
-                  href={collectionHref}
-                  className="text-muted-foreground hover:underline"
-                >
-                  {collection.name}
-                </Link>
-                {" / "}
-                <Link href={noteHref} className="hover:underline">
-                  {displayTitle}
-                </Link>
-              </h2>
-            </CardTitle>
-
-            <TocSection
-              noteLink={noteLink}
-              headings={note.tableOfContent}
+    <article>
+      <Card className="w-full rounded-xl sm:rounded-2xl border-t border-border lg:border p-4 lg:p-6">
+        {/* ── Header: author info + rename input + options menu ── */}
+        <CardHeader className="p-0 mb-3 flex flex-row justify-between items-center">
+          {isRenaming ? (
+            <NoteTitle
+              note={note}
+              isRenaming={isRenaming}
+              onRename={setIsRenaming}
             />
+          ) : (
+            <AuthorInfo
+              author={author}
+              note={note}
+              collection={collection}
+              isOwner={isOwner}
+            />
+          )}
 
-            <Link
-              href={noteHref}
-              aria-label={`Read more about ${displayTitle} group`}
-            >
-              <p className="text-muted-foreground text-sm line-clamp-3">
-                {displayDescription}
-              </p>
+          {isOwner && (
+            <NotesOption
+              trigger={<MoreVertical className="size-4" />}
+              className="size-10 rounded-full"
+              note={note}
+              setIsRenaming={setIsRenaming}
+            />
+          )}
+        </CardHeader>
 
-              <div className="mt-2 flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                >
-                  <span className="sr-only">{`Read more about ${displayTitle}`}</span>
-                  <span aria-hidden="true">Read More</span>
-                  <ChevronRight />
-                </Button>
-              </div>
-            </Link>
+        {/* ── Body: text + optional image carousel ── */}
+        <CardContent className="p-0">
+          <div className="flex flex-col items-start md:flex-row gap-4">
+            {/* Left: title, TOC, description, CTA */}
+            <div className="flex-1 w-full">
+              <CardTitle>
+                <h2 className="text-base sm:text-xl font-semibold mb-2">
+                  <Link
+                    href={collectionHref}
+                    className="text-muted-foreground hover:underline"
+                  >
+                    {collection.name}
+                  </Link>
+                  {" / "}
+                  <Link href={noteHref} className="hover:underline">
+                    {displayTitle}
+                  </Link>
+                </h2>
+              </CardTitle>
+
+              <TocSection noteLink={noteLink} headings={note.tableOfContent} />
+
+              <Link
+                href={noteHref}
+                aria-label={`Read more about ${displayTitle} group`}
+              >
+                <p className="text-muted-foreground text-sm line-clamp-3">
+                  {displayDescription}
+                </p>
+
+                <div className="mt-2 flex items-center gap-2">
+                  <Button size="sm" variant="ghost">
+                    <span className="sr-only">{`Read more about ${displayTitle}`}</span>
+                    <span aria-hidden="true">Read More</span>
+                    <ChevronRight />
+                  </Button>
+                </div>
+              </Link>
+            </div>
+
+            {/* Right: image carousel */}
+            {displayImages?.length > 0 && (
+              <ImageCarousel images={displayImages} />
+            )}
           </div>
-
-          {/* Right: image carousel */}
-          {displayImages?.length > 0 && <ImageCarousel images={displayImages} />}
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </article>
   );
 });

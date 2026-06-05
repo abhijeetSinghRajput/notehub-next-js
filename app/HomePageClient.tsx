@@ -4,12 +4,15 @@ import { useNoteStore } from "@/app/stores/useNoteStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { noteToArticle } from "@/lib/utils";
 import { ArticleCardSkeleton } from "@/components/ArticleCardSkeleton";
-import { CheckCircle2 } from "lucide-react";
+import { ArrowRight, Bookmark, CheckCircle2 } from "lucide-react";
 import { PopulatedNote } from "@/types/model";
 import OnboardingCard from "@/components/OnboardingCard";
 import WritingTipsCard from "@/components/WritingTipsCard";
 import { ArticleCard } from "@/components/article-card";
 import HomePageStatic from "./HomePageStatic";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Label } from "@/components/ui/label";
 
 type Props = {
   initialData?: any;
@@ -24,7 +27,9 @@ const HomePageClient = ({ initialData }: Props) => {
 
   // After hydration, swap static → interactive
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const articles = useMemo(
     () => notes.map((note) => noteToArticle(note as PopulatedNote)),
@@ -83,17 +88,55 @@ const HomePageClient = ({ initialData }: Props) => {
 
   const feed = (
     <div className="flex-1 space-y-3 sm:space-y-4 max-w-5xl">
-      {articles.map((note, index) => (
-        <ArticleCard
-          key={note._id || index}
-          note={note}
-          description={note.article.description}
-          images={note.article.images}
-          author={note.userId}
-          collection={note.collectionId}
-          headings={note.article.headings}
-        />
-      ))}
+      <h1 className="sr-only">NoteHub — Explore Public Notes</h1>
+      <section>
+        <div className="max-w-5xl mx-auto py-8 sm:py-16">
+          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground mb-5 max-w-2xl leading-tight">
+            The Hub where notes
+            <br />
+            become knowledge.
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+            Whether you're a student cramming for exams, an engineer documenting
+            systems, or a developer exploring new tech — NoteHub is where your
+            knowledge finds a home. help the next person who's searching for
+            exactly what you know.
+          </p>
+          <div className="flex flex-wrap gap-3 mt-8">
+            <Button asChild>
+              <Link href="#articles">
+                Browse Notes <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/contact">Contact us</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <div id="articles" className="scroll-mt-20 space-y-3 sm:space-y-4">
+        <div className="flex items-center gap-6 pb-4">
+          {/* <span className="border-b flex-1"></span> */}
+          <div className="flex items-center gap-2">
+            <Bookmark className="size-4" />
+            <Label htmlFor="articles">Articles</Label>
+          </div>
+          <span className="border-b flex-1"></span>
+        </div>
+
+        {articles.map((note, index) => (
+          <ArticleCard
+            key={note._id || index}
+            note={note}
+            description={note.article.description}
+            images={note.article.images}
+            author={note.userId}
+            collection={note.collectionId}
+            headings={note.article.headings}
+          />
+        ))}
+      </div>
 
       {status.note.state === "loading" &&
         [...Array(5)].map((_, i) => <ArticleCardSkeleton key={i} />)}
@@ -105,7 +148,9 @@ const HomePageClient = ({ initialData }: Props) => {
           <div className="relative bg-muted rounded-full p-4 shadow-lg">
             <CheckCircle2 className="h-12 w-12 text-green-500" />
           </div>
-          <h3 className="mt-6 text-xl font-semibold">You&apos;ve reached the end</h3>
+          <h3 className="mt-6 text-xl font-semibold">
+            You&apos;ve reached the end
+          </h3>
           <p className="mt-2 text-center text-muted-foreground max-w-md">
             That&apos;s all for now. Check back later for more content.
           </p>
@@ -115,9 +160,11 @@ const HomePageClient = ({ initialData }: Props) => {
   );
 
   const sidebarCard = isGuest ? <OnboardingCard /> : <WritingTipsCard />;
-  const mobileCard = isGuest
-    ? <OnboardingCard />
-    : <WritingTipsCard defaultOpen={false} />;
+  const mobileCard = isGuest ? (
+    <OnboardingCard />
+  ) : (
+    <WritingTipsCard defaultOpen={false} />
+  );
 
   return (
     <div className="p-2">

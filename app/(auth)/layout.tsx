@@ -1,6 +1,7 @@
 "use client";
 
 import BaseHeader from "@/components/BaseHeader";
+import Footer from "@/components/Footer";
 import { ReactNode } from "react";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
@@ -8,6 +9,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     <div>
       <BaseHeader />
       {children}
+      <Footer/>
     </div>
   );
 }
