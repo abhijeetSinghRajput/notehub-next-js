@@ -38,7 +38,7 @@ import {
   Check,
 } from "lucide-react";
 import Link from "next/link";
-import JsonPreviewCard from "../_components/json-preview-card";
+import CampaignCodeCard from "../_components/campaign-code-card";
 import DeliveryReport from "../_components/delivery-report";
 import CampaignDetails from "../_components/CampaignDetails";
 import { Campaign, Job } from "@/types/mailer.types";
@@ -323,7 +323,7 @@ export default function CampaignDetailPage() {
 
       <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
         <CampaignDetails campaign={campaign} />
-        <JsonPreviewCard json={campaign.extraJson} />
+        <CampaignCodeCard json={campaign.extraJson} html={campaign.htmlBody} />
       </div>
 
       {["done", "failed", "sending"].includes(campaign.status) && (
