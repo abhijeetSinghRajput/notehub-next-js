@@ -42,6 +42,7 @@ import JsonPreviewCard from "../_components/json-preview-card";
 import DeliveryReport from "../_components/delivery-report";
 import CampaignDetails from "../_components/CampaignDetails";
 import { Campaign, Job } from "@/types/mailer.types";
+import { useCampaignSocket } from "@/hooks/useCampaignSocket";
 
 const statusConfig: Record<
   string,
@@ -92,6 +93,31 @@ export default function CampaignDetailPage() {
       setJobsLoading(false);
     }
   }, [id]);
+
+  useCampaignSocket({
+    campaignId: campaign ? id : "",
+    onProgress: (stats) => {
+      setCampaign((prev) => (prev ? { ...prev, stats } : prev));
+    },
+    onDone: (stats, status) => {
+      setCampaign((prev) => (prev ? { ...prev, stats, status } : prev));
+      if (status === "done") toast.success(`Sent to ${stats.sent} recipients`);
+      if (status === "failed") toast.error("Campaign failed");
+    },
+    onJob: (job) => {
+      setJobs((prev) => {
+        const exists = prev.findIndex((j) => j._id === job._id);
+        if (exists !== -1) {
+          // update existing (e.g. pending → sent/failed)
+          const updated = [...prev];
+          updated[exists] = { ...updated[exists], ...job };
+          return updated;
+        }
+        // append new
+        return [...prev, job as Job];
+      });
+    },
+  });
 
   useEffect(() => {
     fetchCampaign();

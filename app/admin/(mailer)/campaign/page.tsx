@@ -39,6 +39,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Campaign, CampaignStats, Job } from "@/types/mailer.types";
 import DeliveryReport from "./_components/delivery-report";
+import { useCampaignSocket } from "@/hooks/useCampaignSocket";
 
 const statusBadge: Record<
   string,
@@ -58,40 +59,14 @@ interface LiveProgressProps {
   onDone: (id: string, stats: CampaignStats, status: "done" | "failed") => void;
 }
 
-const LiveProgress = ({
-  campaignId,
-  initialStats,
-  onDone,
-}: LiveProgressProps) => {
+const LiveProgress = ({ campaignId, initialStats, onDone }: LiveProgressProps) => {
   const [stats, setStats] = useState<CampaignStats>(initialStats);
-  const esRef = useRef<EventSource | null>(null);
 
-  useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
-    const es = new EventSource(
-      `${apiBase}/api/mailer/campaigns/${campaignId}/progress`,
-    );
-    esRef.current = es;
-
-    es.onmessage = (e) => {
-      try {
-        const data = JSON.parse(e.data);
-        if (data.stats) setStats(data.stats);
-        if (data.status === "done" || data.status === "failed") {
-          es.close();
-          onDone(campaignId, data.stats ?? stats, data.status);
-        }
-      } catch {}
-    };
-
-    es.onerror = () => {
-      es.close();
-    };
-
-    return () => {
-      es.close();
-    };
-  }, [campaignId]);
+  useCampaignSocket({
+    campaignId,
+    onProgress: (s) => setStats(s),
+    onDone: (s, status) => onDone(campaignId, s, status),
+  });
 
   const processed = stats.sent + stats.failed;
   const pct = stats.total > 0 ? Math.round((processed / stats.total) * 100) : 0;
@@ -99,9 +74,7 @@ const LiveProgress = ({
   return (
     <div className="space-y-1 min-w-40">
       <div className="flex justify-between text-muted-foreground text-xs">
-        <span>
-          {stats.sent} sent · {stats.failed} failed
-        </span>
+        <span>{stats.sent} sent · {stats.failed} failed</span>
         <span>{pct}%</span>
       </div>
       <Progress value={pct} className="h-1.5" />
@@ -333,7 +306,7 @@ export default function CampaignPage() {
       )}
 
       <Dialog open={!!jobsDialog} onOpenChange={() => setJobsDialog(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto pt-10">
+        <DialogContent className="max-w-4xl max-h-[70vh] px-4 overflow-y-auto pt-10">
           <DeliveryReport
             jobs={jobs}
             jobsLoading={jobsLoading}
