@@ -183,7 +183,7 @@ export default function SuppressionListPage() {
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-4 p-4 max-w-7xl mx-auto">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="font-semibold text-xl">Unsubscribers</h1>

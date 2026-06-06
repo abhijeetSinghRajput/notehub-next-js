@@ -148,7 +148,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Contacts</h1>

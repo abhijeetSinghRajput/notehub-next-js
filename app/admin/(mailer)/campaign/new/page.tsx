@@ -323,7 +323,7 @@ export default function NewCampaignPage() {
   ];
 
   return (
-    <>
+    <div className="p-4 max-w-7xl mx-auto">
       <PreviewSheet open={previewOpen} onOpenChange={setPreviewOpen} previews={previews} />
 
       <RecipientsDialog
@@ -568,6 +568,6 @@ export default function NewCampaignPage() {
           Send emails
         </Button>
       </div>
-    </>
+    </div>
   );
 }

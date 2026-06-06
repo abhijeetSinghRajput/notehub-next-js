@@ -68,7 +68,7 @@ export default function LinkGraphClient() {
     : null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-7xl p-4 mx-auto">
       <LinkGraphHeader
         isCrawling={isCrawling}
         crawlPhase={crawlPhase}

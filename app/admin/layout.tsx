@@ -102,7 +102,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
         <main className="w-full">
-          <div className="p-4 max-w-6xl mx-auto space-y-6">
+          <div className="mx-auto space-y-6">
             {children}
           </div>
         </main>

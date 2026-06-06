@@ -36,6 +36,7 @@ import {
   AlertCircle,
   BarChart3,
   Check,
+  RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
 import CampaignCodeCard from "../_components/campaign-code-card";
@@ -47,14 +48,14 @@ import { useCampaignSocket } from "@/hooks/useCampaignSocket";
 const statusConfig: Record<
   string,
   {
-    variant: "secondary" | "default" | "destructive" | "outline";
+    variant: "secondary" | "default" | "destructive" | "outline" | "success";
     icon: React.ElementType;
     label: string;
   }
 > = {
   draft: { variant: "secondary", icon: FileText, label: "Draft" },
   sending: { variant: "outline", icon: Loader2, label: "Sending" },
-  done: { variant: "default", icon: Check, label: "Completed" },
+  done: { variant: "success", icon: Check, label: "Completed" },
   failed: { variant: "destructive", icon: XCircle, label: "Failed" },
 };
 
@@ -68,8 +69,14 @@ export default function CampaignDetailPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [jobsLoading, setJobsLoading] = useState(false);
+  const [jobsLoadingMore, setJobsLoadingMore] = useState(false);
+  const [jobsPagination, setJobsPagination] = useState({
+    page: 1,
+    hasMore: false,
+  });
   const [sending, setSending] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [retrying, setRetrying] = useState(false);
 
   const fetchCampaign = useCallback(async () => {
     try {
@@ -82,17 +89,35 @@ export default function CampaignDetailPage() {
     }
   }, [id]);
 
-  const fetchJobs = useCallback(async () => {
-    setJobsLoading(true);
-    try {
-      const { data } = await axiosInstance.get(`/mailer/campaigns/${id}/jobs`);
-      setJobs(data.jobs);
-    } catch {
-      toast.error("Failed to load delivery jobs");
-    } finally {
-      setJobsLoading(false);
-    }
-  }, [id]);
+  const fetchJobs = useCallback(
+    async (page = 1) => {
+      if (page === 1) setJobsLoading(true);
+      try {
+        const { data } = await axiosInstance.get(
+          `/mailer/campaigns/${id}/jobs`,
+          {
+            params: { page, limit: 50 },
+          },
+        );
+        setJobs((prev) => (page === 1 ? data.jobs : [...prev, ...data.jobs]));
+        setJobsPagination({
+          page: data.pagination.currentPage,
+          hasMore: data.pagination.hasNextPage,
+        });
+      } catch {
+        toast.error("Failed to load delivery jobs");
+      } finally {
+        setJobsLoading(false);
+        setJobsLoadingMore(false);
+      }
+    },
+    [id],
+  );
+
+  const handleJobsLoadMore = () => {
+    setJobsLoadingMore(true);
+    fetchJobs(jobsPagination.page + 1);
+  };
 
   useCampaignSocket({
     campaignId: campaign ? id : "",
@@ -160,6 +185,19 @@ export default function CampaignDetailPage() {
     }
   };
 
+  const handleRetryFailed = async () => {
+    setRetrying(true);
+    try {
+      await axiosInstance.post(`/mailer/campaigns/${id}/retry-failed`);
+      toast.success("Retrying failed jobs…");
+      setCampaign((prev) => (prev ? { ...prev, status: "sending" } : prev));
+    } catch {
+      toast.error("Failed to retry");
+    } finally {
+      setRetrying(false);
+    }
+  };
+
   // ─── Loading state ────────────────────────────────────────────
 
   if (loading) {
@@ -198,7 +236,7 @@ export default function CampaignDetailPage() {
   // ─── Render ───────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex justify-between items-start gap-4">
         <div className="space-y-1">
@@ -232,6 +270,29 @@ export default function CampaignDetailPage() {
               disabled={sending}
             >
               {sending ? <Loader2 className="animate-spin" /> : <Send />}
+            </Button>
+          )}
+          {campaign.status === "done" && campaign.stats.failed > 0 && (
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={handleRetryFailed}
+              tooltip="retry failed"
+              disabled={retrying}
+            >
+              {retrying ? <Loader2 className="animate-spin" /> : <RotateCcw />}
+            </Button>
+          )}
+
+          {campaign.status === "failed" && (
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={handleRetryFailed}
+              tooltip="retry failed"
+              disabled={retrying}
+            >
+              {retrying ? <Loader2 className="animate-spin" /> : <RotateCcw />}
             </Button>
           )}
           {campaign.status !== "sending" && (
@@ -330,7 +391,10 @@ export default function CampaignDetailPage() {
         <DeliveryReport
           jobs={jobs}
           jobsLoading={jobsLoading}
-          onRefresh={fetchJobs}
+          onRefresh={() => fetchJobs(1)}
+          hasMore={jobsPagination.hasMore}
+          onLoadMore={handleJobsLoadMore}
+          loadingMore={jobsLoadingMore}
         />
       )}
     </div>

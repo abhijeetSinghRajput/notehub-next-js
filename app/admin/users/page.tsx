@@ -52,13 +52,14 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateUserDialog } from "./CreateUserDialog";
+import { Badge } from "@/components/ui/badge";
 const PAGE_SIZE = 50;
 
 export default function UserManagementPage() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [itemsPerPage, setItemsPerPage] = useState(PAGE_SIZE);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -93,7 +94,7 @@ export default function UserManagementPage() {
     currentPage,
     totalPages: 1,
     totalItems: 0,
-    itemsPerPage: PAGE_SIZE,
+    itemsPerPage,
     hasNextPage: false,
     hasPreviousPage: false,
   };
@@ -169,7 +170,7 @@ export default function UserManagementPage() {
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-4 mx-auto p-4 max-w-7xl">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="font-semibold text-xl">User Management</h1>
@@ -301,17 +302,11 @@ export default function UserManagementPage() {
                         </TableCell>
                         <TableCell>
                           {user.isDeleted ? (
-                            <span className="inline-flex items-center bg-gray-100 dark:bg-gray-900/30 px-2 py-0.5 rounded-full font-medium text-gray-700 dark:text-gray-400 text-xs">
-                              Deleted
-                            </span>
+                            <Badge variant={"secondary"}>Deleted</Badge>
                           ) : user.isBanned ? (
-                            <span className="inline-flex items-center bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full font-medium text-red-700 dark:text-red-400 text-xs">
-                              Banned
-                            </span>
+                            <Badge variant={"destructive"}>Banned</Badge>
                           ) : (
-                            <span className="inline-flex items-center bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full font-medium text-green-700 dark:text-green-400 text-xs">
-                              Active
-                            </span>
+                            <Badge variant={"success"}>Active</Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
@@ -464,8 +459,59 @@ export default function UserManagementPage() {
 
         {usersError && <p className="text-destructive text-xs">{usersError}</p>}
 
-        {/* ── PAGINATION ── */}
-        <div className="flex justify-between items-center gap-3 text-muted-foreground text-xs">
+        {/* ── BATCH ACTIONS BAR ── */}
+        {selectedIds.length > 0 && (
+          <div className="bottom-0 slide-in-from-bottom-2 z-20 sticky flex flex-wrap items-center gap-2 bg-card shadow-sm p-3 border rounded-md transition-all animate-in fade-in">
+            <span className="mr-auto pl-2 font-medium text-sm">
+              {selectedIds.length} user(s) selected
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openConfirmDialog("assignRole", "admin")}
+              className="h-8"
+            >
+              <Shield className="mr-2 w-4 h-4" /> Make Admin
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openConfirmDialog("assignRole", "user")}
+              className="h-8"
+            >
+              <UserIcon className="mr-2 w-4 h-4" /> Make User
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openConfirmDialog("unban")}
+              className="hover:bg-green-50 dark:hover:bg-green-900/20 border-green-200 h-8 text-green-700"
+            >
+              <CheckCircle className="mr-2 w-4 h-4" /> Unban
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openConfirmDialog("ban")}
+              className="hover:bg-orange-50 dark:hover:bg-orange-900/20 border-orange-200 h-8 text-orange-700"
+            >
+              <Ban className="mr-2 w-4 h-4" /> Ban
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => openConfirmDialog("delete")}
+              className="h-8"
+            >
+              <Trash className="mr-2 w-4 h-4" /> Delete
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* ── PAGINATION ── */}
+      <div className="border-t h-16 sticky bottom-0 bg-background z-10 px-4 py-3">
+        <div className="justify-between items-center gap-3 text-muted-foreground text-xs flex mx-auto max-w-7xl">
           <div className="flex items-center gap-2">
             <p>
               {(pagination.currentPage - 1) * pagination.itemsPerPage +
@@ -546,55 +592,6 @@ export default function UserManagementPage() {
             </PaginationContent>
           </Pagination>
         </div>
-
-        {/* ── BATCH ACTIONS BAR ── */}
-        {selectedIds.length > 0 && (
-          <div className="bottom-0 slide-in-from-bottom-2 z-10 sticky flex flex-wrap items-center gap-2 bg-card shadow-sm p-3 border rounded-md transition-all animate-in fade-in">
-            <span className="mr-auto pl-2 font-medium text-sm">
-              {selectedIds.length} user(s) selected
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openConfirmDialog("assignRole", "admin")}
-              className="h-8"
-            >
-              <Shield className="mr-2 w-4 h-4" /> Make Admin
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openConfirmDialog("assignRole", "user")}
-              className="h-8"
-            >
-              <UserIcon className="mr-2 w-4 h-4" /> Make User
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openConfirmDialog("unban")}
-              className="hover:bg-green-50 dark:hover:bg-green-900/20 border-green-200 h-8 text-green-700"
-            >
-              <CheckCircle className="mr-2 w-4 h-4" /> Unban
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openConfirmDialog("ban")}
-              className="hover:bg-orange-50 dark:hover:bg-orange-900/20 border-orange-200 h-8 text-orange-700"
-            >
-              <Ban className="mr-2 w-4 h-4" /> Ban
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => openConfirmDialog("delete")}
-              className="h-8"
-            >
-              <Trash className="mr-2 w-4 h-4" /> Delete
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* ── CONFIRMATION DIALOG ── */}

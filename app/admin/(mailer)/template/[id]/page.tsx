@@ -35,7 +35,7 @@ export default function EditTemplatePage() {
   }, [id]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4 max-w-7xl mx-auto">
       <div>
         <h1 className="font-semibold text-xl">Edit Template</h1>
         <p className="text-muted-foreground text-sm">
