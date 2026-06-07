@@ -15,7 +15,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { AlertCircle, Clock, Loader2, RefreshCw, Users } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { AlertCircle, Clock, Eye, Loader2, MousePointerClick, RefreshCw } from "lucide-react";
 import { Job } from "@/types/mailer.types";
 
 interface DeliveryReportProps {
@@ -27,6 +32,52 @@ interface DeliveryReportProps {
   loadingMore?: boolean;
 }
 
+// ─── Small helpers ────────────────────────────────────────────
+
+function TrackingCell({
+  count,
+  firstAt,
+  icon: Icon,
+  label,
+  activeColor,
+}: {
+  count: number;
+  firstAt: string | null;
+  icon: React.ElementType;
+  label: string;
+  activeColor: string;
+}) {
+  if (count === 0) {
+    return <span className="text-muted-foreground">—</span>;
+  }
+
+  const formattedTime = firstAt
+    ? new Date(firstAt).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : null;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className={`flex items-center gap-1.5 cursor-default w-fit ${activeColor}`}>
+          <Icon className="h-3.5 w-3.5 shrink-0" />
+          <span className="text-sm font-medium tabular-nums">{count}</span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="text-xs">
+        {formattedTime
+          ? `First ${label} at ${formattedTime}`
+          : `${count} ${label}${count > 1 ? "s" : ""}`}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────
+
 export default function DeliveryReport({
   jobs,
   jobsLoading,
@@ -35,29 +86,21 @@ export default function DeliveryReport({
   onLoadMore,
   loadingMore = false,
 }: DeliveryReportProps) {
-
   return (
     <div>
-      <div className="mb-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-1.5 font-medium text-sm">
-            Delivery jobs
-          </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRefresh}
-            disabled={jobsLoading}
-          >
-            <RefreshCw
-              className={`mr-1.5 h-3.5 w-3.5 ${
-                jobsLoading ? "animate-spin" : ""
-              }`}
-            />
-            Refresh
-          </Button>
-        </div>
+      <div className="mb-4 flex justify-between items-center">
+        <span className="font-medium text-sm">Delivery jobs</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRefresh}
+          disabled={jobsLoading}
+        >
+          <RefreshCw
+            className={`mr-1.5 h-3.5 w-3.5 ${jobsLoading ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </Button>
       </div>
 
       {jobsLoading && jobs.length === 0 ? (
@@ -74,10 +117,22 @@ export default function DeliveryReport({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>#</TableHead>
+                <TableHead className="w-8">#</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Processed At</TableHead>
+                <TableHead>
+                  <div className="flex items-center gap-1.5">
+                    <Eye className="h-3.5 w-3.5" />
+                    Opens
+                  </div>
+                </TableHead>
+                <TableHead>
+                  <div className="flex items-center gap-1.5">
+                    <MousePointerClick className="h-3.5 w-3.5" />
+                    Clicks
+                  </div>
+                </TableHead>
                 <TableHead>Error</TableHead>
               </TableRow>
             </TableHeader>
@@ -85,10 +140,11 @@ export default function DeliveryReport({
             <TableBody>
               {jobs.map((job, index) => (
                 <TableRow key={job._id}>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-muted-foreground text-xs">
                     {index + 1}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+
+                  <TableCell className="text-muted-foreground text-sm">
                     {job.email}
                   </TableCell>
 
@@ -106,7 +162,7 @@ export default function DeliveryReport({
                     </Badge>
                   </TableCell>
 
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-muted-foreground text-sm">
                     {job.processedAt
                       ? new Date(job.processedAt).toLocaleTimeString("en-US", {
                           hour: "2-digit",
@@ -116,7 +172,30 @@ export default function DeliveryReport({
                       : "—"}
                   </TableCell>
 
-                  <TableCell className="max-w-50 truncate text-muted-foreground text-xs">
+                  {/* Opens */}
+                  <TableCell>
+                    <TrackingCell
+                      count={job.openCount ?? 0}
+                      firstAt={job.firstOpenedAt ?? null}
+                      icon={Eye}
+                      label="open"
+                      activeColor="text-blue-500"
+                    />
+                  </TableCell>
+
+                  {/* Clicks */}
+                  <TableCell>
+                    <TrackingCell
+                      count={job.clickCount ?? 0}
+                      firstAt={job.firstClickedAt ?? null}
+                      icon={MousePointerClick}
+                      label="click"
+                      activeColor="text-violet-500"
+                    />
+                  </TableCell>
+
+                  {/* Error */}
+                  <TableCell className="text-muted-foreground text-xs">
                     {job.error ? (
                       <Popover>
                         <PopoverTrigger asChild>
@@ -124,11 +203,8 @@ export default function DeliveryReport({
                             <AlertCircle />
                           </Button>
                         </PopoverTrigger>
-
                         <PopoverContent align="end" className="w-auto max-w-md">
-                          <p className="text-destructive text-sm">
-                            {job.error}
-                          </p>
+                          <p className="text-destructive text-sm">{job.error}</p>
                         </PopoverContent>
                       </Popover>
                     ) : (
@@ -139,6 +215,7 @@ export default function DeliveryReport({
               ))}
             </TableBody>
           </Table>
+
           {hasMore && (
             <div className="flex justify-center pt-4">
               <Button
