@@ -1,30 +1,21 @@
 export interface CampaignStats {
   total: number;
   sent: number;
-  skipped: number,
+  skipped: number;
   failed: number;
+  opened: number;   // unique jobs with at least one open
+  clicked: number;  // unique jobs with at least one click
 }
-
 
 export interface Campaign {
   _id: string;
   name: string;
   subject: string;
   htmlBody: string;
-
   emails: string[];
-
   status: "draft" | "sending" | "done" | "failed" | "skipped";
-
   extraJson: unknown;
-
-  stats: {
-    total: number;
-    sent: number;
-    skipped: number;
-    failed: number;
-  };
-
+  stats: CampaignStats;
   sentAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -33,10 +24,15 @@ export interface Campaign {
 export interface Job {
   _id: string;
   email: string;
-  status: "pending" | "sent" | "failed";
+  status: "pending" | "sent" | "failed" | "skipped";
   error: string | null;
   processedAt: string | null;
   createdAt: string;
+  // tracking
+  openCount: number;
+  clickCount: number;
+  firstOpenedAt: string | null;
+  firstClickedAt: string | null;
 }
 
 export interface Contact {
