@@ -20,6 +20,7 @@ export function useCampaignSocket({
 
     const s = getSocket();
     s.emit("join:campaign", campaignId);
+    s.emit("campaign:sync", campaignId);
 
     const handleProgress = (data: { stats: CampaignStats }) => {
       onProgress?.(data.stats);

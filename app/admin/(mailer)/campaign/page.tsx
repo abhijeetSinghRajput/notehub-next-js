@@ -39,6 +39,7 @@ import DeliveryReport from "./_components/delivery-report";
 import { useCampaignSocket } from "@/hooks/useCampaignSocket";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { getSocket } from "@/lib/socket";
 
 const statusBadge: Record<
   string,
@@ -82,7 +83,7 @@ const LiveProgress = ({
         </span>
         <span>{pct}%</span>
       </div>
-      <Progress value={pct} className="h-1.5 bg-red-500" />
+      <Progress value={pct} className="h-1.5" />
     </div>
   );
 };
@@ -140,6 +141,11 @@ export default function CampaignPage() {
       const { data } = await axiosInstance.post(
         `/mailer/campaigns/${id}/duplicate`,
       );
+
+      // Join the new campaign's socket room immediately
+      const newCampaignId = data.campaign._id;
+      getSocket().emit("join:campaign", newCampaignId);
+
       toast.success("Campaign duplicated and queued");
       setCampaigns((prev) => [data.campaign, ...prev]);
     } catch {
@@ -297,10 +303,22 @@ export default function CampaignPage() {
                         {c.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className={cn(c.stats.opened ? "text-blue-500" : "text-muted-foreground")}>
+                    <TableCell
+                      className={cn(
+                        c.stats.opened
+                          ? "text-blue-500"
+                          : "text-muted-foreground",
+                      )}
+                    >
                       {c.stats.opened === 0 ? "—" : c.stats.opened}
                     </TableCell>
-                    <TableCell className={cn(c.stats.clicked ? "text-blue-500" : "text-muted-foreground")}>
+                    <TableCell
+                      className={cn(
+                        c.stats.clicked
+                          ? "text-blue-500"
+                          : "text-muted-foreground",
+                      )}
+                    >
                       {c.stats.clicked === 0 ? "—" : c.stats.clicked}
                     </TableCell>
                     <TableCell>
