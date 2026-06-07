@@ -37,13 +37,11 @@ interface DeliveryReportProps {
 function TrackingCell({
   count,
   firstAt,
-  icon: Icon,
   label,
   activeColor,
 }: {
   count: number;
   firstAt: string | null;
-  icon: React.ElementType;
   label: string;
   activeColor: string;
 }) {
@@ -63,7 +61,6 @@ function TrackingCell({
     <Tooltip>
       <TooltipTrigger asChild>
         <div className={`flex items-center gap-1.5 cursor-default w-fit ${activeColor}`}>
-          <Icon className="h-3.5 w-3.5 shrink-0" />
           <span className="text-sm font-medium tabular-nums">{count}</span>
         </div>
       </TooltipTrigger>
@@ -175,7 +172,6 @@ export default function DeliveryReport({
                     <TrackingCell
                       count={job.openCount ?? 0}
                       firstAt={job.firstOpenedAt ?? null}
-                      icon={Eye}
                       label="open"
                       activeColor="text-blue-500"
                     />
@@ -186,7 +182,6 @@ export default function DeliveryReport({
                     <TrackingCell
                       count={job.clickCount ?? 0}
                       firstAt={job.firstClickedAt ?? null}
-                      icon={MousePointerClick}
                       label="click"
                       activeColor="text-violet-500"
                     />

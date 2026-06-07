@@ -13,10 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +30,7 @@ import {
   Eye,
   EllipsisVertical,
   RotateCcw,
+  RotateCw,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -40,6 +38,7 @@ import { Campaign, CampaignStats, Job } from "@/types/mailer.types";
 import DeliveryReport from "./_components/delivery-report";
 import { useCampaignSocket } from "@/hooks/useCampaignSocket";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const statusBadge: Record<
   string,
@@ -106,6 +105,7 @@ export default function CampaignPage() {
 
   const fetchCampaigns = async () => {
     try {
+      setLoading(true);
       const { data } = await axiosInstance.get("/mailer/campaigns");
       setCampaigns(data.campaigns);
     } catch {
@@ -218,11 +218,23 @@ export default function CampaignPage() {
             Send targeted emails to contact groups
           </p>
         </div>
-        <Button size="sm" asChild>
-          <Link href="/admin/campaign/new">
-            <Plus className="mr-1 w-4 h-4" /> New Campaign
-          </Link>
-        </Button>
+        <div className="flex gap-2 items-center">
+          <Button
+            variant={"outline"}
+            disabled={loading}
+            tooltip={"re fetch"}
+            size="icon"
+            onClick={fetchCampaigns}
+            className="size-8"
+          >
+            <RotateCw className={cn(loading ? "animate-spin" : "")} />
+          </Button>
+          <Button size="sm" asChild>
+            <Link href="/admin/campaign/new">
+              <Plus className="mr-1 w-4 h-4" /> New Campaign
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {!loading && campaigns.length === 0 ? (
@@ -236,6 +248,8 @@ export default function CampaignPage() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Opened</TableHead>
+              <TableHead>Clicked</TableHead>
               <TableHead>Progress</TableHead>
               <TableHead>Sent At</TableHead>
               <TableHead />
@@ -252,10 +266,19 @@ export default function CampaignPage() {
                       <Skeleton className="w-12 h-4" />
                     </TableCell>
                     <TableCell>
+                      <Skeleton className="w-12 h-4" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="w-12 h-4" />
+                    </TableCell>
+                    <TableCell>
                       <Skeleton className="w-40 h-4" />
                     </TableCell>
                     <TableCell>
                       <Skeleton className="w-20 h-4" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="w-8 h-8" />
                     </TableCell>
                   </TableRow>
                 ))
@@ -273,6 +296,12 @@ export default function CampaignPage() {
                         )}
                         {c.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell className={cn(c.stats.opened ? "text-blue-500" : "text-muted-foreground")}>
+                      {c.stats.opened === 0 ? "—" : c.stats.opened}
+                    </TableCell>
+                    <TableCell className={cn(c.stats.clicked ? "text-blue-500" : "text-muted-foreground")}>
+                      {c.stats.clicked === 0 ? "—" : c.stats.clicked}
                     </TableCell>
                     <TableCell>
                       {c.status === "sending" ? (
