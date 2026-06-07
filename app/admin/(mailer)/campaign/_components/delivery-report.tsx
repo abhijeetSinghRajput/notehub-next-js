@@ -123,13 +123,11 @@ export default function DeliveryReport({
                 <TableHead>Processed At</TableHead>
                 <TableHead>
                   <div className="flex items-center gap-1.5">
-                    <Eye className="h-3.5 w-3.5" />
                     Opens
                   </div>
                 </TableHead>
                 <TableHead>
                   <div className="flex items-center gap-1.5">
-                    <MousePointerClick className="h-3.5 w-3.5" />
                     Clicks
                   </div>
                 </TableHead>
