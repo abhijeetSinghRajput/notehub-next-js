@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -37,6 +38,17 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { Contact } from "@/types/mailer.types";
+import PaginationFooter from "../../users/_components/pagination-footer";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface User {
   _id: string;
@@ -211,8 +223,8 @@ function EmailPickerTabs({
                     <p className="text-sm font-medium truncate">
                       {user.fullName}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      @{user.userName} · {user.email}
+                    <p className="text-sm text-muted-foreground truncate">
+                      {user.email}
                     </p>
                   </div>
                 </div>
@@ -252,6 +264,26 @@ function EmailPickerTabs({
   );
 }
 
+const LabelInput = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) => (
+  <label htmlFor="label" className="flex items-center gap-1 border-b">
+    <div className="text-muted-foreground w-max shrink-0 text-sm">Label :</div>
+    <Input
+      id="label"
+      value={value}
+      placeholder="e.g. Beta users"
+      className="bg-transparent! focus-visible:ring-0 shadow-none outline-none! border-none rounded-none"
+      onChange={(e) => onChange(e.target.value)}
+      autoFocus
+    />
+  </label>
+);
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function ContactPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -262,6 +294,7 @@ export default function ContactPage() {
   const [createLabel, setCreateLabel] = useState("");
   const [createEmails, setCreateEmails] = useState<Set<string>>(new Set());
   const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // Edit dialog
   const [editOpen, setEditOpen] = useState(false);
@@ -274,10 +307,19 @@ export default function ContactPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
-  const fetchContacts = async () => {
+  // pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const fetchContacts = async (page = currentPage, limit = itemsPerPage) => {
     try {
-      const { data } = await axiosInstance.get("/mailer/contacts");
+      setLoading(true);
+      const { data } = await axiosInstance.get("/mailer/contacts", {
+        params: { page, limit },
+      });
       setContacts(data.contacts);
+      setTotalItems(data.pagination.totalItems);
     } catch {
       toast.error("Failed to load contacts");
     } finally {
@@ -286,8 +328,8 @@ export default function ContactPage() {
   };
 
   useEffect(() => {
-    fetchContacts();
-  }, []);
+    fetchContacts(currentPage, itemsPerPage);
+  }, [currentPage, itemsPerPage]);
 
   const handleCreate = async () => {
     if (!createLabel.trim()) return toast.error("Label is required");
@@ -343,13 +385,23 @@ export default function ContactPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  // Called when user clicks the trash icon — just opens the dialog
+  const confirmDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleteTarget(id);
+  };
+
+  // Called when user confirms inside the dialog
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await axiosInstance.delete(`/mailer/contacts/${id}`);
+      await axiosInstance.delete(`/mailer/contacts/${deleteTarget}`);
       toast.success("Deleted");
-      setContacts((prev) => prev.filter((c) => c._id !== id));
+      setContacts((prev) => prev.filter((c) => c._id !== deleteTarget));
     } catch {
       toast.error("Failed to delete");
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -357,29 +409,6 @@ export default function ContactPage() {
     setSelectedContact(contact);
     setDetailsOpen(true);
   };
-
-  // ── Shared label input ──────────────────────────────────────────────────────
-  const LabelInput = ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-  }) => (
-    <label htmlFor="label" className="flex items-center gap-1 border-b">
-      <div className="text-muted-foreground w-max shrink-0 text-sm">
-        Label :
-      </div>
-      <Input
-        id="label"
-        value={value}
-        placeholder="e.g. Beta users"
-        className="bg-transparent! focus-visible:ring-0 shadow-none outline-none! border-none rounded-none"
-        onChange={(e) => onChange(e.target.value)}
-        autoFocus
-      />
-    </label>
-  );
 
   return (
     <div className="space-y-4 p-4 max-w-7xl mx-auto">
@@ -402,7 +431,7 @@ export default function ContactPage() {
             <DialogHeader>
               <DialogTitle>Create Contact Group</DialogTitle>
             </DialogHeader>
-            <div className="space-y-3 mt-2">
+            <div className="space-y-3 mt-2 overflow-hidden">
               <LabelInput value={createLabel} onChange={setCreateLabel} />
               <EmailPickerTabs
                 selectedEmails={createEmails}
@@ -442,7 +471,7 @@ export default function ContactPage() {
                 <TableHead>Label</TableHead>
                 <TableHead>Users</TableHead>
                 <TableHead>Created</TableHead>
-                <TableHead>Action</TableHead>
+                <TableHead className="text-right">Action</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -460,7 +489,7 @@ export default function ContactPage() {
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(c.createdAt).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right justify-end flex">
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
@@ -472,10 +501,7 @@ export default function ContactPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(c._id);
-                        }}
+                        onClick={(e) => confirmDelete(c._id, e)}
                       >
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
@@ -521,6 +547,14 @@ export default function ContactPage() {
             <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>{selectedContact?.label}</DialogTitle>
+                {selectedContact && (
+                  <DialogDescription>
+                    <span className="text-xs text-muted-foreground">
+                      Created{" "}
+                      {new Date(selectedContact.createdAt).toLocaleDateString()}
+                    </span>
+                  </DialogDescription>
+                )}
               </DialogHeader>
               {selectedContact && (
                 <div className="space-y-2 pt-2">
@@ -532,12 +566,6 @@ export default function ContactPage() {
                       <Badge variant="secondary">
                         {selectedContact.emails.length} emails
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        Created{" "}
-                        {new Date(
-                          selectedContact.createdAt,
-                        ).toLocaleDateString()}
-                      </span>
                     </div>
                   </div>
                   <div className="max-h-64 overflow-y-auto rounded-md border">
@@ -554,8 +582,45 @@ export default function ContactPage() {
               )}
             </DialogContent>
           </Dialog>
+
+          <AlertDialog
+            open={!!deleteTarget}
+            onOpenChange={(open) => !open && setDeleteTarget(null)}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete contact group?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently remove the contact group. Campaigns that
+                  used it will not be affected.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       )}
+
+      <PaginationFooter
+        totalItems={totalItems}
+        itemCount={contacts.length}
+        isLoading={loading}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1);
+        }}
+      />
     </div>
   );
 }

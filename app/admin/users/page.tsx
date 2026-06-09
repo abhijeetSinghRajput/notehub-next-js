@@ -53,6 +53,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateUserDialog } from "./CreateUserDialog";
 import { Badge } from "@/components/ui/badge";
+import PaginationFooter from "./_components/pagination-footer";
 const PAGE_SIZE = 50;
 
 export default function UserManagementPage() {
@@ -98,13 +99,6 @@ export default function UserManagementPage() {
     hasNextPage: false,
     hasPreviousPage: false,
   };
-
-  const paginationPages = useMemo(() => {
-    const totalPages = pagination.totalPages;
-    const start = Math.max(1, pagination.currentPage - 1);
-    const end = Math.min(totalPages, start + 2);
-    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
-  }, [pagination.currentPage, pagination.totalPages]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -170,8 +164,8 @@ export default function UserManagementPage() {
 
   return (
     <>
-      <div className="space-y-4 mx-auto p-4 max-w-7xl">
-        <div className="flex justify-between items-center">
+      <div className="space-y-4 mx-auto p-4 max-w-7xl min-h-svh">
+        <div className="flex justify-between items-center gap-4">
           <div>
             <h1 className="font-semibold text-xl">User Management</h1>
             <p className="text-muted-foreground text-sm">
@@ -458,10 +452,12 @@ export default function UserManagementPage() {
         </div>
 
         {usersError && <p className="text-destructive text-xs">{usersError}</p>}
+      </div>
 
-        {/* ── BATCH ACTIONS BAR ── */}
-        {selectedIds.length > 0 && (
-          <div className="bottom-0 slide-in-from-bottom-2 z-20 sticky flex flex-wrap items-center gap-2 bg-card shadow-sm p-3 border rounded-md transition-all animate-in fade-in">
+      {/* ── BATCH ACTIONS BAR ── */}
+      {selectedIds.length > 0 && (
+        <div className="border-t min-h-16 z-50 sticky bottom-0 slide-in-from-bottom-2 bg-card px-4 py-3  transition-all animate-in fade-in">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-2">
             <span className="mr-auto pl-2 font-medium text-sm">
               {selectedIds.length} user(s) selected
             </span>
@@ -506,93 +502,22 @@ export default function UserManagementPage() {
               <Trash className="mr-2 w-4 h-4" /> Delete
             </Button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── PAGINATION ── */}
-      <div className="border-t h-16 sticky bottom-0 bg-background z-10 px-4 py-3">
-        <div className="justify-between items-center gap-3 text-muted-foreground text-xs flex mx-auto max-w-7xl">
-          <div className="flex items-center gap-2">
-            <p>
-              {(pagination.currentPage - 1) * pagination.itemsPerPage +
-                (users.length ? 1 : 0)}{" "}
-              –
-              {(pagination.currentPage - 1) * pagination.itemsPerPage +
-                users.length}{" "}
-              / {pagination.totalItems}
-            </p>
-            <Select
-              value={itemsPerPage.toString()}
-              onValueChange={(value) => {
-                setItemsPerPage(Number(value));
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="w-16 h-7 text-xs">
-                <SelectValue placeholder="10" />
-              </SelectTrigger>
-              <SelectContent className="text-xs">
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="15">15</SelectItem>
-                <SelectItem value="25">25</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Pagination className="justify-end mx-0 w-auto">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    if (pagination.hasPreviousPage && !isLoadingUsers)
-                      setCurrentPage((p) => Math.max(p - 1, 1));
-                  }}
-                  aria-disabled={!pagination.hasPreviousPage || isLoadingUsers}
-                  className={
-                    !pagination.hasPreviousPage || isLoadingUsers
-                      ? "pointer-events-none opacity-50"
-                      : ""
-                  }
-                />
-              </PaginationItem>
-              {paginationPages.map((pageNumber) => (
-                <PaginationItem key={pageNumber}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNumber === pagination.currentPage}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setCurrentPage(pageNumber);
-                    }}
-                  >
-                    {pageNumber}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    if (pagination.hasNextPage && !isLoadingUsers)
-                      setCurrentPage((p) => p + 1);
-                  }}
-                  aria-disabled={!pagination.hasNextPage || isLoadingUsers}
-                  className={
-                    !pagination.hasNextPage || isLoadingUsers
-                      ? "pointer-events-none opacity-50"
-                      : ""
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      </div>
+      <PaginationFooter
+        totalItems={pagination.totalItems}
+        itemCount={users.length}
+        isLoading={isLoadingUsers}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1);
+        }}
+      />
 
       {/* ── CONFIRMATION DIALOG ── */}
       <AlertDialog

@@ -1,19 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  type ReactNode,
+} from "react";
 import { axiosInstance } from "@/lib/axios";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -42,15 +40,19 @@ import {
 import { Trash, Loader2, Trash2, ArrowUpRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import PaginationFooter from "../../users/_components/pagination-footer";
 
 interface SuppressedEmail {
   _id: string;
   email: string;
-  campaignId?: {
-    _id: string;
-    name: string;
-    subject: string;
-  } | string | null;
+  campaignId?:
+    | {
+        _id: string;
+        name: string;
+        subject: string;
+      }
+    | string
+    | null;
   createdAt: string;
 }
 
@@ -60,31 +62,23 @@ function getCampaignLabel(campaignId: SuppressedEmail["campaignId"]) {
   return campaignId.name;
 }
 
-interface PaginationMeta {
-  total: number;
-  page: number;
-  limit: number;
-}
-
 export default function SuppressionListPage() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(50);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmInput, setConfirmInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
   const [data, setData] = useState<SuppressedEmail[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta>({
-    total: 0,
-    page: 1,
-    limit: 50,
-  });
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
 
   const fetchData = useCallback(
     async (opts?: { silent?: boolean }) => {
@@ -100,11 +94,7 @@ export default function SuppressionListPage() {
           params,
         });
         setData(res.data.data);
-        setMeta({
-          total: res.data.total,
-          page: res.data.page,
-          limit: res.data.limit,
-        });
+        setTotalItems(res.data.pagination.totalItems); // ← add this
       } catch {
         setError("Failed to load suppression list.");
       } finally {
@@ -126,16 +116,6 @@ export default function SuppressionListPage() {
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
-
-  const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
-  const hasPreviousPage = currentPage > 1;
-  const hasNextPage = currentPage < totalPages;
-
-  const paginationPages = useMemo(() => {
-    const start = Math.max(1, currentPage - 1);
-    const end = Math.min(totalPages, start + 2);
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  }, [currentPage, totalPages]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === data.length && data.length > 0)
@@ -169,16 +149,10 @@ export default function SuppressionListPage() {
     }
   };
 
-  const handleSingleDelete = async (email: string) => {
-    try {
-      await axiosInstance.delete("/mailer/suppressed-emails", {
-        data: { email },
-      });
-      toast.success(`Removed ${email} from suppression list.`);
-      void fetchData({ silent: true });
-    } catch {
-      toast.error("Failed to remove email.");
-    }
+  const handleSingleDelete = (row: SuppressedEmail) => {
+    setSelectedIds([row._id]);
+    setConfirmInput("");
+    setConfirmOpen(true);
   };
 
   return (
@@ -248,10 +222,7 @@ export default function SuppressionListPage() {
                     const campaignId = row.campaignId;
                     let campaignContent: ReactNode = "—";
 
-                    if (
-                      typeof campaignId === "object" &&
-                      campaignId !== null
-                    ) {
+                    if (typeof campaignId === "object" && campaignId !== null) {
                       campaignContent = (
                         <Link
                           href={`/admin/campaign/${campaignId._id}`}
@@ -379,7 +350,7 @@ export default function SuppressionListPage() {
                       variant="ghost"
                       size="icon"
                       className="w-8 h-8 text-muted-foreground hover:text-destructive shrink-0"
-                      onClick={() => handleSingleDelete(row.email)}
+                      onClick={() => handleSingleDelete(row)}
                     >
                       <Trash className="w-4 h-4" />
                     </Button>
@@ -402,83 +373,18 @@ export default function SuppressionListPage() {
 
         {error && <p className="text-destructive text-xs">{error}</p>}
 
-        {/* ── PAGINATION ── */}
-        <div className="flex justify-between items-center gap-3 text-muted-foreground text-xs">
-          <div className="flex items-center gap-2">
-            <p>
-              {(currentPage - 1) * meta.limit + (data.length ? 1 : 0)}–
-              {(currentPage - 1) * meta.limit + data.length} / {meta.total}
-            </p>
-            <Select
-              value={itemsPerPage.toString()}
-              onValueChange={(value) => {
-                setItemsPerPage(Number(value));
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="w-16 h-7 text-xs">
-                <SelectValue placeholder="50" />
-              </SelectTrigger>
-              <SelectContent className="text-xs">
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="15">15</SelectItem>
-                <SelectItem value="25">25</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Pagination className="justify-end mx-0 w-auto">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (hasPreviousPage && !isLoading)
-                      setCurrentPage((p) => Math.max(p - 1, 1));
-                  }}
-                  aria-disabled={!hasPreviousPage || isLoading}
-                  className={
-                    !hasPreviousPage || isLoading
-                      ? "pointer-events-none opacity-50"
-                      : ""
-                  }
-                />
-              </PaginationItem>
-              {paginationPages.map((pageNumber) => (
-                <PaginationItem key={pageNumber}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNumber === currentPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentPage(pageNumber);
-                    }}
-                  >
-                    {pageNumber}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (hasNextPage && !isLoading) setCurrentPage((p) => p + 1);
-                  }}
-                  aria-disabled={!hasNextPage || isLoading}
-                  className={
-                    !hasNextPage || isLoading
-                      ? "pointer-events-none opacity-50"
-                      : ""
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+        <PaginationFooter
+          totalItems={totalItems}
+          itemCount={data.length}
+          isLoading={isLoading}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setItemsPerPage(size);
+            setCurrentPage(1);
+          }}
+        />
 
         {/* ── BATCH ACTIONS BAR ── */}
         {selectedIds.length > 0 && (

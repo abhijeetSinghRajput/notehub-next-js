@@ -40,6 +40,7 @@ import { useCampaignSocket } from "@/hooks/useCampaignSocket";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getSocket } from "@/lib/socket";
+import PaginationFooter from "../../users/_components/pagination-footer";
 
 const statusBadge: Record<
   string,
@@ -104,11 +105,19 @@ export default function CampaignPage() {
   });
   const [dialogLoadingMore, setDialogLoadingMore] = useState(false);
 
-  const fetchCampaigns = async () => {
+  // pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const fetchCampaigns = async (page = currentPage, limit = itemsPerPage) => {
     try {
       setLoading(true);
-      const { data } = await axiosInstance.get("/mailer/campaigns");
+      const { data } = await axiosInstance.get("/mailer/campaigns", {
+        params: { page, limit },
+      });
       setCampaigns(data.campaigns);
+      setTotalItems(data.pagination.totalItems);
     } catch {
       toast.error("Failed to load campaigns");
     } finally {
@@ -117,8 +126,8 @@ export default function CampaignPage() {
   };
 
   useEffect(() => {
-    fetchCampaigns();
-  }, []);
+    fetchCampaigns(currentPage, itemsPerPage);
+  }, [currentPage, itemsPerPage]);
 
   const handleSend = async (id: string) => {
     setSending(id);
@@ -230,7 +239,7 @@ export default function CampaignPage() {
             disabled={loading}
             tooltip={"re fetch"}
             size="icon"
-            onClick={fetchCampaigns}
+            onClick={() => fetchCampaigns(currentPage, itemsPerPage)}
             className="size-8"
           >
             <RotateCw className={cn(loading ? "animate-spin" : "")} />
@@ -436,6 +445,19 @@ export default function CampaignPage() {
           />
         </DialogContent>
       </Dialog>
+
+      <PaginationFooter
+        totalItems={totalItems}
+        itemCount={campaigns.length}
+        isLoading={loading}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1);
+        }}
+      />
     </div>
   );
 }
