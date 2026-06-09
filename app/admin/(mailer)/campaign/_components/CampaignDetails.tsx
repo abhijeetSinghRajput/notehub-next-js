@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ChevronsUpDown, Loader2 } from "lucide-react";
+import { Check, ChevronsUpDown, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TEMPLATE_GLOBALS } from "@/lib/mailer-globals";
 import { Liquid } from "liquidjs";
@@ -26,6 +26,26 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
   const [previews, setPreviews] = useState<
     { label: string; html: string; subject: string }[]
   >([]);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmails = async () => {
+    if (!emails.length || copied) return;
+
+    try {
+      await navigator.clipboard.writeText(emails.join("\n"));
+
+      setCopied(true);
+      toast.success(
+        `${emails.length} email${emails.length > 1 ? "s" : ""} copied`,
+      );
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 3000);
+    } catch {
+      toast.error("Failed to copy emails");
+    }
+  };
 
   const emails = campaign.emails ?? [];
   const emailCount = emails.length;
@@ -113,9 +133,7 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
   return (
     <div className="bg-muted/50 rounded-lg overflow-hidden">
       <div className="p-2 bg-muted border-b flex justify-between items-center gap-2">
-        <div className="text-xs text-muted-foreground">
-          Campaign Details
-        </div>
+        <div className="text-xs text-muted-foreground">Campaign Details</div>
         <Button
           variant="outline"
           size="sm"
@@ -144,11 +162,25 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Recipients</DialogTitle>
-                <DialogDescription>
-                  All email addresses included in this campaign.
-                </DialogDescription>
+              <DialogHeader className="flex flex-row pr-4 justify-between items-start">
+                <div>
+                  <DialogTitle>Recipients</DialogTitle>
+                  <DialogDescription>
+                    All email addresses included in this campaign.
+                  </DialogDescription>
+                </div>
+                <div>
+                  <Button
+                    size="icon"
+                    variant={"outline"}
+                    tooltip="copy emails"
+                    className="size-8"
+                    onClick={handleCopyEmails}
+                    disabled={copied}
+                  >
+                    {copied ? <Check /> : <Copy />}
+                  </Button>
+                </div>
               </DialogHeader>
               <div className="max-h-80 overflow-y-auto">
                 {emailCount > 0 ? (

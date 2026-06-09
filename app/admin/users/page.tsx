@@ -328,7 +328,7 @@ export default function UserManagementPage() {
                 <TableRow>
                   <TableCell
                     colSpan={9}
-                    className="h-20 text-muted-foreground text-center"
+                    className="h-[50vh] text-muted-foreground text-center"
                   >
                     No users found.
                   </TableCell>

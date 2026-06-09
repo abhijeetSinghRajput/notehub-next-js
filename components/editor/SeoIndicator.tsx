@@ -179,25 +179,25 @@ const HeadingTreeVisualizer = ({ items }: { items: { level: number; text: string
   }, [items]);
 
   return (
-    <div className="mt-2 p-3 rounded-lg border bg-zinc-950/90 dark:bg-zinc-950 font-mono text-[11px] text-zinc-300 overflow-x-auto leading-relaxed shadow-inner border-zinc-800/60 max-w-full">
-      <div className="text-[9px] uppercase font-extrabold tracking-widest text-zinc-500 mb-2 border-b border-zinc-800/80 pb-1 select-none">
+    <div className="mt-2 bg-muted rounded-lg border font-mono text-[11px] overflow-x-auto leading-relaxed shadow-inner max-w-full">
+      <div className="text-[9px] p-3 uppercase font-extrabold tracking-widest text-muted-foreground border-b select-none">
         Heading Structure
       </div>
-      <div className="space-y-1">
+      <div className="space-y-1 p-3">
         {nodes.map((node) => (
           <div key={node.index} className="flex items-center min-w-0 py-0.5">
             {/* The structural connector tree prefix */}
-            <span className="text-zinc-600 shrink-0 select-none whitespace-pre font-mono">
+            <span className="text-muted-foreground shrink-0 select-none whitespace-pre font-mono">
               {node.prefix}
             </span>
             {/* The heading tag and text */}
-            <span className="shrink-0 text-zinc-400 font-bold mr-1.5 select-none font-mono">
+            <span className="shrink-0 text-muted-foreground font-bold mr-1.5 select-none font-mono">
               H{node.level}
             </span>
             <span 
               className={cn(
                 "truncate font-mono flex-1 min-w-0 mr-1.5",
-                node.missingBefore ? "text-rose-400 font-semibold" : "text-zinc-500"
+                node.missingBefore ? "text-destructive font-semibold" : "text-muted-foreground/80"
               )}
               style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
               title={node.text}
@@ -206,7 +206,7 @@ const HeadingTreeVisualizer = ({ items }: { items: { level: number; text: string
             </span>
             {/* Inline warning if skipped */}
             {node.missingBefore && (
-              <span className="font-bold text-rose-500 shrink-0 select-none animate-pulse font-mono bg-rose-950/20 border border-rose-900/50 rounded px-1 text-[9px] py-0.5">
+              <span className="font-bold text-destructive shrink-0 select-none animate-pulse font-mono bg-destructive/20 border border-destructive/50 rounded px-1 text-[9px] py-0.5">
                 ❌ Missing H{node.missingBefore}
               </span>
             )}
