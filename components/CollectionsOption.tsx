@@ -18,7 +18,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useNoteStore } from "@/app/stores/useNoteStore";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import {
   Dialog,
   DialogContent,

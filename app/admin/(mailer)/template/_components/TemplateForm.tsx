@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { axiosInstance } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -159,182 +159,187 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
       : `{\n  "couponCode": "NH50"\n}`;
 
   return (
-    <div className="space-y-4">
-      <div className="bg-background mt-4 border rounded-lg divide-y">
-        {/* Template name */}
-        <Label
-          htmlFor="template-name"
-          className="flex items-center gap-2 px-4 py-3"
-        >
-          <span className="w-24 text-muted-foreground text-sm shrink-0">
-            Name <span className="text-destructive">*</span>
-          </span>
-          <Input
-            id="template-name"
-            placeholder="Template name"
-            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-        </Label>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2">
-          <div className="border-r">
-            {/* Subject */}
-            <Label
-              htmlFor="subject"
-              className="flex items-center gap-2 px-4 py-3"
-            >
-              <span className="w-24 text-muted-foreground text-sm shrink-0">
-                Subject <span className="text-destructive">*</span>
-              </span>
-              <Input
-                id="subject"
-                className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
-                placeholder="Enter your email subject"
-                value={form.subject}
-                onChange={(e) => setForm({ ...form, subject: e.target.value })}
-              />
-            </Label>
-
-            {/* Preview Text */}
-            <Label
-              htmlFor="subject"
-              className="flex items-center gap-2 px-4 py-3"
-            >
-              <span className="w-24 text-muted-foreground text-sm shrink-0">
-                Preview Text <span className="text-destructive">*</span>
-              </span>
-              <Input
-                id="subject"
-                className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
-                placeholder="Preview text (shown in inbox)"
-                value={form.previewText}
-                onChange={(e) =>
-                  setForm({ ...form, previewText: e.target.value })
-                }
-              />
-            </Label>
-          </div>
-          {form.subject && form.previewText && (
-            <>
-              <div className="flex gap-4 p-4 mt-4">
-                <div className="size-12 font-medium shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-                  N
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold text-lg">Notehub</p>
-                    <span className="text-muted-foreground text-sm">
-                      Just now
-                    </span>
-                  </div>
-                  <p className="text-sm font-medium truncate">{form.subject}</p>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {form.previewText}
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Mode */}
-        <div className="flex items-center gap-2 px-4 py-3">
-          <span className="w-24 text-muted-foreground text-sm shrink-0">
-            Mode <span className="text-destructive">*</span>
-          </span>
-          <Select
-            value={form.mode}
-            onValueChange={(v) =>
-              setForm({ ...form, mode: v as "shared" | "per_recipient" })
-            }
+    <>
+      <div className="space-y-4">
+        <div className="bg-background mt-4 border rounded-lg divide-y">
+          {/* Template name */}
+          <Label
+            htmlFor="template-name"
+            className="flex items-center gap-2 px-4 py-3"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="shared">
-                Shared — same extra for all
-              </SelectItem>
-              <SelectItem value="per_recipient">
-                Per recipient — array with emails
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Editor / Preview tabs */}
-      <Tabs defaultValue="editor">
-        <TabsList>
-          <TabsTrigger value="editor">Editor</TabsTrigger>
-          <TabsTrigger value="preview">
-            Preview
-            {previewLoading && (
-              <Loader2 className="w-3 h-3 ml-1 animate-spin" />
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="editor" className="space-y-2">
-          <div className="border rounded-md overflow-hidden">
-            <MonacoEditor
-              height="380px"
-              language="html"
-              value={form.htmlBody}
-              onChange={(val) => setForm({ ...form, htmlBody: val ?? "" })}
-              onMount={(editor) => {
-                editorRef.current = editor;
-              }}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 13,
-                wordWrap: "on",
-                tabSize: 2,
-                scrollBeyondLastLine: false,
-              }}
-              theme="vs-dark"
+            <span className="w-24 text-muted-foreground text-sm shrink-0">
+              Name <span className="text-destructive">*</span>
+            </span>
+            <Input
+              id="template-name"
+              placeholder="Template name"
+              className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
-          </div>
+          </Label>
 
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">
-              Sample extra JSON for preview
-              {form.mode === "per_recipient" && (
-                <span className="ml-1 text-amber-500">
-                  — array mode, first entry used for preview
+          <div className="grid grid-cols-1 lg:grid-cols-2">
+            <div className="border-r divide-y sm:divide-none">
+              {/* Subject */}
+              <Label
+                htmlFor="subject"
+                className="flex items-center gap-2 px-4 py-3"
+              >
+                <span className="w-24 text-muted-foreground text-sm shrink-0">
+                  Subject <span className="text-destructive">*</span>
                 </span>
-              )}
-            </p>
-            <Textarea
-              value={sampleJson}
-              placeholder={samplePlaceholder}
-              onChange={(e) => setSampleJson(e.target.value)}
-              className="font-mono text-xs min-h-20 resize-none"
-            />
-          </div>
-        </TabsContent>
+                <Input
+                  id="subject"
+                  className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+                  placeholder="Enter your email subject"
+                  value={form.subject}
+                  onChange={(e) =>
+                    setForm({ ...form, subject: e.target.value })
+                  }
+                />
+              </Label>
 
-        <TabsContent value="preview">
-          <div className="border rounded-md overflow-hidden h-100">
-            {previewLoading ? (
-              <div className="flex items-center justify-center h-72">
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <iframe
-                srcDoc={previewHtml}
-                className="w-full h-100 border"
-                title="Email preview"
-              />
+              {/* Preview Text */}
+              <Label
+                htmlFor="subject"
+                className="flex items-center gap-2 px-4 py-3"
+              >
+                <span className="w-24 text-muted-foreground text-sm shrink-0">
+                  Preview Text <span className="text-destructive">*</span>
+                </span>
+                <Input
+                  id="subject"
+                  className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+                  placeholder="Preview text (shown in inbox)"
+                  value={form.previewText}
+                  onChange={(e) =>
+                    setForm({ ...form, previewText: e.target.value })
+                  }
+                />
+              </Label>
+            </div>
+            {form.subject && form.previewText && (
+              <>
+                <div className="flex gap-4 p-4 pt-6 bg-card w-full">
+                  <div className="size-12 font-medium shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                    N
+                  </div>
+                  <div className="min-w-0 w-full">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-lg">Notehub</p>
+                      <span className="text-muted-foreground text-sm">
+                        Just now
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium truncate">
+                      {form.subject}
+                    </p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {form.previewText}
+                    </p>
+                  </div>
+                </div>
+              </>
             )}
           </div>
-        </TabsContent>
-      </Tabs>
 
+          {/* Mode */}
+          <div className="flex items-center gap-2 px-4 py-3">
+            <span className="w-24 text-muted-foreground text-sm shrink-0">
+              Mode <span className="text-destructive">*</span>
+            </span>
+            <Select
+              value={form.mode}
+              onValueChange={(v) =>
+                setForm({ ...form, mode: v as "shared" | "per_recipient" })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="shared">
+                  Shared — same extra for all
+                </SelectItem>
+                <SelectItem value="per_recipient">
+                  Per recipient — array with emails
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Editor / Preview tabs */}
+        <Tabs defaultValue="editor">
+          <TabsList>
+            <TabsTrigger value="editor">Editor</TabsTrigger>
+            <TabsTrigger value="preview">
+              Preview
+              {previewLoading && (
+                <Loader2 className="w-3 h-3 ml-1 animate-spin" />
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="editor" className="space-y-2">
+            <div className="border rounded-md overflow-hidden">
+              <MonacoEditor
+                height="380px"
+                language="html"
+                value={form.htmlBody}
+                onChange={(val) => setForm({ ...form, htmlBody: val ?? "" })}
+                onMount={(editor) => {
+                  editorRef.current = editor;
+                }}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  wordWrap: "on",
+                  tabSize: 2,
+                  scrollBeyondLastLine: false,
+                }}
+                theme="vs-dark"
+              />
+            </div>
+
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">
+                Sample extra JSON for preview
+                {form.mode === "per_recipient" && (
+                  <span className="ml-1 text-amber-500">
+                    — array mode, first entry used for preview
+                  </span>
+                )}
+              </p>
+              <Textarea
+                value={sampleJson}
+                placeholder={samplePlaceholder}
+                onChange={(e) => setSampleJson(e.target.value)}
+                className="font-mono text-xs min-h-20 resize-none"
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="preview">
+            <div className="border rounded-md overflow-hidden h-100">
+              {previewLoading ? (
+                <div className="flex items-center justify-center h-72">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <iframe
+                  srcDoc={previewHtml}
+                  className="w-full h-100 border"
+                  title="Email preview"
+                />
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
       {/* Actions */}
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 bg-background py-3 border-t sticky bottom-0">
         <Button
           variant="outline"
           onClick={() => router.push("/admin/template")}
@@ -346,6 +351,6 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
           {isEditing ? "Update Template" : "Create Template"}
         </Button>
       </div>
-    </div>
+    </>
   );
 }

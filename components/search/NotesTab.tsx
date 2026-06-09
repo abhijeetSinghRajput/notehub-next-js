@@ -1,6 +1,6 @@
 // components/search/NotesTab.tsx
 import { Search, Folder } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { EmptyState } from "@/components/collection/EmptyState";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import BadgeIcon from "@/components/icons/BadgeIcon";

@@ -19,7 +19,7 @@ import {
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import BadgeIcon from "../icons/BadgeIcon";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 
 const NavUser = () => {

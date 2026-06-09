@@ -23,7 +23,7 @@ const MathDialog = React.lazy(() => import("./MathDialog"));
 import AddImageDialog from "./AddImageDialog";
 import { useDraftStore } from "@/app/stores/useDraftStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 import TextColorDropdown from "./TextColorDropdown";
 import ListDropdown from "./ListDropdown";

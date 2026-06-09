@@ -21,7 +21,7 @@ import {
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { LabeledInput } from "@/components//labeled-input";
 import BadgeIcon from "@/components/icons/BadgeIcon";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import NProgress from "nprogress";
 

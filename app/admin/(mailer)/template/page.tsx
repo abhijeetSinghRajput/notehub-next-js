@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 import { FileText, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { Template } from "@/types/mailer.types";
 import { Skeleton } from "@/components/ui/skeleton";
 import PaginationFooter from "../../users/_components/pagination-footer";

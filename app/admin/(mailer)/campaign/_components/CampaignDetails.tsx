@@ -151,6 +151,9 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
           <span className="text-muted-foreground">Subject</span>
           <span className="font-medium">{campaign.subject || "—"}</span>
 
+          <span className="text-muted-foreground">Preview Text</span>
+          <span className="font-medium">{campaign.previewText || "—"}</span>
+
           <span className="text-muted-foreground">Recipients</span>
           <Dialog>
             <DialogTrigger asChild>

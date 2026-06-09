@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/pagination";
 import BadgeIcon from "./icons/BadgeIcon";
 import { useDebounceCallback } from "../hooks/useDebounceCallback";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { INote, IUser, PopulatedNote } from "@/types/model";
 import Image from "next/image";
 

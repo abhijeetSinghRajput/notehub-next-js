@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import NProgress from "nprogress";
 

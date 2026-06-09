@@ -33,7 +33,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { validateSlug } from "@/lib/validator";
 import { BaseCollaboratorsDialog } from "@/components/CollaboratorsDialog";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SortSelector from "@/components/SortSelector";

@@ -11,6 +11,7 @@ export interface Campaign {
   _id: string;
   name: string;
   subject: string;
+  previewText: string;
   htmlBody: string;
   emails: string[];
   status: "draft" | "sending" | "done" | "failed" | "skipped";
@@ -48,6 +49,7 @@ export interface Template {
   name: string;
   subject: string;
   htmlBody: string;
+  previewText: string;
   mode: "shared" | "per_recipient";
   createdAt: string;
 }

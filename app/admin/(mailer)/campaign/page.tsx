@@ -33,7 +33,7 @@ import {
   RotateCw,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { Campaign, CampaignStats, Job } from "@/types/mailer.types";
 import DeliveryReport from "./_components/delivery-report";
 import { useCampaignSocket } from "@/hooks/useCampaignSocket";

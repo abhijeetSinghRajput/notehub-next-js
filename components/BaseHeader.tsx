@@ -14,7 +14,7 @@ import {
 import TooltipWrapper from "@/components/TooltipWrapper";
 import Link from "next/link";
 import AppBreadcrumbs from "./AppBreadCrumb";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import AddNoteDialog from "./AddNoteDialog";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import nProgress from "nprogress";

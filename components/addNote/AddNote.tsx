@@ -5,7 +5,7 @@ import { LabeledInput } from "@/components/labeled-input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import FileIcon from "../icons/FileIcon";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { ICollection, INote } from "@/types/model";
 import { cn } from "@/lib/utils";
 import { useDraftStore } from "@/app/stores/useDraftStore";

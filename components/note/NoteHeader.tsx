@@ -33,7 +33,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { htmlToMarkdown } from "@/lib/note/htmlToMarkdown.client";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { BaseCollaboratorsDialog } from "../CollaboratorsDialog";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 
 export type NoteHeaderProps = {

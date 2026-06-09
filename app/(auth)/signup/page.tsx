@@ -23,7 +23,7 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { LabeledInput } from "@/components/labeled-input";
 import { isEmail, isEmpty, isLength, isNumeric } from "@/lib/validator";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import NProgress from "nprogress";
 
 // ✅ Typed useDebounce hook

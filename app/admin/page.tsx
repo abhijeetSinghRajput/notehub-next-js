@@ -12,7 +12,7 @@ import {
   ArrowUpRight,
   MoreHorizontal,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import SortSelector from "@/components/SortSelector";
 import {
   Tooltip,

@@ -14,8 +14,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Send, Eye, FileText, Users, Code2, Braces } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  Loader2,
+  Send,
+  Eye,
+  FileText,
+  Users,
+  Code2,
+  Braces,
+} from "lucide-react";
+import { useRouter } from "nextjs-toploader/app";
 import Editor from "@monaco-editor/react";
 import { Liquid } from "liquidjs";
 import PreviewSheet from "../_components/preview-sheet";
@@ -24,7 +32,10 @@ import { cn } from "@/lib/utils";
 import { TEMPLATE_GLOBALS } from "@/lib/mailer-globals";
 import { Contact, Template } from "@/types/mailer.types";
 
-const liquidEngine = new Liquid({ strictFilters: false, strictVariables: false });
+const liquidEngine = new Liquid({
+  strictFilters: false,
+  strictVariables: false,
+});
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -36,7 +47,10 @@ export interface JsonError {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validateExtraJson(raw: string): { errors: JsonError[]; isPerRecipient: boolean } {
+function validateExtraJson(raw: string): {
+  errors: JsonError[];
+  isPerRecipient: boolean;
+} {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -79,7 +93,7 @@ function validateExtraJson(raw: string): { errors: JsonError[]; isPerRecipient: 
 function setMonacoJsonMarkers(
   monaco: typeof import("monaco-editor"),
   model: import("monaco-editor").editor.ITextModel,
-  errors: JsonError[]
+  errors: JsonError[],
 ) {
   const markers = errors.map((e, i) => ({
     severity: monaco.MarkerSeverity.Error,
@@ -115,11 +129,15 @@ export default function NewCampaignPage() {
 
   // monaco refs
   const monacoRef = useRef<typeof import("monaco-editor") | null>(null);
-  const jsonModelRef = useRef<import("monaco-editor").editor.ITextModel | null>(null);
+  const jsonModelRef = useRef<import("monaco-editor").editor.ITextModel | null>(
+    null,
+  );
 
   // preview
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previews, setPreviews] = useState<{ label: string; html: string; subject: string }[]>([]);
+  const [previews, setPreviews] = useState<
+    { label: string; html: string; subject: string }[]
+  >([]);
   const [previewBuilding, setPreviewBuilding] = useState(false);
 
   // recipients (manual select — disabled when per-recipient extraJson is active)
@@ -129,6 +147,7 @@ export default function NewCampaignPage() {
   // form
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
+  const [previewText, setPreviewText] = useState("");
   const [templateId, setTemplateId] = useState("");
 
   // ─── Derived recipient list ──────────────────────────────────
@@ -142,9 +161,11 @@ export default function NewCampaignPage() {
           ...new Set(
             parsed
               .map((e: Record<string, unknown>) =>
-                typeof e.email === "string" ? e.email.trim().toLowerCase() : null
+                typeof e.email === "string"
+                  ? e.email.trim().toLowerCase()
+                  : null,
               )
-              .filter(Boolean) as string[]
+              .filter(Boolean) as string[],
           ),
         ];
       }
@@ -194,7 +215,8 @@ export default function NewCampaignPage() {
     const t = templates.find((t) => t._id === id);
     if (!t) return;
     setHtmlBody(t.htmlBody);
-    if (!subject) setSubject(t.subject);
+    setSubject(t.subject);
+    setPreviewText(t.previewText || "");
     setActiveTab("html");
     setTemplateId(""); // reset selector immediately
     toast.success(`Template "${t.name}" inserted`);
@@ -204,7 +226,7 @@ export default function NewCampaignPage() {
 
   const handleJsonEditorMount = (
     editor: import("monaco-editor").editor.IStandaloneCodeEditor,
-    monaco: typeof import("monaco-editor")
+    monaco: typeof import("monaco-editor"),
   ) => {
     monacoRef.current = monaco;
     jsonModelRef.current = editor.getModel();
@@ -238,30 +260,50 @@ export default function NewCampaignPage() {
         const seen = new Set<string>();
         for (const entry of parsed as Record<string, unknown>[]) {
           const email =
-            typeof entry.email === "string" ? entry.email.trim().toLowerCase() : null;
+            typeof entry.email === "string"
+              ? entry.email.trim().toLowerCase()
+              : null;
           if (!email || seen.has(email)) continue;
           seen.add(email);
 
-          const ctx = {...TEMPLATE_GLOBALS, extra: entry };
-          const renderedSubject = await liquidEngine.parseAndRender(subject, ctx);
+          const ctx = { ...TEMPLATE_GLOBALS, extra: entry };
+          const renderedSubject = await liquidEngine.parseAndRender(
+            subject,
+            ctx,
+          );
           const renderedHtml = await liquidEngine.parseAndRender(htmlBody, ctx);
-          results.push({ label: email, html: renderedHtml, subject: renderedSubject });
+          results.push({
+            label: email,
+            html: renderedHtml,
+            subject: renderedSubject,
+          });
 
           if (results.length >= 20) break; // cap at 20 previews
         }
       } else {
-        const ctx = {...TEMPLATE_GLOBALS, extra: parsed as Record<string, unknown> };
+        const ctx = {
+          ...TEMPLATE_GLOBALS,
+          extra: parsed as Record<string, unknown>,
+        };
         const renderedSubject = await liquidEngine.parseAndRender(subject, ctx);
         const renderedHtml = await liquidEngine.parseAndRender(htmlBody, ctx);
 
         if (recipientEmails.length > 0) {
           // Shared mode still needs one preview per selected recipient.
           for (const email of recipientEmails) {
-            results.push({ label: email, html: renderedHtml, subject: renderedSubject });
+            results.push({
+              label: email,
+              html: renderedHtml,
+              subject: renderedSubject,
+            });
             if (results.length >= 20) break; // cap at 20 previews
           }
         } else {
-          results.push({ label: "Preview", html: renderedHtml, subject: renderedSubject });
+          results.push({
+            label: "Preview",
+            html: renderedHtml,
+            subject: renderedSubject,
+          });
         }
       }
 
@@ -280,8 +322,10 @@ export default function NewCampaignPage() {
     if (!name.trim()) return toast.error("Campaign name is required");
     if (!subject.trim()) return toast.error("Subject is required");
     if (!htmlBody.trim()) return toast.error("HTML body is required");
-    if (recipientEmails.length === 0) return toast.error("Add at least one recipient");
-    if (jsonErrors.length > 0) return toast.error("Fix JSON errors before sending");
+    if (recipientEmails.length === 0)
+      return toast.error("Add at least one recipient");
+    if (jsonErrors.length > 0)
+      return toast.error("Fix JSON errors before sending");
 
     let parsed: unknown;
     try {
@@ -295,6 +339,7 @@ export default function NewCampaignPage() {
       const { data } = await axiosInstance.post("/mailer/campaigns", {
         name,
         subject,
+        previewText,
         htmlBody,
         emails: recipientEmails,
         extraJson: parsed,
@@ -318,13 +363,25 @@ export default function NewCampaignPage() {
   // ─── Render ───────────────────────────────────────────────────
 
   const tabs: { id: EditorTab; label: string; icon: React.ReactNode }[] = [
-    { id: "html", label: "email.html", icon: <Code2 className="w-3.5 h-3.5" /> },
-    { id: "json", label: "extra.json", icon: <Braces className="w-3.5 h-3.5" /> },
+    {
+      id: "html",
+      label: "email.html",
+      icon: <Code2 className="w-3.5 h-3.5" />,
+    },
+    {
+      id: "json",
+      label: "extra.json",
+      icon: <Braces className="w-3.5 h-3.5" />,
+    },
   ];
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      <PreviewSheet open={previewOpen} onOpenChange={setPreviewOpen} previews={previews} />
+      <PreviewSheet
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        previews={previews}
+      />
 
       <RecipientsDialog
         open={recipientsDialogOpen}
@@ -355,28 +412,23 @@ export default function NewCampaignPage() {
               </Badge>
             )}
           </Button>
-          <Button size="sm" onClick={() => handleSend(true)} disabled={saving}>
-            {saving ? (
-              <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
-            ) : (
-              <Send className="mr-1.5 w-4 h-4" />
-            )}
-            Send emails
-          </Button>
         </div>
       </div>
 
       {/* Compose card */}
       <div className="bg-background mt-4 border rounded-lg divide-y">
         {/* Campaign name */}
-        <Label htmlFor="campaign-name" className="flex items-center gap-4 px-4 py-3">
-          <span className="w-20 text-muted-foreground text-sm shrink-0">
+        <Label
+          htmlFor="campaign-name"
+          className="flex items-center gap-4 px-4 py-3"
+        >
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
             Name <span className="text-destructive">*</span>
           </span>
           <Input
             id="campaign-name"
             placeholder="Enter your campaign name"
-            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+            className="pl-0 border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -384,13 +436,15 @@ export default function NewCampaignPage() {
 
         {/* From */}
         <div className="flex items-center gap-4 px-4 py-3">
-          <span className="w-20 text-muted-foreground text-sm shrink-0">From</span>
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
+            From
+          </span>
           <span className="text-sm">NoteHub</span>
         </div>
 
         {/* To */}
         <div className="flex items-center gap-4 px-4 py-3">
-          <span className="w-20 text-muted-foreground text-sm shrink-0">
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
             To <span className="text-destructive">*</span>
           </span>
           <Button
@@ -398,14 +452,18 @@ export default function NewCampaignPage() {
             size="sm"
             onClick={() => setRecipientsDialogOpen(true)}
             disabled={isPerRecipient}
-            title={isPerRecipient ? "Recipients are derived from extra.json" : undefined}
+            title={
+              isPerRecipient
+                ? "Recipients are derived from extra.json"
+                : undefined
+            }
           >
             <Users className="mr-1.5 w-3.5 h-3.5" />
             {isPerRecipient
               ? `${recipientCount} recipient${recipientCount !== 1 ? "s" : ""} (from JSON)`
               : recipientCount > 0
-              ? `${recipientCount} recipient${recipientCount !== 1 ? "s" : ""}`
-              : "Select recipients"}
+                ? `${recipientCount} recipient${recipientCount !== 1 ? "s" : ""}`
+                : "Select recipients"}
           </Button>
           {isPerRecipient && (
             <Badge variant="default" className="text-xs">
@@ -416,21 +474,37 @@ export default function NewCampaignPage() {
 
         {/* Subject */}
         <Label htmlFor="subject" className="flex items-center gap-4 px-4 py-3">
-          <span className="w-20 text-muted-foreground text-sm shrink-0">
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
             Subject <span className="text-destructive">*</span>
           </span>
           <Input
             id="subject"
             placeholder="Enter your email subject"
-            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+            className="pl-0 border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
           />
         </Label>
 
+        {/* Preview Text */}
+        <Label htmlFor="subject" className="flex items-center gap-4 px-4 py-3">
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
+            Preview Text <span className="text-destructive">*</span>
+          </span>
+          <Input
+            id="previewText"
+            placeholder="Enter your email subject"
+            className="pl-0 border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+            value={previewText}
+            onChange={(e) => setPreviewText(e.target.value)}
+          />
+        </Label>
+
         {/* Template — one-time insert */}
         <div className="flex items-center gap-4 px-4 py-3">
-          <span className="w-20 text-muted-foreground text-sm shrink-0">Template</span>
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
+            Template
+          </span>
           <Select value={templateId} onValueChange={handleTemplateChange}>
             <SelectTrigger disabled={loading} className="max-w-72">
               {loading && <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />}
@@ -458,7 +532,7 @@ export default function NewCampaignPage() {
                   "flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-t-sm transition-colors border border-transparent",
                   activeTab === tab.id
                     ? "bg-background border-border border-b-background text-foreground -mb-px"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                 )}
               >
                 {tab.icon}
@@ -550,8 +624,12 @@ export default function NewCampaignPage() {
       </div>
 
       {/* Bottom actions */}
-      <div className="flex justify-between items-center pt-2">
-        <Button variant="outline" onClick={() => handleSend(false)} disabled={saving}>
+      <div className="flex justify-between items-center py-2 sticky bottom-0 bg-background z-50">
+        <Button
+          variant="outline"
+          onClick={() => handleSend(false)}
+          disabled={saving}
+        >
           {saving ? (
             <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
           ) : (
