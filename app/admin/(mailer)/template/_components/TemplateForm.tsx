@@ -19,6 +19,8 @@ import { Loader2 } from "lucide-react";
 import { Liquid } from "liquidjs";
 import dynamic from "next/dynamic";
 import { TEMPLATE_GLOBALS } from "@/lib/mailer-globals";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -29,7 +31,10 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ),
 });
 
-const liquidEngine = new Liquid({ strictFilters: false, strictVariables: false });
+const liquidEngine = new Liquid({
+  strictFilters: false,
+  strictVariables: false,
+});
 
 const SAMPLE_SHARED = {
   user: {
@@ -66,7 +71,7 @@ interface Props {
 export default function TemplateForm({ initialValues, templateId }: Props) {
   const router = useRouter();
   const [form, setForm] = useState<TemplateFormValues>(
-    initialValues ?? emptyForm
+    initialValues ?? emptyForm,
   );
   const [sampleJson, setSampleJson] = useState("{}");
   const [previewHtml, setPreviewHtml] = useState("");
@@ -98,9 +103,18 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
 
         const ctx =
           form.mode === "per_recipient" && Array.isArray(extra)
-            ? { ...TEMPLATE_GLOBALS, user: SAMPLE_SHARED.user, extra: (extra as Record<string, unknown>[])[0] ?? {}, unsubscribe_url: "[unsubscribe_url]" }
-            : { ...TEMPLATE_GLOBALS, user: SAMPLE_SHARED.user, extra, unsubscribe_url: "[unsubscribe_url]" };
-
+            ? {
+                ...TEMPLATE_GLOBALS,
+                user: SAMPLE_SHARED.user,
+                extra: (extra as Record<string, unknown>[])[0] ?? {},
+                unsubscribe_url: "[unsubscribe_url]",
+              }
+            : {
+                ...TEMPLATE_GLOBALS,
+                user: SAMPLE_SHARED.user,
+                extra,
+                unsubscribe_url: "[unsubscribe_url]",
+              };
 
         const html = await liquidEngine.parseAndRender(form.htmlBody, ctx);
         if (!cancelled) setPreviewHtml(html);
@@ -146,42 +160,77 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Row 1: name / preview text / mode */}
-      <div className="grid grid-cols-3 gap-3">
-        <Input
-          placeholder="Template name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-        <Input
-          placeholder="Preview text (shown in inbox)"
-          value={form.previewText}
-          onChange={(e) => setForm({ ...form, previewText: e.target.value })}
-        />
-        <Select
-          value={form.mode}
-          onValueChange={(v) =>
-            setForm({ ...form, mode: v as "shared" | "per_recipient" })
-          }
+      <div className="bg-background mt-4 border rounded-lg divide-y">
+        {/* Template name */}
+        <Label
+          htmlFor="template-name"
+          className="flex items-center gap-2 px-4 py-3"
         >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="shared">Shared — same extra for all</SelectItem>
-            <SelectItem value="per_recipient">
-              Per recipient — array with userId
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
+            Name <span className="text-destructive">*</span>
+          </span>
+          <Input
+            id="template-name"
+            placeholder="Template name"
+            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+        </Label>
 
-      {/* Subject */}
-      <Input
-        placeholder="Subject — supports Liquid: Hey {{ user.fullName }}!"
-        value={form.subject}
-        onChange={(e) => setForm({ ...form, subject: e.target.value })}
-      />
+        {/* Subject */}
+        <Label htmlFor="subject" className="flex items-center gap-2 px-4 py-3">
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
+            Subject <span className="text-destructive">*</span>
+          </span>
+          <Input
+            id="subject"
+            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+            placeholder="Enter your email subject"
+            value={form.subject}
+            onChange={(e) => setForm({ ...form, subject: e.target.value })}
+          />
+        </Label>
+
+        {/* Preview Text */}
+        <Label htmlFor="subject" className="flex items-center gap-2 px-4 py-3">
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
+            Preview Text <span className="text-destructive">*</span>
+          </span>
+          <Input
+            id="subject"
+            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+            placeholder="Preview text (shown in inbox)"
+            value={form.previewText}
+            onChange={(e) => setForm({ ...form, previewText: e.target.value })}
+          />
+        </Label>
+
+        {/* Mode */}
+        <div className="flex items-center gap-2 px-4 py-3">
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
+            Mode <span className="text-destructive">*</span>
+          </span>
+          <Select
+            value={form.mode}
+            onValueChange={(v) =>
+              setForm({ ...form, mode: v as "shared" | "per_recipient" })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="shared">
+                Shared — same extra for all
+              </SelectItem>
+              <SelectItem value="per_recipient">
+                Per recipient — array with emails
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {/* Editor / Preview tabs */}
       <Tabs defaultValue="editor">
