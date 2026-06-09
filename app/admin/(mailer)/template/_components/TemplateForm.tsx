@@ -178,33 +178,66 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
           />
         </Label>
 
-        {/* Subject */}
-        <Label htmlFor="subject" className="flex items-center gap-2 px-4 py-3">
-          <span className="w-24 text-muted-foreground text-sm shrink-0">
-            Subject <span className="text-destructive">*</span>
-          </span>
-          <Input
-            id="subject"
-            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
-            placeholder="Enter your email subject"
-            value={form.subject}
-            onChange={(e) => setForm({ ...form, subject: e.target.value })}
-          />
-        </Label>
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          <div className="border-r">
+            {/* Subject */}
+            <Label
+              htmlFor="subject"
+              className="flex items-center gap-2 px-4 py-3"
+            >
+              <span className="w-24 text-muted-foreground text-sm shrink-0">
+                Subject <span className="text-destructive">*</span>
+              </span>
+              <Input
+                id="subject"
+                className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+                placeholder="Enter your email subject"
+                value={form.subject}
+                onChange={(e) => setForm({ ...form, subject: e.target.value })}
+              />
+            </Label>
 
-        {/* Preview Text */}
-        <Label htmlFor="subject" className="flex items-center gap-2 px-4 py-3">
-          <span className="w-24 text-muted-foreground text-sm shrink-0">
-            Preview Text <span className="text-destructive">*</span>
-          </span>
-          <Input
-            id="subject"
-            className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
-            placeholder="Preview text (shown in inbox)"
-            value={form.previewText}
-            onChange={(e) => setForm({ ...form, previewText: e.target.value })}
-          />
-        </Label>
+            {/* Preview Text */}
+            <Label
+              htmlFor="subject"
+              className="flex items-center gap-2 px-4 py-3"
+            >
+              <span className="w-24 text-muted-foreground text-sm shrink-0">
+                Preview Text <span className="text-destructive">*</span>
+              </span>
+              <Input
+                id="subject"
+                className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
+                placeholder="Preview text (shown in inbox)"
+                value={form.previewText}
+                onChange={(e) =>
+                  setForm({ ...form, previewText: e.target.value })
+                }
+              />
+            </Label>
+          </div>
+          {form.subject && form.previewText && (
+            <>
+              <div className="flex gap-4 p-4 mt-4">
+                <div className="size-12 font-medium shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                  N
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-lg">Notehub</p>
+                    <span className="text-muted-foreground text-sm">
+                      Just now
+                    </span>
+                  </div>
+                  <p className="text-sm font-medium truncate">{form.subject}</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {form.previewText}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Mode */}
         <div className="flex items-center gap-2 px-4 py-3">
