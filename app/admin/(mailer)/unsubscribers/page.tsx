@@ -262,7 +262,7 @@ export default function SuppressionListPage() {
                             size="icon"
                             className="w-8 h-8 text-muted-foreground hover:text-destructive"
                             tooltip="Re Subscribe"
-                            onClick={() => handleSingleDelete(row.email)}
+                            onClick={() => handleSingleDelete(row)}
                           >
                             <Trash2 />
                           </Button>
