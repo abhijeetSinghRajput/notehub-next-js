@@ -21,6 +21,7 @@ import dynamic from "next/dynamic";
 import { TEMPLATE_GLOBALS } from "@/lib/mailer-globals";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { generateAndUploadPreview } from "@/lib/mailer-preview";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -138,13 +139,23 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
     }
     setSaving(true);
     try {
+      let savedId: string;
+
       if (isEditing) {
         await axiosInstance.put(`/mailer/templates/${templateId}`, form);
+        savedId = templateId;
         toast.success("Template updated");
       } else {
-        await axiosInstance.post("/mailer/templates", form);
+        const { data } = await axiosInstance.post("/mailer/templates", form);
+        savedId = data.template._id; // adjust key if your API returns differently
         toast.success("Template created");
       }
+
+      // Fire-and-forget — won't block navigation
+      generateAndUploadPreview(savedId, form.htmlBody).catch(() =>
+        console.warn("Preview generation failed silently"),
+      );
+
       router.push("/admin/template");
     } catch {
       toast.error("Failed to save template");

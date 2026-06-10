@@ -415,7 +415,7 @@ export default function ContactPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Contacts</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="hidden sm:block text-sm text-muted-foreground">
             Labeled groups of NoteHub users for campaigns
           </p>
         </div>

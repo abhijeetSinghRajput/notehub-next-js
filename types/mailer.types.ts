@@ -3,8 +3,8 @@ export interface CampaignStats {
   sent: number;
   skipped: number;
   failed: number;
-  opened: number;   // unique jobs with at least one open
-  clicked: number;  // unique jobs with at least one click
+  opened: number; // unique jobs with at least one open
+  clicked: number; // unique jobs with at least one click
 }
 
 export interface Campaign {
@@ -50,6 +50,7 @@ export interface Template {
   subject: string;
   htmlBody: string;
   previewText: string;
+  previewImage?: string;
   mode: "shared" | "per_recipient";
   createdAt: string;
 }

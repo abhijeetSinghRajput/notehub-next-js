@@ -229,7 +229,7 @@ export default function CampaignPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="font-semibold text-xl">Campaigns</h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="hidden sm:block text-muted-foreground text-sm">
             Send targeted emails to contact groups
           </p>
         </div>

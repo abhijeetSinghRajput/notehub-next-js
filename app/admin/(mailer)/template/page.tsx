@@ -3,25 +3,21 @@
 import { useEffect, useState } from "react";
 import { axiosInstance } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { toast } from "sonner";
-import { FileText, Plus, Trash2 } from "lucide-react";
+import { FileText, LayoutGrid, List, Plus, RotateCw } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "nextjs-toploader/app";
 import { Template } from "@/types/mailer.types";
-import { Skeleton } from "@/components/ui/skeleton";
 import PaginationFooter from "../../users/_components/pagination-footer";
+import { cn } from "@/lib/utils";
+import TemplateGrid from "./_components/template-grid";
+import TemplateTable from "./_components/template-table";
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<"grid" | "list">("grid");
+
   // pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -63,16 +59,52 @@ export default function TemplatesPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="font-semibold text-xl">Templates</h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="hidden sm:block text-muted-foreground text-sm">
               Reusable Liquid-powered email layouts
             </p>
           </div>
-          <Button asChild>
-            <Link href="/admin/template/new">
-              <Plus className="mr-1 w-4 h-4" />
-              New Template
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={"outline"}
+              disabled={loading}
+              tooltip={"re fetch"}
+              size="icon"
+              onClick={() => fetchTemplates(currentPage, itemsPerPage)}
+              className="size-8"
+            >
+              <RotateCw className={cn(loading ? "animate-spin" : "")} />
+            </Button>
+            <div className="flex border rounded-md overflow-hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "rounded-none h-9 w-9",
+                  view === "grid" && "bg-muted",
+                )}
+                onClick={() => setView("grid")}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "rounded-none h-9 w-9 border-l",
+                  view === "list" && "bg-muted",
+                )}
+                onClick={() => setView("list")}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
+            <Button asChild className="w-9 sm:w-auto">
+              <Link href="/admin/template/new">
+                <Plus />
+                <span className="hidden sm:inline">New Template</span>
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {!loading && templates.length === 0 ? (
@@ -80,63 +112,18 @@ export default function TemplatesPage() {
             <FileText className="w-8 h-8" />
             <p className="text-sm">No templates yet</p>
           </div>
+        ) : view === "grid" ? (
+          <TemplateGrid
+            templates={templates}
+            loading={loading}
+            onDelete={handleDelete}
+          />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Subject</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading
-                ? Array.from({ length: 20 }).map((_, i) => (
-                    <TableRow key={i} className="h-13.25">
-                      <TableCell>
-                        <Skeleton className="w-32 h-4" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="w-40 h-4" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="w-40 h-4" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="w-8 h-8" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                : templates.map((t) => (
-                    <TableRow
-                      key={t._id}
-                      className="cursor-pointer"
-                      onClick={() => router.push(`/admin/template/${t._id}`)}
-                    >
-                      <TableCell className="font-medium">{t.name}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {t.subject}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {new Date(t.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(t._id);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-            </TableBody>
-          </Table>
+          <TemplateTable
+            templates={templates}
+            loading={loading}
+            onDelete={handleDelete}
+          />
         )}
       </div>
 

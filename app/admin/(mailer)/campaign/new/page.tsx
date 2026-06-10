@@ -211,15 +211,22 @@ export default function NewCampaignPage() {
 
   // ─── Template insert (one-time) ──────────────────────────────
 
-  const handleTemplateChange = (id: string) => {
+  const handleTemplateChange = async (id: string) => {
     const t = templates.find((t) => t._id === id);
     if (!t) return;
-    setHtmlBody(t.htmlBody);
-    setSubject(t.subject);
-    setPreviewText(t.previewText || "");
-    setActiveTab("html");
-    setTemplateId(""); // reset selector immediately
-    toast.success(`Template "${t.name}" inserted`);
+
+    try {
+      const { data } = await axiosInstance.get(`/mailer/templates/${id}`);
+      const full = data.template; // adjust if your API returns differently
+      setHtmlBody(full.htmlBody);
+      setSubject(full.subject);
+      setPreviewText(full.previewText || "");
+      setActiveTab("html");
+      setTemplateId("");
+      toast.success(`Template "${full.name}" inserted`);
+    } catch {
+      toast.error("Failed to load template");
+    }
   };
 
   // ─── Monaco mount handlers ───────────────────────────────────
