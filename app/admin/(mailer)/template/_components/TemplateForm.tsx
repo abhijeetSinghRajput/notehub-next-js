@@ -143,7 +143,7 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
 
       if (isEditing) {
         await axiosInstance.put(`/mailer/templates/${templateId}`, form);
-        savedId = templateId;
+        savedId = templateId!;
         toast.success("Template updated");
       } else {
         const { data } = await axiosInstance.post("/mailer/templates", form);
