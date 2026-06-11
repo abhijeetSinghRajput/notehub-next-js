@@ -39,6 +39,8 @@ import {
 } from "@/components/ui/chart";
 import { formatTimeAgo } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { axiosInstance } from "@/lib/axios";
 
 const chartConfig = {
   healthy: {
@@ -259,6 +261,15 @@ export default function AdminOverviewPage() {
     },
   ];
 
+  const fetchGsc = () => {
+    try {
+      const data = axiosInstance.get("/admin/gsc/auth");
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <div className="flex p-4 max-w-7xl mx-auto flex-col gap-6">
       {/* Header */}
@@ -268,9 +279,13 @@ export default function AdminOverviewPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#e24b4a] animate-pulse shrink-0" />
             <span>Health Monitor</span>
           </div>
+          <div>
+
           <h1 className="text-[22px] font-medium text-foreground leading-tight tracking-tight">
             Blogs health overview
           </h1>
+          <Button onClick={fetchGsc}>Fetch GSC</Button>
+          </div>
           <p className="text-[13px] text-muted-foreground/80 mt-1 leading-relaxed max-w-125">
             SEO compliance, quality scores, and structural health across all
             published notes.

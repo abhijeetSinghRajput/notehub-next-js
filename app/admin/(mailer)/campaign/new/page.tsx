@@ -472,11 +472,6 @@ export default function NewCampaignPage() {
                 ? `${recipientCount} recipient${recipientCount !== 1 ? "s" : ""}`
                 : "Select recipients"}
           </Button>
-          {isPerRecipient && (
-            <Badge variant="default" className="text-xs">
-              driven by extra.json
-            </Badge>
-          )}
         </div>
 
         {/* Subject */}
@@ -530,25 +525,41 @@ export default function NewCampaignPage() {
         {/* Monaco editor — VS Code tabs */}
         <div className="flex flex-col">
           {/* Tab bar */}
-          <div className="flex items-center border-b bg-muted/30 px-1 pt-1 gap-0.5">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-t-sm transition-colors border border-transparent",
-                  activeTab === tab.id
-                    ? "bg-background border-border border-b-background text-foreground -mb-px"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                )}
-              >
-                {tab.icon}
-                {tab.label}
-                {tab.id === "json" && jsonErrors.length > 0 && (
-                  <span className="ml-1 w-1.5 h-1.5 rounded-full bg-destructive inline-block" />
-                )}
-              </button>
-            ))}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center border-b bg-muted/30 px-1 pt-1 gap-0.5">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-t-sm transition-colors border border-transparent",
+                    activeTab === tab.id
+                      ? "bg-background border-border border-b-background text-foreground -mb-px"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                  )}
+                >
+                  {tab.icon}
+                  {tab.label}
+                  {tab.id === "json" && jsonErrors.length > 0 && (
+                    <span className="ml-1 w-1.5 h-1.5 rounded-full bg-destructive inline-block" />
+                  )}
+                </button>
+              ))}
+            </div>
+            <Button
+              size="icon"
+              variant="outline"
+              className="size-7 mr-2"
+              onClick={buildPreviews}
+              disabled={previewBuilding || !htmlBody.trim()}
+              tooltip="Show Preview"
+            >
+              {previewBuilding ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Eye />
+              )}
+            </Button>
           </div>
 
           {/* HTML editor */}
