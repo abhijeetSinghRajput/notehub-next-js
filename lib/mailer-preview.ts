@@ -27,7 +27,7 @@ export async function generateAndUploadPreview(templateId: string, htmlBody: str
   const blob = await new Promise<Blob>((res, rej) =>
     canvas.toBlob(
       (b) => (b ? res(b) : rej(new Error("toBlob failed"))),
-      "image/jpeg",
+      "image/png",
       0.8
     )
   );
