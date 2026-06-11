@@ -22,7 +22,8 @@ const NO_SHELL_ROUTES = [
   "/oauth", 
   "/about", 
   "/contact", 
-  "/privacy-policy"
+  "/privacy-policy",
+  "/terms",
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {

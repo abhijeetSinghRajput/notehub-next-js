@@ -76,6 +76,7 @@ const footerColumns: {
       { href: "/contact", label: "Contact" },
       { href: "/signup", label: "Signup" },
       { href: "/privacy-policy", label: "Privacy Policy" },
+      { href: "/terms", label: "Terms of Service" },
       {
         href: "https://github.com/abhijeetSinghRajput/NoteHub-Production/issues/new",
         label: "Report an Issue",

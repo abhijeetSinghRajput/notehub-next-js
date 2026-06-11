@@ -160,9 +160,8 @@ const LogInPage = () => {
         </Card>
         <div className="text-muted-foreground mt-6 *:[a]:hover:text-primary text-center text-sm text-balance *:[a]:underline *:[a]:underline-offset-4">
           By clicking continue, you agree to our{" "}
-          <Link href={"/privacy-policy"} className="underline">
-            Privacy Policy
-          </Link>
+          <Link href="/terms">Terms of Service</Link> and{" "}
+          <Link href="/privacy-policy">Privacy Policy</Link>
         </div>
       </div>
     </div>
