@@ -4,8 +4,6 @@ import { getSocket } from "@/lib/socket";
 import { Campaign, CampaignStats, Job } from "@/types/mailer.types";
 import { axiosInstance } from "@/lib/axios";
 
-
-
 interface CampaignState {
   campaigns: Campaign[];
   loading: boolean;
@@ -33,7 +31,7 @@ interface CampaignState {
     stats: CampaignStats,
     status: "done" | "failed",
   ) => void;
-  handleDelete: (id: string) => Promise<void>;
+  handleDelete: (id: string) => Promise<boolean>;
   handleRetryFailed: (id: string) => Promise<void>;
   fetchJobs: (id: string, page?: number) => Promise<void>;
 }
@@ -66,7 +64,10 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
       const { data } = await axiosInstance.get("/mailer/campaigns", {
         params: { page: p, limit: l },
       });
-      set({ campaigns: data.campaigns, totalItems: data.pagination.totalItems });
+      set({
+        campaigns: data.campaigns,
+        totalItems: data.pagination.totalItems,
+      });
     } catch {
       toast.error("Failed to load campaigns");
     } finally {
@@ -122,14 +123,19 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
   },
 
   handleDelete: async (id) => {
+    set({ sending: id });
     try {
       await axiosInstance.delete(`/mailer/campaigns/${id}`);
       toast.success("Deleted");
       set((state) => ({
         campaigns: state.campaigns.filter((c) => c._id !== id),
       }));
+      return true;
     } catch {
       toast.error("Failed to delete");
+      return false;
+    } finally {
+      set({ sending: null });
     }
   },
 

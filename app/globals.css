@@ -262,3 +262,9 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 .devicon-invertible {
   filter: invert(var(--devicon-invert, 0)) !important;
 }
+
+.ͼo,
+.ͼo .cm-editor,
+.ͼo .cm-gutters {
+  background: #1e1e1e !important;
+}

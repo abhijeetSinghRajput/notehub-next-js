@@ -6,12 +6,6 @@ import { axiosInstance } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card";
 
 import {
   AlertDialog,
@@ -22,7 +16,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
@@ -31,12 +24,12 @@ import {
   Send,
   Trash2,
   FileText,
-  CheckCircle2,
   XCircle,
   AlertCircle,
-  BarChart3,
   Check,
   RotateCcw,
+  EllipsisVertical,
+  Pencil,
 } from "lucide-react";
 import Link from "next/link";
 import CampaignCodeCard from "../_components/campaign-code-card";
@@ -44,6 +37,15 @@ import DeliveryReport from "../_components/delivery-report";
 import CampaignDetails from "../_components/CampaignDetails";
 import { Campaign, Job } from "@/types/mailer.types";
 import { useCampaignSocket } from "@/hooks/useCampaignSocket";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useCampaignStore } from "@/app/stores/useCampaignStore";
+import CampaignStatsCards from "../_components/campaign-stats-cards";
 
 const statusConfig: Record<
   string,
@@ -67,16 +69,17 @@ export default function CampaignDetailPage() {
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
   const [jobsLoading, setJobsLoading] = useState(false);
   const [jobsLoadingMore, setJobsLoadingMore] = useState(false);
   const [jobsPagination, setJobsPagination] = useState({
     page: 1,
     hasMore: false,
   });
-  const [sending, setSending] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [retrying, setRetrying] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const { sending, handleSend, handleDelete, handleRetryFailed } =
+    useCampaignStore();
 
   const fetchCampaign = useCallback(async () => {
     try {
@@ -95,9 +98,7 @@ export default function CampaignDetailPage() {
       try {
         const { data } = await axiosInstance.get(
           `/mailer/campaigns/${id}/jobs`,
-          {
-            params: { page, limit: 50 },
-          },
+          { params: { page, limit: 50 } },
         );
         setJobs((prev) => (page === 1 ? data.jobs : [...prev, ...data.jobs]));
         setJobsPagination({
@@ -105,7 +106,7 @@ export default function CampaignDetailPage() {
           hasMore: data.pagination.hasNextPage,
         });
       } catch {
-        toast.error("Failed to load delivery jobs");
+        toast.error("Failed to load jobs");
       } finally {
         setJobsLoading(false);
         setJobsLoadingMore(false);
@@ -133,12 +134,10 @@ export default function CampaignDetailPage() {
       setJobs((prev) => {
         const exists = prev.findIndex((j) => j._id === job._id);
         if (exists !== -1) {
-          // update existing (e.g. pending → sent/failed)
           const updated = [...prev];
           updated[exists] = { ...updated[exists], ...job };
           return updated;
         }
-        // append new
         return [...prev, job as Job];
       });
     },
@@ -159,43 +158,22 @@ export default function CampaignDetailPage() {
     }
   }, [campaign?.status, fetchJobs]);
 
-  const handleSend = async () => {
-    setSending(true);
-    try {
-      await axiosInstance.post(`/mailer/campaigns/${id}/send`);
-      toast.success("Campaign dispatched");
-      fetchCampaign();
-    } catch {
-      toast.error("Failed to send campaign");
-    } finally {
-      setSending(false);
-    }
+  const onSend = async () => {
+    if (!campaign) return;
+    await handleSend(campaign._id);
+    setCampaign((prev) => (prev ? { ...prev, status: "sending" } : prev));
   };
 
-  const handleDelete = async () => {
-    setDeleting(true);
-    try {
-      await axiosInstance.delete(`/mailer/campaigns/${id}`);
-      toast.success("Campaign deleted");
-      router.push("/admin/campaign");
-    } catch {
-      toast.error("Failed to delete campaign");
-    } finally {
-      setDeleting(false);
-    }
+  const onRetryFailed = async () => {
+    if (!campaign) return;
+    await handleRetryFailed(campaign._id);
+    setCampaign((prev) => (prev ? { ...prev, status: "sending" } : prev));
   };
 
-  const handleRetryFailed = async () => {
-    setRetrying(true);
-    try {
-      await axiosInstance.post(`/mailer/campaigns/${id}/retry-failed`);
-      toast.success("Retrying failed jobs…");
-      setCampaign((prev) => (prev ? { ...prev, status: "sending" } : prev));
-    } catch {
-      toast.error("Failed to retry");
-    } finally {
-      setRetrying(false);
-    }
+  const onDelete = async () => {
+    if (!campaign) return;
+    const ok = await handleDelete(campaign._id);
+    if (ok) router.push("/admin/campaign");
   };
 
   // ─── Loading state ────────────────────────────────────────────
@@ -224,14 +202,15 @@ export default function CampaignDetailPage() {
 
   const statusInfo = statusConfig[campaign.status];
   const StatusIcon = statusInfo.icon;
+  const isSending = sending === campaign._id;
   const canSend = campaign.status === "draft" || campaign.status === "failed";
+  const canRetry =
+    (campaign.status === "done" || campaign.status === "failed") &&
+    campaign.stats.failed > 0;
+  const canEdit = campaign.status === "draft" || campaign.status === "failed";
+  const canDelete = campaign.status !== "sending";
   const hasStats = campaign.status !== "draft";
-  const sentPercent = hasStats
-    ? Math.round((campaign.stats.sent / campaign.stats.total) * 100)
-    : 0;
-  const failedPercent = hasStats
-    ? Math.round((campaign.stats.failed / campaign.stats.total) * 100)
-    : 0;
+  const hasDropdownActions = canEdit || canSend || canRetry;
 
   // ─── Render ───────────────────────────────────────────────────
 
@@ -240,7 +219,7 @@ export default function CampaignDetailPage() {
       {/* Header */}
       <div className="flex justify-between items-start gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col-reverse sm:flex-row items-start gap-2">
             <h1 className="font-semibold text-xl">{campaign.name}</h1>
             <Badge variant={statusInfo.variant} className="gap-1">
               <StatusIcon
@@ -262,73 +241,74 @@ export default function CampaignDetailPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {canSend && (
-            <Button
-              size="icon"
-              onClick={handleSend}
-              tooltip="send"
-              disabled={sending}
-            >
-              {sending ? <Loader2 className="animate-spin" /> : <Send />}
-            </Button>
-          )}
-          {campaign.status === "done" && campaign.stats.failed > 0 && (
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={handleRetryFailed}
-              tooltip="retry failed"
-              disabled={retrying}
-            >
-              {retrying ? <Loader2 className="animate-spin" /> : <RotateCcw />}
-            </Button>
-          )}
-
-          {campaign.status === "failed" && (
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={handleRetryFailed}
-              tooltip="retry failed"
-              disabled={retrying}
-            >
-              {retrying ? <Loader2 className="animate-spin" /> : <RotateCcw />}
-            </Button>
-          )}
-          {campaign.status !== "sending" && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  tooltip="delete"
-                  size="icon"
-                  disabled={deleting}
-                >
-                  <Trash2 />
+          {hasDropdownActions ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="icon" variant="ghost">
+                  {isSending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <EllipsisVertical />
+                  )}
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete campaign?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete &ldquo;{campaign.name}&rdquo;
-                    and all its delivery jobs. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {canEdit && (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      router.push(`/admin/campaign/${campaign._id}/edit`)
+                    }
                   >
-                    {deleting ? (
-                      <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
-                    ) : null}
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                    <Pencil className="w-4 h-4" /> Edit
+                  </DropdownMenuItem>
+                )}
+
+                {canSend && (
+                  <DropdownMenuItem disabled={isSending} onClick={onSend}>
+                    {isSending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                    Send
+                  </DropdownMenuItem>
+                )}
+
+                {canRetry && (
+                  <DropdownMenuItem
+                    disabled={isSending}
+                    onClick={onRetryFailed}
+                  >
+                    {isSending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="w-4 h-4" />
+                    )}
+                    Retry Failed
+                  </DropdownMenuItem>
+                )}
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  variant="destructive"
+                  disabled={!canDelete}
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  <Trash2 className="w-4 h-4" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              size="icon"
+              variant="destructive"
+              tooltip="Delete"
+              disabled={!canDelete}
+              onClick={() => setDeleteOpen(true)}
+            >
+              {isSending ? <Loader2 className="animate-spin" /> : <Trash2 />}
+            </Button>
           )}
         </div>
       </div>
@@ -337,49 +317,11 @@ export default function CampaignDetailPage() {
 
       {/* Stats cards — only when campaign has been sent */}
       {hasStats && (
-        <div className="gap-4 grid grid-cols-1 sm:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5" /> Total
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="font-bold text-2xl">{campaign.stats.total}</p>
-              <p className="text-muted-foreground text-xs">recipients</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Sent
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="font-bold text-emerald-600 text-2xl">
-                {campaign.stats.sent}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {sentPercent}% success
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5">
-                <XCircle className="w-3.5 h-3.5 text-red-500" /> Failed
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="font-bold text-red-600 text-2xl">
-                {campaign.stats.failed}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {failedPercent}% failure
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <CampaignStatsCards
+          total={campaign.stats.total}
+          failed={campaign.stats.failed}
+          sent={campaign.stats.sent}
+        />
       )}
 
       <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
@@ -397,6 +339,30 @@ export default function CampaignDetailPage() {
           loadingMore={jobsLoadingMore}
         />
       )}
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete campaign?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete &ldquo;{campaign.name}&rdquo; and all
+              its delivery jobs. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={onDelete}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              {isSending ? (
+                <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
+              ) : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
