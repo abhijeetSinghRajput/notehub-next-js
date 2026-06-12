@@ -121,6 +121,7 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
           setPreviewText(c.previewText || "");
           setHtmlBody(c.htmlBody);
           setExtraJson(JSON.stringify(c.extraJson ?? {}, null, 2));
+          setManualEmails(c.emails ?? []);
         }
       } catch {
         toast.error("Failed to load data");
@@ -187,9 +188,16 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
           seen.add(email);
 
           const ctx = { ...TEMPLATE_GLOBALS, extra: entry };
-          const renderedSubject = await liquidEngine.parseAndRender(subject, ctx);
+          const renderedSubject = await liquidEngine.parseAndRender(
+            subject,
+            ctx,
+          );
           const renderedHtml = await liquidEngine.parseAndRender(htmlBody, ctx);
-          results.push({ label: email, html: renderedHtml, subject: renderedSubject });
+          results.push({
+            label: email,
+            html: renderedHtml,
+            subject: renderedSubject,
+          });
 
           if (results.length >= 20) break;
         }
@@ -203,11 +211,19 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
 
         if (recipientEmails.length > 0) {
           for (const email of recipientEmails) {
-            results.push({ label: email, html: renderedHtml, subject: renderedSubject });
+            results.push({
+              label: email,
+              html: renderedHtml,
+              subject: renderedSubject,
+            });
             if (results.length >= 20) break;
           }
         } else {
-          results.push({ label: "Preview", html: renderedHtml, subject: renderedSubject });
+          results.push({
+            label: "Preview",
+            html: renderedHtml,
+            subject: renderedSubject,
+          });
         }
       }
 
@@ -226,10 +242,8 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
     if (!name.trim()) return toast.error("Campaign name is required");
     if (!subject.trim()) return toast.error("Subject is required");
     if (!htmlBody.trim()) return toast.error("HTML body is required");
-    if (recipientEmails.length === 0)
-      return toast.error("Add at least one recipient");
-    if (jsonErrors.length > 0)
-      return toast.error("Fix JSON errors before sending");
+    if (recipientEmails.length === 0) return toast.error("Add at least one recipient");
+    if (jsonErrors.length > 0) return toast.error("Fix JSON errors before sending");
 
     let parsed: unknown;
     try {
@@ -240,25 +254,36 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
 
     setSaving(true);
     try {
-      const { data } = await axiosInstance.post("/mailer/campaigns", {
+      const payload = {
         name,
         subject,
         previewText,
         htmlBody,
         emails: recipientEmails,
         extraJson: parsed,
-      });
+      };
+
+      let campaignIdToUse = campaignId;
+
+      if (isEditMode) {
+        await axiosInstance.put(`/mailer/campaigns/${campaignId}`, payload);
+        toast.success("Campaign updated");
+      } else {
+        const { data } = await axiosInstance.post("/mailer/campaigns", payload);
+        campaignIdToUse = data.campaign._id;
+        toast.success("Saved as draft");
+      }
 
       if (andSend) {
-        await axiosInstance.post(`/mailer/campaigns/${data.campaign._id}/send`);
+        await axiosInstance.post(`/mailer/campaigns/${campaignIdToUse}/send`);
         toast.success("Campaign dispatched");
-      } else {
-        toast.success("Saved as draft");
       }
 
       router.push("/admin/campaign");
     } catch {
-      toast.error("Failed to create campaign");
+      toast.error(
+        isEditMode ? "Failed to update campaign" : "Failed to create campaign",
+      );
     } finally {
       setSaving(false);
     }
@@ -329,7 +354,9 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
 
         {/* From */}
         <div className="flex items-center gap-4 px-4 py-3">
-          <span className="w-24 text-muted-foreground text-sm shrink-0">From</span>
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
+            From
+          </span>
           <span className="text-sm">NoteHub</span>
         </div>
 
@@ -344,7 +371,9 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
             onClick={() => setRecipientsDialogOpen(true)}
             disabled={isPerRecipient}
             title={
-              isPerRecipient ? "Recipients are derived from extra.json" : undefined
+              isPerRecipient
+                ? "Recipients are derived from extra.json"
+                : undefined
             }
           >
             <Users className="mr-1.5 w-3.5 h-3.5" />
@@ -371,7 +400,10 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
         </Label>
 
         {/* Preview Text */}
-        <Label htmlFor="previewText" className="flex items-center gap-4 px-4 py-3">
+        <Label
+          htmlFor="previewText"
+          className="flex items-center gap-4 px-4 py-3"
+        >
           <span className="w-24 text-muted-foreground text-sm shrink-0">
             Preview Text
           </span>
@@ -386,7 +418,9 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
 
         {/* Template — one-time insert */}
         <div className="flex items-center gap-4 px-4 py-3">
-          <span className="w-24 text-muted-foreground text-sm shrink-0">Template</span>
+          <span className="w-24 text-muted-foreground text-sm shrink-0">
+            Template
+          </span>
           <Select value={templateId} onValueChange={handleTemplateChange}>
             <SelectTrigger disabled={loading} className="max-w-72">
               {loading && <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />}
@@ -430,7 +464,7 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
           ) : (
             <FileText className="mr-1.5 w-4 h-4" />
           )}
-          Save as draft
+          {isEditMode ? "Update draft" : "Save as draft"}
         </Button>
         <Button onClick={() => handleSend(true)} disabled={saving}>
           {saving ? (
