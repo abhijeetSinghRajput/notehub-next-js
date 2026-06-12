@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,11 +18,13 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, X, Mail } from "lucide-react";
+import { Users, X, Mail, Loader2 } from "lucide-react";
 import type { IUser as User } from "@/types/model";
 import RecipientSearch from "./recipient-search";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { Contact } from "@/types/mailer.types";
+import { axiosInstance } from "@/lib/axios";
+import { toast } from "sonner";
 
 interface RecipientsDialogProps {
   open: boolean;
@@ -42,6 +44,9 @@ const RecipientsDialog = ({
   const [contactId, setContactId] = useState("");
   const [activeTab, setActiveTab] = useState("users");
 
+  const [contactEmails, setContactEmails] = useState<string[]>([]);
+  const [contactEmailsLoading, setContactEmailsLoading] = useState(false);
+
   const parsedEmails = [...new Set(
     pasteInput
       .split(/[\s,\n]+/)
@@ -51,6 +56,29 @@ const RecipientsDialog = ({
 
   const selectedContact = contacts.find((c) => c._id === contactId);
 
+  // Fetch emails on demand when a contact group is selected
+  useEffect(() => {
+    if (!contactId) {
+      setContactEmails([]);
+      return;
+    }
+    const fetchEmails = async () => {
+      setContactEmailsLoading(true);
+      try {
+        const { data } = await axiosInstance.get(
+          `/mailer/contacts/${contactId}/emails`,
+        );
+        setContactEmails(data.emails);
+      } catch {
+        toast.error("Failed to load contact emails");
+        setContactEmails([]);
+      } finally {
+        setContactEmailsLoading(false);
+      }
+    };
+    fetchEmails();
+  }, [contactId]);
+
   const handleConfirm = () => {
     let emails: string[] = [];
     if (activeTab === "users") {
@@ -58,7 +86,7 @@ const RecipientsDialog = ({
     } else if (activeTab === "copyPaste") {
       emails = parsedEmails;
     } else if (activeTab === "contact") {
-      emails = selectedContact?.emails ?? [];
+      emails = contactEmails;
     }
     onConfirm(emails);
     onOpenChange(false);
@@ -67,7 +95,7 @@ const RecipientsDialog = ({
   const confirmDisabled =
     (activeTab === "users" && users.length === 0) ||
     (activeTab === "copyPaste" && parsedEmails.length === 0) ||
-    (activeTab === "contact" && !contactId);
+    (activeTab === "contact" && (!contactId || contactEmailsLoading || contactEmails.length === 0));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -211,7 +239,7 @@ const RecipientsDialog = ({
                   <SelectItem key={c._id} value={c._id}>
                     <span>{c.label}</span>
                     <Badge variant="secondary" className="ml-2 text-xs">
-                      {c.emails.length}
+                      {c.emailCount}
                     </Badge>
                   </SelectItem>
                 ))}
@@ -223,9 +251,13 @@ const RecipientsDialog = ({
                 <p className="py-6 text-muted-foreground text-xs text-center">
                   Select a group to preview its addresses
                 </p>
+              ) : contactEmailsLoading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                </div>
               ) : (
                 <div className="space-y-1">
-                  {selectedContact.emails.map((email) => (
+                  {contactEmails.map((email) => (
                     <div
                       key={email}
                       className="flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-muted/40"

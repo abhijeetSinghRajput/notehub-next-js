@@ -13,7 +13,7 @@ export interface Campaign {
   subject: string;
   previewText: string;
   htmlBody: string;
-  emails: string[];
+  emails?: string[];
   status: "draft" | "sending" | "done" | "failed" | "skipped";
   extraJson: unknown;
   stats: CampaignStats;
@@ -40,7 +40,8 @@ export interface Contact {
   _id: string;
   label: string;
   description: string;
-  emails: string[];
+  emails?: string[];
+  emailCount: number;
   createdAt: string;
 }
 
