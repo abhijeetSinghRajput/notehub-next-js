@@ -17,7 +17,7 @@ export async function generateAndUploadPreview(templateId: string, htmlBody: str
   const canvas = await html2canvas(doc.body, {
     width: 600,
     height: 800,
-    scale: 0.5,
+    scale: 2,
     useCORS: true,
     logging: false,
   });
@@ -27,7 +27,7 @@ export async function generateAndUploadPreview(templateId: string, htmlBody: str
   const blob = await new Promise<Blob>((res, rej) =>
     canvas.toBlob(
       (b) => (b ? res(b) : rej(new Error("toBlob failed"))),
-      "image/jpeg",
+      "image/png",
       0.8
     )
   );
