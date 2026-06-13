@@ -4,19 +4,100 @@ import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, Loader2, Code2, Braces } from "lucide-react";
 import { cn } from "@/lib/utils";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { html } from "@codemirror/lang-html";
 import { json } from "@codemirror/lang-json";
 import { oneDark } from "@codemirror/theme-one-dark";
+import { foldGutter, foldKeymap } from "@codemirror/language";
+import { keymap } from "@codemirror/view";
+import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
+import { selectNextOccurrence } from "@codemirror/search";
+import * as prettier from "prettier/standalone";
+import prettierHtml from "prettier/plugins/html";
+import prettierBabel from "prettier/plugins/babel";
+import prettierEstree from "prettier/plugins/estree";
+
+// ─── Prettier formatting ───────────────────────────────────────────────────
+
+async function formatDoc(view: EditorView, language: EditorTab) {
+  const code = view.state.doc.toString();
+  try {
+    const formatted = await prettier.format(code, {
+      parser: language === "json" ? "json" : "html",
+      plugins:
+        language === "json"
+          ? [prettierBabel, prettierEstree]
+          : [prettierHtml, prettierBabel, prettierEstree],
+    });
+
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: formatted },
+    });
+  } catch (err) {
+    console.error("Prettier format failed:", err);
+  }
+  return true;
+}
+
+function formatKeymap(language: EditorTab) {
+  return keymap.of([
+    {
+      key: "Alt-Shift-f",
+      run: (view) => {
+        formatDoc(view, language);
+        return true;
+      },
+    },
+  ]);
+}
+
+// ─── Ctrl-D fix (prevents global theme-toggle from firing inside editor) ──────
+
+const fixCtrlD = keymap.of([
+  {
+    key: "Mod-d",
+    run: (view) => {
+      selectNextOccurrence(view);
+      return true;
+    },
+    preventDefault: true,
+  },
+]);
+
+const stopCtrlDPropagation = EditorView.domEventHandlers({
+  keydown(event) {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") {
+      event.stopPropagation();
+    }
+    return false;
+  },
+});
 
 // ─── Stable extension references (must live outside component) ────────────────
 
-export const HTML_EXTENSIONS = [html()];
-export const JSON_EXTENSIONS = [json()];
+export const HTML_EXTENSIONS = [
+  html({ autoCloseTags: true, matchClosingTags: true }),
+  closeBrackets(),
+  foldGutter(),
+  keymap.of([...closeBracketsKeymap, ...foldKeymap]),
+  fixCtrlD,
+  stopCtrlDPropagation,
+  formatKeymap("html"),
+];
+
+export const JSON_EXTENSIONS = [
+  json(),
+  closeBrackets(),
+  foldGutter(),
+  keymap.of([...closeBracketsKeymap, ...foldKeymap]),
+  fixCtrlD,
+  stopCtrlDPropagation,
+  formatKeymap("json"),
+];
 
 const BASIC_SETUP = {
   lineNumbers: true,
-  foldGutter: false,
+  foldGutter: false, // custom foldGutter() added via extensions
   highlightActiveLine: true,
   autocompletion: true,
 };

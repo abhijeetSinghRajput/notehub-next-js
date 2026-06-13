@@ -20,7 +20,7 @@ export default function TemplatesPage() {
 
   // pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const [totalItems, setTotalItems] = useState(0);
   const router = useRouter();
 

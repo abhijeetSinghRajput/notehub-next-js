@@ -27,7 +27,7 @@ export default function ContactPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const [totalItems, setTotalItems] = useState(0);
 
   const fetchContacts = async (page = currentPage, limit = itemsPerPage) => {

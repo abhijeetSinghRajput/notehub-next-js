@@ -42,7 +42,7 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
   sending: null,
 
   currentPage: 1,
-  itemsPerPage: 10,
+  itemsPerPage: 20,
   totalItems: 0,
 
   jobsDialog: null,

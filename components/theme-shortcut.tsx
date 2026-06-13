@@ -9,6 +9,8 @@ export function ThemeShortcut() {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "d" && (e.metaKey || e.ctrlKey)) {
+        const target = e.target as HTMLElement;
+        if (target.closest(".cm-editor")) return;
         e.preventDefault();
         toggleTheme();
       }
