@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Plus, RotateCw } from "lucide-react";
 import Link from "next/link";
-import DeliveryReport from "./_components/delivery-report";
+import DeliveryReport from "./_components/campaign-job-table";
 import CampaignTable from "./_components/campaign-table";
 import { cn } from "@/lib/utils";
 import PaginationFooter from "../../users/_components/pagination-footer";
@@ -14,25 +19,34 @@ import { useCampaignStore } from "@/app/stores/useCampaignStore";
 export default function CampaignPage() {
   const {
     campaigns,
-    loading,
+    fetchingCampaign,
     currentPage,
     itemsPerPage,
     totalItems,
-    jobsDialog,
-    jobs,
-    jobsLoading,
-    dialogPagination,
-    dialogLoadingMore,
     fetchCampaigns,
-    fetchJobs,
     setCurrentPage,
     setItemsPerPage,
-    setJobsDialog,
+    setJobs,
+    setJobsFilter,
+    fetchJobs,
   } = useCampaignStore();
+
+  const [jobsSheet, setJobsSheet] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCampaigns(currentPage, itemsPerPage);
   }, [currentPage, itemsPerPage]);
+
+  const handleSheetClose = () => {
+    setJobsSheet(null);
+    setJobs(() => []);
+    setJobsFilter({});
+  };
+
+  const handleSheetOpen = (id: string) => {
+    setJobsSheet(id);
+    fetchJobs(id, 1, { sortBy: "openCount", sortOrder: "desc" });
+  };
 
   return (
     <div className="space-y-4 p-4 max-w-7xl mx-auto">
@@ -45,14 +59,14 @@ export default function CampaignPage() {
         </div>
         <div className="flex gap-2 items-center">
           <Button
-            variant={"outline"}
-            disabled={loading}
-            tooltip={"re fetch"}
+            variant="outline"
+            disabled={fetchingCampaign}
+            tooltip="Re-fetch"
             size="icon"
             onClick={() => fetchCampaigns(currentPage, itemsPerPage)}
             className="size-8"
           >
-            <RotateCw className={cn(loading ? "animate-spin" : "")} />
+            <RotateCw className={cn(fetchingCampaign ? "animate-spin" : "")} />
           </Button>
           <Button size="sm" asChild>
             <Link href="/admin/campaign/new">
@@ -62,25 +76,28 @@ export default function CampaignPage() {
         </div>
       </div>
 
-      <CampaignTable />
+      <CampaignTable onViewJobs={handleSheetOpen} />
 
-      <Dialog open={!!jobsDialog} onOpenChange={() => setJobsDialog(null)}>
-        <DialogContent className="max-w-4xl max-h-[70vh] px-4 overflow-y-auto pt-10">
-          <DeliveryReport
-            jobs={jobs}
-            jobsLoading={jobsLoading}
-            onRefresh={() => jobsDialog && fetchJobs(jobsDialog, 1)}
-            hasMore={dialogPagination.hasMore}
-            onLoadMore={() => jobsDialog && fetchJobs(jobsDialog, dialogPagination.page + 1)}
-            loadingMore={dialogLoadingMore}
-          />
-        </DialogContent>
-      </Dialog>
+      <Sheet open={!!jobsSheet} onOpenChange={handleSheetClose}>
+        <SheetContent
+          side="right"
+          className="w-full p-0 sm:max-w-2xl flex flex-col gap-0 overflow-hidden!"
+        >
+          <SheetHeader className="shrink-0 mb-4 p-4 pb-0">
+            <SheetTitle>Delivery jobs</SheetTitle>
+          </SheetHeader>
+          {jobsSheet && (
+            <div className="p-4 flex-1 min-h-0 overflow-y-auto">
+              <DeliveryReport campaignId={jobsSheet} hideTitle />
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
 
       <PaginationFooter
         totalItems={totalItems}
         itemCount={campaigns.length}
-        isLoading={loading}
+        isLoading={fetchingCampaign}
         currentPage={currentPage}
         itemsPerPage={itemsPerPage}
         onPageChange={setCurrentPage}

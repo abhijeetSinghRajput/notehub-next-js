@@ -15,22 +15,36 @@ import { Trash2 } from "lucide-react";
 interface Props {
   onConfirm: () => void;
   iconSize?: string;
+  title?: string;
+  description?: string;
+  // Controlled mode (no trigger button rendered)
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export default function DeleteConfirmDialog({ onConfirm, iconSize = "w-4 h-4" }: Props) {
+export default function DeleteConfirmDialog({
+  onConfirm,
+  iconSize = "w-4 h-4",
+  title = "Delete template?",
+  description = "This action cannot be undone. The template will be permanently deleted.",
+  open,
+  onOpenChange,
+}: Props) {
+  const isControlled = open !== undefined;
+
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-          <Trash2 className={`${iconSize} text-destructive`} />
-        </Button>
-      </AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {!isControlled && (
+        <AlertDialogTrigger asChild>
+          <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+            <Trash2 className={`${iconSize} text-destructive`} />
+          </Button>
+        </AlertDialogTrigger>
+      )}
       <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete template?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. The template will be permanently deleted.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>

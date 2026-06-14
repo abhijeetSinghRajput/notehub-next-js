@@ -4,7 +4,11 @@ import { useEffect, useMemo, useRef } from "react";
 import { useLinkGraphStore } from "@/app/stores/useLinkGraphStore";
 import type { IGraphNode } from "@/types/linkGraph.types";
 import { formatTimeAgo } from "@/lib/utils";
-import { GraphCanvas, type GraphCanvasHandle, getNodeColor } from "./GraphCanvas";
+import {
+  GraphCanvas,
+  type GraphCanvasHandle,
+  getNodeColor,
+} from "./GraphCanvas";
 import { LinkReportPanel } from "./LinkReportPanel";
 import { CrawlHistoryPanel } from "./CrawlHistoryPanel";
 import { LinkGraphHeader } from "./LinkGraphHeader";
@@ -16,6 +20,9 @@ export default function LinkGraphClient() {
     crawlError,
     fetchLatestCrawl,
     history,
+    historyPagination,
+    isLoadingMoreHistory,
+    loadMoreHistory,
     fetchHistory,
     crawlPhase,
     crawlProgress,
@@ -32,7 +39,10 @@ export default function LinkGraphClient() {
 
   const { graphData, nodeMap } = useMemo(() => {
     if (!crawl) {
-      return { graphData: { nodes: [], links: [] }, nodeMap: new Map<string, IGraphNode>() };
+      return {
+        graphData: { nodes: [], links: [] },
+        nodeMap: new Map<string, IGraphNode>(),
+      };
     }
     const nodeMap = new Map<string, IGraphNode>();
     crawl.nodes.forEach((n) => nodeMap.set(n.noteId, n));
@@ -55,14 +65,15 @@ export default function LinkGraphClient() {
 
   const lastCrawl = history[0];
   const isCrawling = crawlPhase === "crawling" || crawlPhase === "connecting";
-  const counts = crawlSummary ?? crawl?.summary ?? {
-    totalNotes: 0,
-    totalEdges: 0,
-    orphanCount: 0,
-    deadEndCount: 0,
-    brokenLinkCount: 0,
-    httpLinkCount: 0,
-  };
+  const counts = crawlSummary ??
+    crawl?.summary ?? {
+      totalNotes: 0,
+      totalEdges: 0,
+      orphanCount: 0,
+      deadEndCount: 0,
+      brokenLinkCount: 0,
+      httpLinkCount: 0,
+    };
   const lastCrawlLabel = lastCrawl?.createdAt
     ? formatTimeAgo(new Date(lastCrawl.createdAt), { addSuffix: true })
     : null;
@@ -90,7 +101,14 @@ export default function LinkGraphClient() {
       />
 
       {crawl && <LinkReportPanel crawl={crawl} />}
-      {history.length > 0 && <CrawlHistoryPanel history={history} />}
+      {history.length > 0 && (
+        <CrawlHistoryPanel
+          history={history}
+          hasMore={historyPagination.hasMore}
+          loadingMore={isLoadingMoreHistory}
+          onLoadMore={loadMoreHistory}
+        />
+      )}
     </div>
   );
 }

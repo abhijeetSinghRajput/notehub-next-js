@@ -12,12 +12,7 @@ import type {
 } from "@/types/linkGraph.types";
 
 // ── SSE progress state ────────────────────────────────────────────────────────
-export type CrawlPhase =
-  | "idle"
-  | "connecting"
-  | "crawling"
-  | "done"
-  | "error";
+export type CrawlPhase = "idle" | "connecting" | "crawling" | "done" | "error";
 
 export interface CrawlProgress {
   current: number;
@@ -36,7 +31,10 @@ interface LinkGraphStore {
   // ── History ─────────────────────────────────────────────────────────────────
   history: ILinkGraphHistory[];
   isLoadingHistory: boolean;
+  isLoadingMoreHistory: boolean;
+  historyPagination: { page: number; hasMore: boolean };
   fetchHistory: () => Promise<void>;
+  loadMoreHistory: () => Promise<void>;
 
   // ── Active crawl SSE ─────────────────────────────────────────────────────────
   crawlPhase: CrawlPhase;
@@ -74,14 +72,48 @@ export const useLinkGraphStore = create<LinkGraphStore>((set, get) => ({
   // ── History ─────────────────────────────────────────────────────────────────
   history: [],
   isLoadingHistory: false,
+  isLoadingMoreHistory: false,
+  historyPagination: { page: 1, hasMore: false },
 
+  
   fetchHistory: async () => {
     set({ isLoadingHistory: true });
     try {
-      const res = await axiosInstance.get("/admin/link-graph/history");
-      set({ history: res.data.history, isLoadingHistory: false });
+      const res = await axiosInstance.get("/admin/link-graph/history", {
+        params: { page: 1, limit: 10 },
+      });
+      set({
+        history: res.data.history,
+        historyPagination: {
+          page: res.data.pagination.currentPage,
+          hasMore: res.data.pagination.hasNextPage,
+        },
+        isLoadingHistory: false,
+      });
     } catch {
       set({ isLoadingHistory: false });
+    }
+  },
+
+  loadMoreHistory: async () => {
+    const { historyPagination } = get();
+    if (!historyPagination.hasMore) return;
+
+    set({ isLoadingMoreHistory: true });
+    try {
+      const res = await axiosInstance.get("/admin/link-graph/history", {
+        params: { page: historyPagination.page + 1, limit: 10 },
+      });
+      set((state) => ({
+        history: [...state.history, ...res.data.history],
+        historyPagination: {
+          page: res.data.pagination.currentPage,
+          hasMore: res.data.pagination.hasNextPage,
+        },
+        isLoadingMoreHistory: false,
+      }));
+    } catch {
+      set({ isLoadingMoreHistory: false });
     }
   },
 
@@ -123,7 +155,7 @@ export const useLinkGraphStore = create<LinkGraphStore>((set, get) => ({
             credentials: "include",
             headers: { Accept: "text/event-stream" },
             signal: controller.signal,
-          }
+          },
         );
 
         if (!res.ok || !res.body) {
@@ -155,10 +187,8 @@ export const useLinkGraphStore = create<LinkGraphStore>((set, get) => ({
             let dataStr = "";
 
             for (const line of lines) {
-              if (line.startsWith("event: "))
-                eventName = line.slice(7).trim();
-              if (line.startsWith("data: "))
-                dataStr = line.slice(6).trim();
+              if (line.startsWith("event: ")) eventName = line.slice(7).trim();
+              if (line.startsWith("data: ")) dataStr = line.slice(6).trim();
             }
 
             if (!dataStr) continue;

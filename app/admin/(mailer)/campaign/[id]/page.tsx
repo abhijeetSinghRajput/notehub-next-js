@@ -6,7 +6,6 @@ import { axiosInstance } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +32,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import CampaignCodeCard from "../_components/campaign-code-card";
-import DeliveryReport from "../_components/delivery-report";
+import DeliveryReport from "../_components/campaign-job-table";
 import CampaignDetails from "../_components/CampaignDetails";
 import { Campaign, Job } from "@/types/mailer.types";
 import { useCampaignSocket } from "@/hooks/useCampaignSocket";
@@ -61,25 +60,24 @@ const statusConfig: Record<
   failed: { variant: "destructive", icon: XCircle, label: "Failed" },
 };
 
-// ─── Page ──────────────────────────────────────────────────────
-
 export default function CampaignDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [jobsLoading, setJobsLoading] = useState(false);
-  const [jobsLoadingMore, setJobsLoadingMore] = useState(false);
-  const [jobsPagination, setJobsPagination] = useState({
-    page: 1,
-    hasMore: false,
-  });
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { sending, handleSend, handleDelete, handleRetryFailed } =
-    useCampaignStore();
+  const {
+    sendingId,
+    deletingId,
+    retryingId,
+    handleSend,
+    handleDelete,
+    handleRetryFailed,
+    fetchJobs,
+    setJobs,  // ← needed for socket onJob updates
+  } = useCampaignStore();
 
   const fetchCampaign = useCallback(async () => {
     try {
@@ -91,34 +89,6 @@ export default function CampaignDetailPage() {
       setLoading(false);
     }
   }, [id]);
-
-  const fetchJobs = useCallback(
-    async (page = 1) => {
-      if (page === 1) setJobsLoading(true);
-      try {
-        const { data } = await axiosInstance.get(
-          `/mailer/campaigns/${id}/jobs`,
-          { params: { page, limit: 50 } },
-        );
-        setJobs((prev) => (page === 1 ? data.jobs : [...prev, ...data.jobs]));
-        setJobsPagination({
-          page: data.pagination.currentPage,
-          hasMore: data.pagination.hasNextPage,
-        });
-      } catch {
-        toast.error("Failed to load jobs");
-      } finally {
-        setJobsLoading(false);
-        setJobsLoadingMore(false);
-      }
-    },
-    [id],
-  );
-
-  const handleJobsLoadMore = () => {
-    setJobsLoadingMore(true);
-    fetchJobs(jobsPagination.page + 1);
-  };
 
   useCampaignSocket({
     campaignId: campaign ? id : "",
@@ -132,10 +102,10 @@ export default function CampaignDetailPage() {
     },
     onJob: (job) => {
       setJobs((prev) => {
-        const exists = prev.findIndex((j) => j._id === job._id);
-        if (exists !== -1) {
+        const idx = prev.findIndex((j) => j._id === job._id);
+        if (idx !== -1) {
           const updated = [...prev];
-          updated[exists] = { ...updated[exists], ...job };
+          updated[idx] = { ...updated[idx], ...job } as Job;
           return updated;
         }
         return [...prev, job as Job];
@@ -150,13 +120,11 @@ export default function CampaignDetailPage() {
   useEffect(() => {
     if (
       campaign &&
-      (campaign.status === "done" ||
-        campaign.status === "failed" ||
-        campaign.status === "sending")
+      ["done", "failed", "sending"].includes(campaign.status)
     ) {
-      fetchJobs();
+      fetchJobs(id, 1, { sortBy: "openCount", sortOrder: "desc" });
     }
-  }, [campaign?.status, fetchJobs]);
+  }, [campaign?.status, id, fetchJobs]);
 
   const onSend = async () => {
     if (!campaign) return;
@@ -175,8 +143,6 @@ export default function CampaignDetailPage() {
     const ok = await handleDelete(campaign._id);
     if (ok) router.push("/admin/campaign");
   };
-
-  // ─── Loading state ────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -202,7 +168,9 @@ export default function CampaignDetailPage() {
 
   const statusInfo = statusConfig[campaign.status];
   const StatusIcon = statusInfo.icon;
-  const isSending = sending === campaign._id;
+  const isSending = sendingId === campaign._id;
+  const isDeleting = deletingId === campaign._id;
+  const isRetrying = retryingId === campaign._id;
   const canSend = campaign.status === "draft" || campaign.status === "failed";
   const canRetry =
     (campaign.status === "done" || campaign.status === "failed") &&
@@ -212,11 +180,8 @@ export default function CampaignDetailPage() {
   const hasStats = campaign.status !== "draft";
   const hasDropdownActions = canEdit || canSend || canRetry;
 
-  // ─── Render ───────────────────────────────────────────────────
-
   return (
     <div className="space-y-6 p-4 max-w-7xl mx-auto">
-      {/* Header */}
       <div className="flex justify-between items-start gap-4">
         <div className="space-y-1">
           <div className="flex flex-col-reverse sm:flex-row items-start gap-2">
@@ -245,7 +210,7 @@ export default function CampaignDetailPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="icon" variant="ghost">
-                  {isSending ? (
+                  {isSending || isRetrying || isDeleting ? (
                     <Loader2 className="animate-spin" />
                   ) : (
                     <EllipsisVertical />
@@ -262,7 +227,6 @@ export default function CampaignDetailPage() {
                     <Pencil className="w-4 h-4" /> Edit
                   </DropdownMenuItem>
                 )}
-
                 {canSend && (
                   <DropdownMenuItem disabled={isSending} onClick={onSend}>
                     {isSending ? (
@@ -273,13 +237,9 @@ export default function CampaignDetailPage() {
                     Send
                   </DropdownMenuItem>
                 )}
-
                 {canRetry && (
-                  <DropdownMenuItem
-                    disabled={isSending}
-                    onClick={onRetryFailed}
-                  >
-                    {isSending ? (
+                  <DropdownMenuItem disabled={isRetrying} onClick={onRetryFailed}>
+                    {isRetrying ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <RotateCcw className="w-4 h-4" />
@@ -287,12 +247,10 @@ export default function CampaignDetailPage() {
                     Retry Failed
                   </DropdownMenuItem>
                 )}
-
                 <DropdownMenuSeparator />
-
                 <DropdownMenuItem
                   variant="destructive"
-                  disabled={!canDelete}
+                  disabled={!canDelete || isDeleting}
                   onClick={() => setDeleteOpen(true)}
                 >
                   <Trash2 className="w-4 h-4" /> Delete
@@ -304,10 +262,10 @@ export default function CampaignDetailPage() {
               size="icon"
               variant="destructive"
               tooltip="Delete"
-              disabled={!canDelete}
+              disabled={!canDelete || isDeleting}
               onClick={() => setDeleteOpen(true)}
             >
-              {isSending ? <Loader2 className="animate-spin" /> : <Trash2 />}
+              {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
             </Button>
           )}
         </div>
@@ -315,7 +273,6 @@ export default function CampaignDetailPage() {
 
       <Separator />
 
-      {/* Stats cards — only when campaign has been sent */}
       {hasStats && (
         <CampaignStatsCards
           total={campaign.stats.total}
@@ -330,14 +287,7 @@ export default function CampaignDetailPage() {
       </div>
 
       {["done", "failed", "sending"].includes(campaign.status) && (
-        <DeliveryReport
-          jobs={jobs}
-          jobsLoading={jobsLoading}
-          onRefresh={() => fetchJobs(1)}
-          hasMore={jobsPagination.hasMore}
-          onLoadMore={handleJobsLoadMore}
-          loadingMore={jobsLoadingMore}
-        />
+        <DeliveryReport campaignId={id} />
       )}
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
@@ -355,7 +305,7 @@ export default function CampaignDetailPage() {
               onClick={onDelete}
               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
             >
-              {isSending ? (
+              {isDeleting ? (
                 <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
               ) : null}
               Delete

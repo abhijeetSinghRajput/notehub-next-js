@@ -1,40 +1,105 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatTimeAgo } from "@/lib/utils";
-import { RefreshCcw } from "lucide-react";
+import { History, Loader2, RefreshCcw } from "lucide-react";
 import type { ILinkGraphHistory } from "@/types/linkGraph.types";
+import { cn } from "@/lib/utils";
 
-export function CrawlHistoryPanel({ history }: { history: ILinkGraphHistory[] }) {
+interface Props {
+  history: ILinkGraphHistory[];
+  hasMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
+}
+
+const statusDot: Record<string, string> = {
+  completed: "bg-green-500",
+  running: "bg-amber-500",
+  failed: "bg-red-500",
+};
+
+export function CrawlHistoryPanel({ history, hasMore, loadingMore, onLoadMore }: Props) {
   if (!history.length) return null;
 
   return (
-    <div className="rounded-xl border bg-card">
+    <div className="">
       <div className="flex items-center gap-2 px-4 py-3 border-b">
-        <RefreshCcw className="h-4 w-4 text-muted-foreground" />
+        <History className="h-4 w-4 text-muted-foreground" />
         <span className="font-medium text-sm">Crawl History</span>
       </div>
-      <div className="divide-y">
-        {history.map((h, i) => (
-          <div key={h._id} className="flex items-center gap-3 px-4 py-3">
-            <span className="h-2 w-2 rounded-full shrink-0 bg-green-500" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-medium capitalize">{h.status}</span>
-                {i === 0 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Latest</Badge>}
-                {h.triggeredBy && <span className="text-xs text-muted-foreground">by {h.triggeredBy.userName}</span>}
-              </div>
-              {h.summary && (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {h.summary.totalNotes} notes · {h.summary.totalEdges} edges · {h.summary.brokenLinkCount} broken
-                </p>
-              )}
-              {h.errorMessage && <p className="text-xs text-red-500 mt-0.5 truncate">{h.errorMessage}</p>}
-            </div>
-            <span className="text-xs text-muted-foreground shrink-0">{formatTimeAgo(new Date(h.createdAt), { addSuffix: true })}</span>
-          </div>
-        ))}
-      </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-8" />
+            <TableHead>Status</TableHead>
+            <TableHead>Triggered By</TableHead>
+            <TableHead>Summary</TableHead>
+            <TableHead className="text-right">When</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {history.map((h, i) => (
+            <TableRow key={h._id}>
+              <TableCell>
+                <span
+                  className={cn(
+                    "inline-block h-2 w-2 rounded-full",
+                    statusDot[h.status] ?? "bg-muted-foreground",
+                  )}
+                />
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-medium capitalize">{h.status}</span>
+                  {i === 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      Latest
+                    </Badge>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell className="text-xs text-muted-foreground">
+                {h.triggeredBy ? h.triggeredBy.userName : "—"}
+              </TableCell>
+              <TableCell className="text-xs text-muted-foreground">
+                {h.summary ? (
+                  <>
+                    {h.summary.totalNotes} notes · {h.summary.totalEdges} edges ·{" "}
+                    {h.summary.brokenLinkCount} broken
+                  </>
+                ) : h.errorMessage ? (
+                  <span className="text-red-500 truncate">{h.errorMessage}</span>
+                ) : (
+                  "—"
+                )}
+              </TableCell>
+              <TableCell className="text-right text-xs text-muted-foreground whitespace-nowrap">
+                {formatTimeAgo(new Date(h.createdAt), { addSuffix: true })}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      {hasMore && (
+        <div className="flex justify-center px-4 py-3 border-t">
+          <Button variant="outline" size="sm" onClick={onLoadMore} disabled={loadingMore}>
+            {loadingMore && <Loader2 className="w-4 h-4 animate-spin" />}
+            Load more
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

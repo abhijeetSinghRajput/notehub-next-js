@@ -53,6 +53,17 @@ export default function TemplatesPage() {
     }
   };
 
+  const handleBulkDelete = async (ids: string[]) => {
+  try {
+    const { data } = await axiosInstance.post("/mailer/templates/bulk-delete", { ids });
+    toast.success(`Deleted ${data.deletedCount} template${data.deletedCount === 1 ? "" : "s"}`);
+    setTemplates((prev) => prev.filter((t) => !ids.includes(t._id as string)));
+    setTotalItems((prev) => prev - data.deletedCount);
+  } catch {
+    toast.error("Failed to delete templates");
+  }
+};
+
   return (
     <>
       <div className="space-y-4 p-4 max-w-7xl mx-auto">
@@ -117,12 +128,14 @@ export default function TemplatesPage() {
             templates={templates}
             loading={loading}
             onDelete={handleDelete}
+            onBulkDelete={handleBulkDelete}
           />
         ) : (
           <TemplateTable
             templates={templates}
             loading={loading}
             onDelete={handleDelete}
+            onBulkDelete={handleBulkDelete}
           />
         )}
       </div>
