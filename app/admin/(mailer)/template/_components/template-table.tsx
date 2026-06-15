@@ -42,6 +42,7 @@ export default function TemplateTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead><Skeleton className="size-5 border rounded-sm"/></TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Subject</TableHead>
             <TableHead>Created</TableHead>
@@ -51,6 +52,9 @@ export default function TemplateTable({
         <TableBody>
           {Array.from({ length: 20 }).map((_, i) => (
             <TableRow key={i} className="h-13.25">
+              <TableCell>
+                <Skeleton className="size-5 border rounded-sm" />
+              </TableCell>
               <TableCell>
                 <Skeleton className="w-32 h-4" />
               </TableCell>

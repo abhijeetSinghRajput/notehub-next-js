@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { axiosInstance } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Send, Eye, FileText, Users } from "lucide-react";
+import { Loader2, Send, Eye, Users, Save } from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
 import { Liquid } from "liquidjs";
 import PreviewSheet from "../_components/preview-sheet";
@@ -28,6 +28,7 @@ import {
   type JsonError,
 } from "../_components/campaign-code-editor";
 import { EditorTab } from "../../template/_components/tabbed-code-editor";
+import { cn } from "@/lib/utils";
 
 const liquidEngine = new Liquid({
   strictFilters: false,
@@ -453,20 +454,22 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
       </div>
 
       {/* Bottom actions */}
-      <div className="flex justify-between items-center py-2 sticky bottom-0 bg-background z-50">
+      <div className={cn("flex justify-between items-center py-2 sticky bottom-0 bg-background z-50", isEditMode && "flex-row-reverse")}>
         <Button
-          variant="outline"
+          variant={isEditMode ? "default" : "outline"}
           onClick={() => handleSend(false)}
           disabled={saving}
         >
           {saving ? (
             <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
           ) : (
-            <FileText className="mr-1.5 w-4 h-4" />
+            <Save className="mr-1.5 w-4 h-4" />
           )}
           {isEditMode ? "Update draft" : "Save as draft"}
         </Button>
-        <Button onClick={() => handleSend(true)} disabled={saving}>
+        <Button 
+          variant={isEditMode ? "outline" : "default"}
+        onClick={() => handleSend(true)} disabled={saving}>
           {saving ? (
             <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
           ) : (

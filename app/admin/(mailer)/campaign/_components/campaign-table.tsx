@@ -117,6 +117,9 @@ const CampaignTable = ({ onViewJobs }: CampaignTableProps) => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>
+              <Skeleton className="size-5 border rounded-sm" />
+            </TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Opened</TableHead>
@@ -129,6 +132,9 @@ const CampaignTable = ({ onViewJobs }: CampaignTableProps) => {
         <TableBody>
           {Array.from({ length: 20 }).map((_, i) => (
             <TableRow key={i} className="h-13.25">
+              <TableCell>
+                <Skeleton className="size-5 border rounded-sm" />
+              </TableCell>
               <TableCell>
                 <Skeleton className="w-32 h-4" />
               </TableCell>
@@ -270,7 +276,7 @@ const CampaignTable = ({ onViewJobs }: CampaignTableProps) => {
                   ) : c.stats.total > 0 ? (
                     <div className="space-y-1 min-w-40">
                       <div className="text-muted-foreground text-xs">
-                        {c.stats.sent} sent · {c.stats.failed} failed ·{" "}
+                        {c.stats.sent} / sent · {c.stats.failed} failed ·{" "}
                         {c.stats.total} total
                       </div>
                       <Progress

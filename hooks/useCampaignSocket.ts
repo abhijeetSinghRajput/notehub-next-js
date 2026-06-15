@@ -20,13 +20,18 @@ export function useCampaignSocket({
 
     const s = getSocket();
     s.emit("join:campaign", campaignId);
-    s.emit("campaign:sync", campaignId);
+    if (onProgress || onDone) {
+      s.emit("campaign:sync", campaignId);
+    }
 
     const handleProgress = (data: { stats: CampaignStats }) => {
       onProgress?.(data.stats);
     };
 
-    const handleDone = (data: { stats: CampaignStats; status: "done" | "failed" }) => {
+    const handleDone = (data: {
+      stats: CampaignStats;
+      status: "done" | "failed";
+    }) => {
       onDone?.(data.stats, data.status);
       s.emit("leave:campaign", campaignId);
     };

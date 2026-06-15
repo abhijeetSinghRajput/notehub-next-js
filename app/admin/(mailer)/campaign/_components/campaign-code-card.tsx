@@ -4,18 +4,21 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
-import hljs from "highlight.js";
-import xml from "highlight.js/lib/languages/xml";
+import CodeMirror from "@uiw/react-codemirror";
+import { html as htmlLang } from "@codemirror/lang-html";
+import { json as jsonLang } from "@codemirror/lang-json";
+import { oneDark } from "@codemirror/theme-one-dark";
 
-hljs.registerLanguage("xml", xml);
-
-export default function CampaignCodeCard({ json: jsonData, html }: { json: unknown; html: string }) {
+export default function CampaignCodeCard({
+  json: jsonData,
+  html,
+}: {
+  json: unknown;
+  html: string;
+}) {
   const jsonString = JSON.stringify(jsonData ?? {}, null, 2);
   const [tab, setTab] = useState<"html" | "json">("html");
   const [copied, setCopied] = useState(false);
-
-  const highlightedJson = hljs.highlight(jsonString, { language: "json" }).value;
-  const highlightedHtml = hljs.highlight(html ?? "", { language: "xml" }).value;
 
   const handleCopy = async () => {
     try {
@@ -28,16 +31,11 @@ export default function CampaignCodeCard({ json: jsonData, html }: { json: unkno
     }
   };
 
-  const isEmpty =
-    tab === "json"
-      ? !jsonData || jsonString === "{}"
-      : !html;
+  const isEmpty = tab === "json" ? !jsonData || jsonString === "{}" : !html;
 
   return (
     <div className="flex flex-col border rounded-md max-h-60 overflow-hidden">
-      {/* Header */}
       <div className="sticky top-0 flex items-center justify-between bg-[#222222] border-b border-[#444] px-2 text-xs text-muted-foreground">
-        {/* Tabs */}
         <div className="flex">
           {(["html", "json"] as const).map((t) => (
             <button
@@ -55,34 +53,35 @@ export default function CampaignCodeCard({ json: jsonData, html }: { json: unkno
           ))}
         </div>
 
-        {/* Copy button */}
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8 border-[#444]  bg-[#303030] hover:bg-[#323232] text-[#a1a1a1] hover:text-white"
+          className="h-8 w-8 border-[#444] bg-[#303030] hover:bg-[#323232] text-[#a1a1a1] hover:text-white"
           onClick={handleCopy}
           tooltip={`copy ${tab}`}
         >
-          {copied ? (
-            <Check className="h-3.5 w-3.5" />
-          ) : (
-            <Copy className="h-3.5 w-3.5" />
-          )}
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
         </Button>
       </div>
 
-      {/* Content */}
       {isEmpty ? (
         <p className="p-4 text-center text-muted-foreground text-sm">
           No {tab} data
         </p>
       ) : (
-        <pre
-          className="flex-1 bg-[#181818] p-3 overflow-auto font-mono text-white text-xs break-all leading-relaxed whitespace-pre-wrap"
-          dangerouslySetInnerHTML={{
-            __html: tab === "json" ? highlightedJson : highlightedHtml,
-          }}
-        />
+        <div className="flex-1 overflow-auto text-xs">
+          <CodeMirror
+            value={tab === "json" ? jsonString : html}
+            theme={oneDark}
+            extensions={[tab === "json" ? jsonLang() : htmlLang()]}
+            editable={false}
+            basicSetup={{
+              lineNumbers: false,
+              foldGutter: false,
+              highlightActiveLine: false,
+            }}
+          />
+        </div>
       )}
     </div>
   );
