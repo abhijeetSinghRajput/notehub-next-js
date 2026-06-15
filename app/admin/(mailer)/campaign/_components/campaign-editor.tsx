@@ -59,7 +59,7 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
   // preview
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previews, setPreviews] = useState<
-    { label: string; html: string; subject: string }[]
+    { email: string; html: string; subject: string; previewText: string; }[]
   >([]);
   const [previewBuilding, setPreviewBuilding] = useState(false);
 
@@ -176,7 +176,13 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
         return toast.error("Fix JSON first");
       }
 
-      const results: { label: string; html: string; subject: string }[] = [];
+      const results: {
+        email: string;
+        html: string;
+        subject: string;
+        previewText: string;
+      }[] = [];
+
 
       if (ipr && Array.isArray(parsed)) {
         const seen = new Set<string>();
@@ -194,10 +200,15 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
             ctx,
           );
           const renderedHtml = await liquidEngine.parseAndRender(htmlBody, ctx);
+          const renderedPreviewText = await liquidEngine.parseAndRender(
+            previewText,
+            ctx,
+          );
           results.push({
-            label: email,
+            email: email,
             html: renderedHtml,
             subject: renderedSubject,
+            previewText: renderedPreviewText,
           });
 
           if (results.length >= 20) break;
@@ -209,21 +220,27 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
         };
         const renderedSubject = await liquidEngine.parseAndRender(subject, ctx);
         const renderedHtml = await liquidEngine.parseAndRender(htmlBody, ctx);
+        const renderedPreviewText = await liquidEngine.parseAndRender(
+          previewText,
+          ctx,
+        );
 
         if (recipientEmails.length > 0) {
           for (const email of recipientEmails) {
             results.push({
-              label: email,
+              email: email,
               html: renderedHtml,
               subject: renderedSubject,
+              previewText: renderedPreviewText,
             });
             if (results.length >= 20) break;
           }
         } else {
           results.push({
-            label: "Preview",
+            email: "Preview",
             html: renderedHtml,
             subject: renderedSubject,
+            previewText: renderedPreviewText,
           });
         }
       }
@@ -235,7 +252,7 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
     } finally {
       setPreviewBuilding(false);
     }
-  }, [htmlBody, extraJson, recipientEmails, subject]);
+  }, [htmlBody, extraJson, recipientEmails, subject, previewText]);
 
   // ─── Save / Send ─────────────────────────────────────────────
 
@@ -243,8 +260,10 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
     if (!name.trim()) return toast.error("Campaign name is required");
     if (!subject.trim()) return toast.error("Subject is required");
     if (!htmlBody.trim()) return toast.error("HTML body is required");
-    if (recipientEmails.length === 0) return toast.error("Add at least one recipient");
-    if (jsonErrors.length > 0) return toast.error("Fix JSON errors before sending");
+    if (recipientEmails.length === 0)
+      return toast.error("Add at least one recipient");
+    if (jsonErrors.length > 0)
+      return toast.error("Fix JSON errors before sending");
 
     let parsed: unknown;
     try {
@@ -454,7 +473,12 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
       </div>
 
       {/* Bottom actions */}
-      <div className={cn("flex justify-between items-center py-2 sticky bottom-0 bg-background z-50", isEditMode && "flex-row-reverse")}>
+      <div
+        className={cn(
+          "flex justify-between items-center py-2 sticky bottom-0 bg-background z-50",
+          isEditMode && "flex-row-reverse",
+        )}
+      >
         <Button
           variant={isEditMode ? "default" : "outline"}
           onClick={() => handleSend(false)}
@@ -467,9 +491,11 @@ export default function CampaignEditor({ campaignId }: CampaignEditorProps) {
           )}
           {isEditMode ? "Update draft" : "Save as draft"}
         </Button>
-        <Button 
+        <Button
           variant={isEditMode ? "outline" : "default"}
-        onClick={() => handleSend(true)} disabled={saving}>
+          onClick={() => handleSend(true)}
+          disabled={saving}
+        >
           {saving ? (
             <Loader2 className="mr-1.5 w-4 h-4 animate-spin" />
           ) : (

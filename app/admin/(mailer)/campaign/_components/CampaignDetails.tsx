@@ -24,7 +24,7 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
   const [previewBuilding, setPreviewBuilding] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previews, setPreviews] = useState<
-    { label: string; html: string; subject: string }[]
+    { email: string; html: string; subject: string; previewText: string }[]
   >([]);
   const [copied, setCopied] = useState(false);
 
@@ -57,7 +57,12 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
 
     setPreviewBuilding(true);
     try {
-      const results: { label: string; html: string; subject: string }[] = [];
+      const results: {
+        email: string;
+        html: string;
+        subject: string;
+        previewText: string;
+      }[] = [];
       const extraJson = campaign.extraJson;
 
       if (Array.isArray(extraJson)) {
@@ -81,10 +86,15 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
             campaign.htmlBody,
             ctx,
           );
+          const renderedPreviewText = await liquidEngine.parseAndRender(
+            campaign.previewText,
+            ctx,
+          );
           results.push({
-            label: email,
+            email,
             html: renderedHtml,
             subject: renderedSubject,
+            previewText: renderedPreviewText,
           });
 
           if (results.length >= 20) break;
@@ -102,21 +112,27 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
           campaign.htmlBody,
           ctx,
         );
+        const renderedPreviewText = await liquidEngine.parseAndRender(
+          campaign.previewText,
+          ctx,
+        );
 
         if (campaignEmails.length > 0) {
           for (const email of campaignEmails) {
             results.push({
-              label: email,
+              email,
               html: renderedHtml,
               subject: renderedSubject,
+              previewText: renderedPreviewText,
             });
             if (results.length >= 20) break;
           }
         } else {
           results.push({
-            label: "Preview",
+            email: "Preview",
             html: renderedHtml,
             subject: renderedSubject,
+            previewText: renderedPreviewText,
           });
         }
       }

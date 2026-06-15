@@ -58,13 +58,17 @@ interface Props {
 
 export default function TemplateForm({ initialValues, templateId }: Props) {
   const router = useRouter();
-  const [form, setForm] = useState<TemplateFormValues>(initialValues ?? emptyForm);
+  const [form, setForm] = useState<TemplateFormValues>(
+    initialValues ?? emptyForm,
+  );
   const [sampleJson, setSampleJson] = useState("{}");
   const [activeTab, setActiveTab] = useState<EditorTab>("html");
 
   // Preview sheet
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previews, setPreviews] = useState<{ label: string; html: string; subject: string }[]>([]);
+  const [previews, setPreviews] = useState<
+    { email: string; html: string; subject: string; previewText: string }[]
+  >([]);
   const [previewBuilding, setPreviewBuilding] = useState(false);
 
   const [saving, setSaving] = useState(false);
@@ -88,7 +92,12 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
         return toast.error("Fix JSON first");
       }
 
-      const results: { label: string; html: string; subject: string }[] = [];
+      const results: {
+        email: string;
+        html: string;
+        subject: string;
+        previewText: string;
+      }[] = [];
 
       if (Array.isArray(parsed)) {
         // Per-recipient: render once per unique entry (cap at 20)
@@ -97,17 +106,37 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
           const email =
             typeof entry.email === "string"
               ? entry.email.trim().toLowerCase()
-              : null;
-          const label = email ?? `Entry ${results.length + 1}`;
+              : `Entry ${results.length + 1}`;
+
           if (email) {
             if (seen.has(email)) continue;
             seen.add(email);
           }
 
-          const ctx = { ...TEMPLATE_GLOBALS, user: SAMPLE_USER, extra: entry, unsubscribe_url: "[unsubscribe_url]" };
-          const renderedSubject = await liquidEngine.parseAndRender(form.subject, ctx);
-          const renderedHtml = await liquidEngine.parseAndRender(form.htmlBody, ctx);
-          results.push({ label, html: renderedHtml, subject: renderedSubject });
+          const ctx = {
+            ...TEMPLATE_GLOBALS,
+            user: SAMPLE_USER,
+            extra: entry,
+            unsubscribe_url: "[unsubscribe_url]",
+          };
+          const renderedSubject = await liquidEngine.parseAndRender(
+            form.subject,
+            ctx,
+          );
+          const renderedHtml = await liquidEngine.parseAndRender(
+            form.htmlBody,
+            ctx,
+          );
+          const renderedPreviewText = await liquidEngine.parseAndRender(
+            form.previewText,
+            ctx,
+          );
+          results.push({
+            email,
+            html: renderedHtml,
+            subject: renderedSubject,
+            previewText: renderedPreviewText,
+          });
 
           if (results.length >= 20) break;
         }
@@ -119,11 +148,26 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
           extra: parsed as Record<string, unknown>,
           unsubscribe_url: "[unsubscribe_url]",
         };
-        const renderedSubject = await liquidEngine.parseAndRender(form.subject, ctx);
-        const renderedHtml = await liquidEngine.parseAndRender(form.htmlBody, ctx);
-        results.push({ label: form.name || "Preview", html: renderedHtml, subject: renderedSubject });
+        const renderedSubject = await liquidEngine.parseAndRender(
+          form.subject,
+          ctx,
+        );
+        const renderedHtml = await liquidEngine.parseAndRender(
+          form.htmlBody,
+          ctx,
+        );
+        const renderedPreviewText = await liquidEngine.parseAndRender(
+          form.previewText,
+          ctx,
+        );
+        results.push({
+          email: form.name || "Preview",
+          html: renderedHtml,
+          subject: renderedSubject,
+          previewText: renderedPreviewText,
+        });
       }
-      console.log(results);
+
       setPreviews(results);
       setPreviewOpen(true);
     } catch (e) {
@@ -175,7 +219,10 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
       <div className="space-y-4">
         {/* ── Metadata fields ─────────────────────────────────────────────── */}
         <div className="bg-background mt-4 border rounded-lg divide-y">
-          <Label htmlFor="template-name" className="flex items-center gap-2 px-4 py-3">
+          <Label
+            htmlFor="template-name"
+            className="flex items-center gap-2 px-4 py-3"
+          >
             <span className="w-24 text-muted-foreground text-sm shrink-0">
               Name <span className="text-destructive">*</span>
             </span>
@@ -190,7 +237,10 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
 
           <div className="grid grid-cols-1 lg:grid-cols-2">
             <div className="border-r divide-y sm:divide-none">
-              <Label htmlFor="subject" className="flex items-center gap-2 px-4 py-3">
+              <Label
+                htmlFor="subject"
+                className="flex items-center gap-2 px-4 py-3"
+              >
                 <span className="w-24 text-muted-foreground text-sm shrink-0">
                   Subject <span className="text-destructive">*</span>
                 </span>
@@ -199,11 +249,16 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
                   className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
                   placeholder="Enter your email subject"
                   value={form.subject}
-                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, subject: e.target.value })
+                  }
                 />
               </Label>
 
-              <Label htmlFor="previewText" className="flex items-center gap-2 px-4 py-3">
+              <Label
+                htmlFor="previewText"
+                className="flex items-center gap-2 px-4 py-3"
+              >
                 <span className="w-24 text-muted-foreground text-sm shrink-0">
                   Preview Text <span className="text-destructive">*</span>
                 </span>
@@ -212,7 +267,9 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
                   className="border-none font-normal shadow-none bg-transparent! focus-visible:ring-0"
                   placeholder="Preview text (shown in inbox)"
                   value={form.previewText}
-                  onChange={(e) => setForm({ ...form, previewText: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, previewText: e.target.value })
+                  }
                 />
               </Label>
             </div>
@@ -226,10 +283,14 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
                 <div className="min-w-0 w-full">
                   <div className="flex items-center justify-between">
                     <p className="font-semibold text-lg">Notehub</p>
-                    <span className="text-muted-foreground text-sm">Just now</span>
+                    <span className="text-muted-foreground text-sm">
+                      Just now
+                    </span>
                   </div>
                   <p className="text-sm font-medium truncate">{form.subject}</p>
-                  <p className="text-sm text-muted-foreground truncate">{form.previewText}</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {form.previewText}
+                  </p>
                 </div>
               </div>
             )}
@@ -242,10 +303,12 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
             </span>
             <Select
               value={form.mode}
-              onValueChange={(v) => setForm({ ...form, mode: v as "shared" | "per_recipient" })}
+              onValueChange={(v) =>
+                setForm({ ...form, mode: v as "shared" | "per_recipient" })
+              }
             >
               <SelectTrigger>
-                <SelectValue  className="min-w-40"/>
+                <SelectValue className="min-w-40" />
               </SelectTrigger>
               <SelectContent className="min-w-40">
                 <SelectItem value="shared">Shared</SelectItem>
@@ -283,7 +346,10 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
 
       {/* ── Actions ──────────────────────────────────────────────────────────── */}
       <div className="flex justify-end gap-2 bg-background py-3 border-t sticky bottom-0">
-        <Button variant="outline" onClick={() => router.push("/admin/template")}>
+        <Button
+          variant="outline"
+          onClick={() => router.push("/admin/template")}
+        >
           Cancel
         </Button>
         <Button onClick={handleSave} disabled={saving}>

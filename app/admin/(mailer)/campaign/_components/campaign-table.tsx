@@ -117,7 +117,7 @@ const CampaignTable = ({ onViewJobs }: CampaignTableProps) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>
+            <TableHead className="pr-0">
               <Skeleton className="size-5 border rounded-sm" />
             </TableHead>
             <TableHead>Name</TableHead>
@@ -132,7 +132,7 @@ const CampaignTable = ({ onViewJobs }: CampaignTableProps) => {
         <TableBody>
           {Array.from({ length: 20 }).map((_, i) => (
             <TableRow key={i} className="h-13.25">
-              <TableCell>
+              <TableCell className="pr-0">
                 <Skeleton className="size-5 border rounded-sm" />
               </TableCell>
               <TableCell>
