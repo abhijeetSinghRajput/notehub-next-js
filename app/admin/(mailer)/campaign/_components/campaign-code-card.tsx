@@ -8,6 +8,7 @@ import CodeMirror from "@uiw/react-codemirror";
 import { html as htmlLang } from "@codemirror/lang-html";
 import { json as jsonLang } from "@codemirror/lang-json";
 import { oneDark } from "@codemirror/theme-one-dark";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 export default function CampaignCodeCard({
   json: jsonData,
@@ -18,17 +19,13 @@ export default function CampaignCodeCard({
 }) {
   const jsonString = JSON.stringify(jsonData ?? {}, null, 2);
   const [tab, setTab] = useState<"html" | "json">("html");
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(tab === "json" ? jsonString : html);
-      setCopied(true);
-      toast.success(tab === "json" ? "JSON copied" : "HTML copied");
-      setTimeout(() => setCopied(false), 3000);
-    } catch {
-      toast.error("Failed to copy");
-    }
+  const handleCopy = () => {
+    copy(
+      tab === "json" ? jsonString : html,
+      tab === "json" ? "JSON copied" : "HTML copied",
+    );
   };
 
   const isEmpty = tab === "json" ? !jsonData || jsonString === "{}" : !html;
@@ -60,7 +57,11 @@ export default function CampaignCodeCard({
           onClick={handleCopy}
           tooltip={`copy ${tab}`}
         >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? (
+            <Check className="h-3.5 w-3.5" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
         </Button>
       </div>
 

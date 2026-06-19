@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo, useRef
+} from "react";
 import { useCurrentEditor, useEditorState } from "@tiptap/react";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { useImageStore } from "@/app/stores/useImageStore";
@@ -12,9 +16,7 @@ import {
   Sheet,
   SheetContent,
   SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
+  SheetTitle, SheetFooter
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +34,6 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import {
-  Globe,
   CheckCircle2,
   AlertTriangle,
   XCircle,
@@ -42,33 +43,48 @@ import {
   FileText,
   Activity,
   Check,
-  Settings,
-  HelpCircle,
-  Type,
+  Settings, Type,
   Link,
   AlignLeft,
   Share2,
   X as XIcon,
-  Copy,
+  Copy
 } from "lucide-react";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 // Severity configs for diagnostics panel
 const SEVERITY_CONFIG = {
-  error: { Icon: XCircle, color: "text-rose-500 border-rose-200 bg-rose-50 dark:bg-rose-950/20 dark:border-rose-900/50" },
-  warning: { Icon: AlertTriangle, color: "text-amber-500 border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/50" },
-  info: { Icon: Info, color: "text-blue-500 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-900/50" },
-  pass: { Icon: CheckCircle2, color: "text-emerald-500 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900/50" },
+  error: {
+    Icon: XCircle,
+    color:
+      "text-rose-500 border-rose-200 bg-rose-50 dark:bg-rose-950/20 dark:border-rose-900/50",
+  },
+  warning: {
+    Icon: AlertTriangle,
+    color:
+      "text-amber-500 border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/50",
+  },
+  info: {
+    Icon: Info,
+    color:
+      "text-blue-500 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-900/50",
+  },
+  pass: {
+    Icon: CheckCircle2,
+    color:
+      "text-emerald-500 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900/50",
+  },
 };
 
 const GROUP_ICONS = {
-  "Title": Type,
+  Title: Type,
   "Meta Description": AlignLeft,
   "Slug / URL": Link,
-  "Content": FileText,
-  "Images": ImageIcon,
+  Content: FileText,
+  Images: ImageIcon,
   "Social (OG)": Share2,
   "Social (Twitter)": Share2,
-  "Technical": Settings,
+  Technical: Settings,
 } as Record<string, React.ComponentType<any>>;
 
 const SEVERITY_ORDER = {
@@ -90,7 +106,9 @@ interface UIHeadingNode {
   isLastChild: boolean;
 }
 
-function buildHeadingTree(items: { level: number; text: string; missingBefore?: number }[]) {
+function buildHeadingTree(
+  items: { level: number; text: string; missingBefore?: number }[],
+) {
   const nodes: UIHeadingNode[] = items.map((item, index) => ({
     level: item.level,
     text: item.text,
@@ -119,7 +137,10 @@ function buildHeadingTree(items: { level: number; text: string; missingBefore?: 
       roots.push(node);
     }
 
-    while (activePath.length > 0 && activePath[activePath.length - 1].level >= node.level) {
+    while (
+      activePath.length > 0 &&
+      activePath[activePath.length - 1].level >= node.level
+    ) {
       activePath.pop();
     }
     activePath.push(node);
@@ -128,14 +149,14 @@ function buildHeadingTree(items: { level: number; text: string; missingBefore?: 
   function markLast(n: UIHeadingNode) {
     if (n.children.length > 0) {
       for (let i = 0; i < n.children.length; i++) {
-        n.children[i].isLastChild = (i === n.children.length - 1);
+        n.children[i].isLastChild = i === n.children.length - 1;
         markLast(n.children[i]);
       }
     }
   }
 
   for (let i = 0; i < roots.length; i++) {
-    roots[i].isLastChild = (i === roots.length - 1);
+    roots[i].isLastChild = i === roots.length - 1;
     markLast(roots[i]);
   }
 
@@ -169,7 +190,11 @@ function getPrefix(node: UIHeadingNode): string {
   return prefix;
 }
 
-const HeadingTreeVisualizer = ({ items }: { items: { level: number; text: string; missingBefore?: number }[] }) => {
+const HeadingTreeVisualizer = ({
+  items,
+}: {
+  items: { level: number; text: string; missingBefore?: number }[];
+}) => {
   const nodes = useMemo(() => {
     const builtNodes = buildHeadingTree(items);
     return builtNodes.map((node) => ({
@@ -194,12 +219,18 @@ const HeadingTreeVisualizer = ({ items }: { items: { level: number; text: string
             <span className="shrink-0 text-muted-foreground font-bold mr-1.5 select-none font-mono">
               H{node.level}
             </span>
-            <span 
+            <span
               className={cn(
                 "truncate font-mono flex-1 min-w-0 mr-1.5",
-                node.missingBefore ? "text-destructive font-semibold" : "text-muted-foreground/80"
+                node.missingBefore
+                  ? "text-destructive font-semibold"
+                  : "text-muted-foreground/80",
               )}
-              style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+              style={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
               title={node.text}
             >
               {node.text}
@@ -232,7 +263,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("fields");
   const [isSaving, setIsSaving] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   // Read note cache & draft reactively
   const note = useNoteStore((state) => state.noteCache[noteId]?.data);
@@ -256,7 +287,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [seoKeywords, setSeoKeywords] = useState<string[]>([]);
-  const [keywordInput, setKeywordInput] = useState("");  // pending chip text
+  const [keywordInput, setKeywordInput] = useState(""); // pending chip text
   const [seoImageUrl, setSeoImageUrl] = useState("");
   const [seoImageAlt, setSeoImageAlt] = useState("");
 
@@ -305,7 +336,11 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
     setSeoSlug(activeNote.slug || "");
     setSeoTitle(activeNote.seo?.title || activeNote.name || "");
     setSeoDescription(activeNote.seo?.description || firstPara || "");
-    setSeoKeywords(Array.isArray(activeNote.seo?.keywords) ? [...activeNote.seo.keywords] : []);
+    setSeoKeywords(
+      Array.isArray(activeNote.seo?.keywords)
+        ? [...activeNote.seo.keywords]
+        : [],
+    );
     setKeywordInput("");
 
     const dbUrl = activeNote.seo?.image?.url || "";
@@ -326,7 +361,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
     }
 
     initializedForNoteRef.current = noteId;
-  }, [noteId, activeNote]);  // open/close does NOT trigger a re-seed via ref
+  }, [noteId, activeNote]); // open/close does NOT trigger a re-seed via ref
 
   // Editor content HTML reactively
   const editorContent = useEditorState({
@@ -351,8 +386,12 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
     const collectionSlug =
       typeof activeNote?.collectionId === "object" && activeNote.collectionId
         ? activeNote.collectionId.slug
-        : collections.find((collection) =>
-            Array.isArray(collection.notes) && collection.notes.some((collectionNote) => collectionNote._id === activeNote?._id),
+        : collections.find(
+            (collection) =>
+              Array.isArray(collection.notes) &&
+              collection.notes.some(
+                (collectionNote) => collectionNote._id === activeNote?._id,
+              ),
           )?.slug || "";
 
     const noteSlug = seoSlug || activeNote?.slug || "";
@@ -379,7 +418,18 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
       tags: seoKeywords,
       seoImageUrl,
     };
-  }, [activeNote, seoSlug, seoTitle, seoDescription, seoKeywords, seoImageUrl, editorContent, editorImages, authUser, collections]);
+  }, [
+    activeNote,
+    seoSlug,
+    seoTitle,
+    seoDescription,
+    seoKeywords,
+    seoImageUrl,
+    editorContent,
+    editorImages,
+    authUser,
+    collections,
+  ]);
 
   useEffect(() => {
     if (!activeNote || !authUser?._id) return;
@@ -400,7 +450,8 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
     const seoMatches =
       (currentSeo.title || "") === nextSeo.title &&
       (currentSeo.description || "") === nextSeo.description &&
-      JSON.stringify(currentSeo.keywords || []) === JSON.stringify(nextSeo.keywords) &&
+      JSON.stringify(currentSeo.keywords || []) ===
+        JSON.stringify(nextSeo.keywords) &&
       (currentSeo.image?.url || "") === nextSeo.image.url &&
       (currentSeo.image?.alt || "") === nextSeo.image.alt;
 
@@ -411,12 +462,21 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
       slug: normalizedSlug || activeNote.slug || "",
       seo: nextSeo,
     });
-  }, [activeNote, authUser?._id, noteId, seoSlug, seoTitle, seoDescription, seoKeywords, seoImageUrl, seoImageAlt, setDraft]);
+  }, [
+    activeNote,
+    authUser?._id,
+    noteId,
+    seoSlug,
+    seoTitle,
+    seoDescription,
+    seoKeywords,
+    seoImageUrl,
+    seoImageAlt,
+    setDraft,
+  ]);
 
   // Real-time throttled analysis & score calculation
   const { score, grouped, summary } = useSEOChecker(seoInputData, 600);
-
-
 
   // Save handler
   const handleSaveSeo = async () => {
@@ -426,7 +486,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
     const seoObject = {
       title: seoTitle.trim(),
       description: seoDescription.trim(),
-      keywords: seoKeywords,           // already a string[]
+      keywords: seoKeywords, // already a string[]
       image: {
         url: seoImageUrl.trim(),
         alt: seoImageAlt.trim(),
@@ -498,7 +558,10 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
       setSeoDescription(cleaned.slice(0, 155));
     } else {
       // fallback to any plain text
-      const plainText = html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+      const plainText = html
+        .replace(/<[^>]*>/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
       setSeoDescription(plainText.slice(0, 155));
     }
 
@@ -521,8 +584,7 @@ export function SeoIndicator({ noteId }: SeoIndicatorProps) {
   };
 
   const handleCopySeoReport = () => {
-    try {
-      const markdownReport = `# SEO Audit Report for "${activeNote?.name || "Untitled Note"}"
+    const markdownReport = `# SEO Audit Report for "${activeNote?.name || "Untitled Note"}"
 **SEO Score**: ${score}/100
 
 ## Summary
@@ -535,45 +597,55 @@ ${Object.entries(grouped)
   .map(([group, checks]) => {
     const checkLines = checks
       .map((c) => {
-        const status = c.pass ? "✅ [PASS]" : `❌ [${c.severity.toUpperCase()}]`;
+        const status = c.pass
+          ? "✅ [PASS]"
+          : `❌ [${c.severity.toUpperCase()}]`;
+
         return `- ${status} **${c.label}**: ${c.message}`;
       })
       .join("\n");
+
     return `### ${group}\n${checkLines}`;
   })
   .join("\n\n")}
 `;
 
-      navigator.clipboard.writeText(markdownReport);
-      setCopied(true);
-      toast.success("SEO report copied as Markdown");
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy SEO report:", err);
-      toast.error("Failed to copy SEO report");
-    }
+    copy(markdownReport, "SEO report copied as Markdown");
   };
 
   if (!editor || !activeNote) return null;
 
-  const isKeywordsOutOfBounds = seoKeywords.length < 3 || seoKeywords.length > 8;
+  const isKeywordsOutOfBounds =
+    seoKeywords.length < 3 || seoKeywords.length > 8;
 
   // Score colors & classes
-  const ringColor = score >= 90 ? "stroke-emerald-500" : score >= 50 ? "stroke-amber-500" : "stroke-rose-500";
-  const textColor = score >= 90 ? "text-emerald-500" : score >= 50 ? "text-amber-500" : "text-rose-500";
+  const ringColor =
+    score >= 90
+      ? "stroke-emerald-500"
+      : score >= 50
+        ? "stroke-amber-500"
+        : "stroke-rose-500";
+  const textColor =
+    score >= 90
+      ? "text-emerald-500"
+      : score >= 50
+        ? "text-amber-500"
+        : "text-rose-500";
 
   // Custom gauge tracks & fills matching the screenshot
-  const trackStroke = score >= 90
-    ? "rgba(16, 185, 129, 0.15)"
-    : score >= 50
-      ? "rgba(245, 158, 11, 0.15)"
-      : "rgba(239, 68, 68, 0.15)";
+  const trackStroke =
+    score >= 90
+      ? "rgba(16, 185, 129, 0.15)"
+      : score >= 50
+        ? "rgba(245, 158, 11, 0.15)"
+        : "rgba(239, 68, 68, 0.15)";
 
-  const gaugeFill = score >= 90
-    ? "rgba(16, 185, 129, 0.08)"
-    : score >= 50
-      ? "rgba(245, 158, 11, 0.08)"
-      : "rgba(239, 68, 68, 0.08)";
+  const gaugeFill =
+    score >= 90
+      ? "rgba(16, 185, 129, 0.08)"
+      : score >= 50
+        ? "rgba(245, 158, 11, 0.08)"
+        : "rgba(239, 68, 68, 0.08)";
 
   return (
     <>
@@ -585,7 +657,10 @@ ${Object.entries(grouped)
         style={{ width: "60px", height: "60px" }}
         title={`SEO Score: ${score}/100`}
       >
-        <svg className="lh-gauge absolute inset-0 size-full" viewBox="0 0 120 120">
+        <svg
+          className="lh-gauge absolute inset-0 size-full"
+          viewBox="0 0 120 120"
+        >
           <circle
             className="lh-gauge-base transition-colors duration-500"
             r="56"
@@ -595,7 +670,10 @@ ${Object.entries(grouped)
             style={{ stroke: trackStroke, fill: gaugeFill }}
           />
           <circle
-            className={cn("fill-none transition-all duration-700 ease-out", ringColor)}
+            className={cn(
+              "fill-none transition-all duration-700 ease-out",
+              ringColor,
+            )}
             r="56"
             cx="60"
             cy="60"
@@ -610,7 +688,12 @@ ${Object.entries(grouped)
         </svg>
 
         <div className="flex flex-col items-center justify-center z-10 select-none">
-          <span className={cn("text-base font-extrabold leading-none tracking-tight", textColor)}>
+          <span
+            className={cn(
+              "text-base font-extrabold leading-none tracking-tight",
+              textColor,
+            )}
+          >
             {score}
           </span>
           <span className="text-[8px] text-muted-foreground font-semibold uppercase tracking-widest leading-none mt-0.5">
@@ -625,8 +708,14 @@ ${Object.entries(grouped)
           <SheetHeader className="p-6 pb-4 border-b shrink-0">
             <div className="flex items-center gap-4">
               {/* Score SVG Gauge in place of Globe Icon */}
-              <div className="relative flex items-center justify-center shrink-0 select-none" style={{ width: "48px", height: "48px" }}>
-                <svg className="lh-gauge absolute inset-0 size-full" viewBox="0 0 120 120">
+              <div
+                className="relative flex items-center justify-center shrink-0 select-none"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <svg
+                  className="lh-gauge absolute inset-0 size-full"
+                  viewBox="0 0 120 120"
+                >
                   <circle
                     className="lh-gauge-base transition-colors duration-500"
                     r="56"
@@ -636,7 +725,10 @@ ${Object.entries(grouped)
                     style={{ stroke: trackStroke, fill: gaugeFill }}
                   />
                   <circle
-                    className={cn("fill-none transition-all duration-700 ease-out", ringColor)}
+                    className={cn(
+                      "fill-none transition-all duration-700 ease-out",
+                      ringColor,
+                    )}
                     r="56"
                     cx="60"
                     cy="60"
@@ -656,7 +748,9 @@ ${Object.entries(grouped)
 
               {/* Title & Chips in place of description */}
               <div className="space-y-1.5 flex-1 min-w-0">
-                <SheetTitle className="text-base font-bold tracking-tight leading-none text-foreground">SEO Optimizer</SheetTitle>
+                <SheetTitle className="text-base font-bold tracking-tight leading-none text-foreground">
+                  SEO Optimizer
+                </SheetTitle>
 
                 {/* Quick Summary Pill Row in place of description */}
                 <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold">
@@ -670,7 +764,8 @@ ${Object.entries(grouped)
                   )}
                   {summary.warnings > 0 && (
                     <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
-                      <AlertTriangle className="size-3" /> {summary.warnings} Warnings
+                      <AlertTriangle className="size-3" /> {summary.warnings}{" "}
+                      Warnings
                     </span>
                   )}
                 </div>
@@ -679,18 +774,31 @@ ${Object.entries(grouped)
           </SheetHeader>
 
           {/* Main Content Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
             <TabsList variant="line" className="p-0 grid w-full grid-cols-2">
-              <TabsTrigger value="fields" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:bg-sidebar-accent! rounded-none">
+              <TabsTrigger
+                value="fields"
+                className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:bg-sidebar-accent! rounded-none"
+              >
                 <Settings className="size-3.5" /> Meta Fields
               </TabsTrigger>
-              <TabsTrigger value="diagnostics" className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:bg-sidebar-accent! rounded-none">
+              <TabsTrigger
+                value="diagnostics"
+                className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:bg-sidebar-accent! rounded-none"
+              >
                 <Activity className="size-3.5" /> SEO Audit
               </TabsTrigger>
             </TabsList>
 
             {/* TAB 1: SEO Meta Fields Configuration */}
-            <TabsContent value="fields" className="flex-1 overflow-y-auto space-y-5 m-0 p-4">
+            <TabsContent
+              value="fields"
+              className="flex-1 overflow-y-auto space-y-5 m-0 p-4"
+            >
               <div className="flex items-center justify-between pb-1 border-b">
                 <h3 className="text-sm font-semibold flex items-center gap-1.5 text-foreground">
                   <FileText className="size-4 text-primary" /> Meta Tags Setup
@@ -708,39 +816,61 @@ ${Object.entries(grouped)
               {/* Slug Field */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="seo-slug" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  <Label
+                    htmlFor="seo-slug"
+                    className="text-xs font-bold text-muted-foreground uppercase tracking-wider"
+                  >
                     Note URL Slug
                   </Label>
-                  <span className={cn(
-                    "text-[10px] font-semibold",
-                    seoSlug.length >= 3 && seoSlug.length <= 75 ? "text-emerald-500" : "text-muted-foreground"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-[10px] font-semibold",
+                      seoSlug.length >= 3 && seoSlug.length <= 75
+                        ? "text-emerald-500"
+                        : "text-muted-foreground",
+                    )}
+                  >
                     {seoSlug.length}/75 chars
                   </span>
                 </div>
                 <Input
                   id="seo-slug"
                   value={seoSlug}
-                  onChange={(e) => setSeoSlug(e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""))}
+                  onChange={(e) =>
+                    setSeoSlug(
+                      e.target.value
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")
+                        .replace(/[^a-z0-9-]/g, ""),
+                    )
+                  }
                   placeholder={activeNote?.slug || "enter-note-slug..."}
                   maxLength={75}
                   className="h-10 text-sm font-semibold"
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  Updates the note slug used for routing and canonical URLs. Formatted automatically to lowercase with hyphens.
+                  Updates the note slug used for routing and canonical URLs.
+                  Formatted automatically to lowercase with hyphens.
                 </p>
               </div>
 
               {/* Title Field */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="seo-title" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  <Label
+                    htmlFor="seo-title"
+                    className="text-xs font-bold text-muted-foreground uppercase tracking-wider"
+                  >
                     SEO Meta Title
                   </Label>
-                  <span className={cn(
-                    "text-[10px] font-semibold",
-                    seoTitle.length >= 50 && seoTitle.length <= 60 ? "text-emerald-500" : "text-muted-foreground"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-[10px] font-semibold",
+                      seoTitle.length >= 50 && seoTitle.length <= 60
+                        ? "text-emerald-500"
+                        : "text-muted-foreground",
+                    )}
+                  >
                     {seoTitle.length}/60 chars
                   </span>
                 </div>
@@ -748,7 +878,9 @@ ${Object.entries(grouped)
                   id="seo-title"
                   value={seoTitle}
                   onChange={(e) => setSeoTitle(e.target.value)}
-                  placeholder={activeNote?.name || "Enter descriptive SEO title..."}
+                  placeholder={
+                    activeNote?.name || "Enter descriptive SEO title..."
+                  }
                   maxLength={70}
                   className="h-10 text-sm font-medium"
                 />
@@ -757,13 +889,21 @@ ${Object.entries(grouped)
               {/* Description Field */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="seo-desc" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  <Label
+                    htmlFor="seo-desc"
+                    className="text-xs font-bold text-muted-foreground uppercase tracking-wider"
+                  >
                     Meta Description
                   </Label>
-                  <span className={cn(
-                    "text-[10px] font-semibold",
-                    seoDescription.length >= 120 && seoDescription.length <= 155 ? "text-emerald-500" : "text-muted-foreground"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-[10px] font-semibold",
+                      seoDescription.length >= 120 &&
+                        seoDescription.length <= 155
+                        ? "text-emerald-500"
+                        : "text-muted-foreground",
+                    )}
+                  >
                     {seoDescription.length}/155 chars
                   </span>
                 </div>
@@ -781,13 +921,18 @@ ${Object.entries(grouped)
               {/* Keywords Chip Input */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="seo-keywords-input" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  <Label
+                    htmlFor="seo-keywords-input"
+                    className="text-xs font-bold text-muted-foreground uppercase tracking-wider"
+                  >
                     Focus Keywords (3–8 tags)
                   </Label>
-                  <span className={cn(
-                    "text-[10px] font-semibold transition-colors",
-                    isKeywordsOutOfBounds ? "text-warn" : "text-emerald-500"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-[10px] font-semibold transition-colors",
+                      isKeywordsOutOfBounds ? "text-warn" : "text-emerald-500",
+                    )}
+                  >
                     {seoKeywords.length} / 3–8 tags
                   </span>
                 </div>
@@ -804,7 +949,11 @@ ${Object.entries(grouped)
                         <button
                           type="button"
                           aria-label={`Remove keyword ${kw}`}
-                          onClick={() => setSeoKeywords((prev) => prev.filter((k) => k !== kw))}
+                          onClick={() =>
+                            setSeoKeywords((prev) =>
+                              prev.filter((k) => k !== kw),
+                            )
+                          }
                           className="hover:text-rose-500 transition-colors cursor-pointer"
                         >
                           <XIcon className="size-2.5" />
@@ -827,7 +976,11 @@ ${Object.entries(grouped)
                         setSeoKeywords((prev) => [...prev, trimmed]);
                       }
                       setKeywordInput("");
-                    } else if (e.key === "Backspace" && keywordInput === "" && seoKeywords.length > 0) {
+                    } else if (
+                      e.key === "Backspace" &&
+                      keywordInput === "" &&
+                      seoKeywords.length > 0
+                    ) {
                       setSeoKeywords((prev) => prev.slice(0, -1));
                     }
                   }}
@@ -838,7 +991,10 @@ ${Object.entries(grouped)
                       .split(/[,;\n]+/)
                       .map((t) => t.trim())
                       .filter(Boolean);
-                    if (tokens.length > 1 || (tokens.length === 1 && pasted.includes(","))) {
+                    if (
+                      tokens.length > 1 ||
+                      (tokens.length === 1 && pasted.includes(","))
+                    ) {
                       e.preventDefault();
                       setSeoKeywords((prev) => {
                         const existing = new Set(prev);
@@ -857,20 +1013,37 @@ ${Object.entries(grouped)
                       setKeywordInput("");
                     }
                   }}
-                  placeholder={seoKeywords.length === 0 ? "Type a keyword and press Enter or comma" : "Add another keyword..."}
+                  placeholder={
+                    seoKeywords.length === 0
+                      ? "Type a keyword and press Enter or comma"
+                      : "Add another keyword..."
+                  }
                   className={cn(
                     "h-10 text-sm font-medium transition-all duration-300",
                     isKeywordsOutOfBounds
                       ? "border-warn/60! focus-visible:border-warn! focus-visible:ring-warn/40!"
-                      : "focus-visible:border-ring focus-visible:ring-ring/50"
+                      : "focus-visible:border-ring focus-visible:ring-ring/50",
                   )}
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  Press <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">Enter</kbd> or <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">,</kbd> to add &nbsp;·&nbsp; <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">⌫</kbd> to remove last
+                  Press{" "}
+                  <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">
+                    Enter
+                  </kbd>{" "}
+                  or{" "}
+                  <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">
+                    ,
+                  </kbd>{" "}
+                  to add &nbsp;·&nbsp;{" "}
+                  <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">
+                    ⌫
+                  </kbd>{" "}
+                  to remove last
                 </p>
                 {isKeywordsOutOfBounds && (
                   <p className="text-[10px] text-warn font-semibold mt-1 flex items-center gap-1">
-                    ⚠️ Aim for between 3 and 8 focus keywords to optimize search visibility.
+                    ⚠️ Aim for between 3 and 8 focus keywords to optimize search
+                    visibility.
                   </p>
                 )}
               </div>
@@ -878,13 +1051,18 @@ ${Object.entries(grouped)
               {/* Featured SEO Image Fields */}
               <div className="space-y-3 pt-3 border-t">
                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <ImageIcon className="size-4 text-primary" /> Feature Image & Alt
+                  <ImageIcon className="size-4 text-primary" /> Feature Image &
+                  Alt
                 </h4>
 
                 {/* Preview Selected Image */}
                 {seoImageUrl ? (
                   <div className="relative border rounded-lg overflow-hidden bg-muted/20 aspect-1200/630 flex flex-col justify-end">
-                    <img src={seoImageUrl} alt="SEO Preview" className="absolute inset-0 size-full object-cover" />
+                    <img
+                      src={seoImageUrl}
+                      alt="SEO Preview"
+                      className="absolute inset-0 size-full object-cover"
+                    />
                     <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/10 to-transparent" />
                     <div className="relative p-3 flex justify-between items-center text-white z-10">
                       <span className="text-[10px] font-bold bg-primary/95 text-primary-foreground px-2 py-0.5 rounded uppercase tracking-wider">
@@ -898,23 +1076,29 @@ ${Object.entries(grouped)
                         className="size-6 rounded-full cursor-pointer"
                         title="Remove image"
                       >
-                        <span className="sr-only">Remove</span>
-                        ×
+                        <span className="sr-only">Remove</span>×
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="border border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center bg-muted/10 text-muted-foreground">
                     <ImageIcon className="size-8 mb-2 text-muted-foreground/60" />
-                    <span className="text-xs font-semibold">No Featured Image Selected</span>
-                    <span className="text-[10px] mt-0.5">Select from your upload gallery or upload a new one.</span>
+                    <span className="text-xs font-semibold">
+                      No Featured Image Selected
+                    </span>
+                    <span className="text-[10px] mt-0.5">
+                      Select from your upload gallery or upload a new one.
+                    </span>
                   </div>
                 )}
 
                 {/* Alt text field for image accessibility */}
                 {seoImageUrl && (
                   <div className="space-y-1">
-                    <Label htmlFor="seo-image-alt" className="text-[11px] font-semibold text-muted-foreground">
+                    <Label
+                      htmlFor="seo-image-alt"
+                      className="text-[11px] font-semibold text-muted-foreground"
+                    >
                       Image Alt Text (Accessibility)
                     </Label>
                     <Input
@@ -927,26 +1111,30 @@ ${Object.entries(grouped)
                   </div>
                 )}
 
-
-
                 {/* Upload New Image option (Nest FileDropZone inside sheet) */}
                 <div className="space-y-1.5 pt-1 border-t">
                   <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
                     Upload New Image to Gallery
                   </span>
-                  <FileDropZone onImageSelect={(url) => {
-                    setSeoImageUrl(url);
-                    toast.success("Uploaded cover image and selected");
-                  }} />
+                  <FileDropZone
+                    onImageSelect={(url) => {
+                      setSeoImageUrl(url);
+                      toast.success("Uploaded cover image and selected");
+                    }}
+                  />
                 </div>
               </div>
             </TabsContent>
 
             {/* TAB 2: SEO Diagnostics Audit Panel */}
-            <TabsContent value="diagnostics" className="flex-1 overflow-y-auto space-y-4 m-0">
+            <TabsContent
+              value="diagnostics"
+              className="flex-1 overflow-y-auto space-y-4 m-0"
+            >
               <div className="flex items-center justify-between px-4 py-2 border-b">
                 <h3 className="text-sm font-semibold flex items-center gap-1.5 text-foreground">
-                  <Activity className="size-4 text-primary" /> Live SEO Audit Logs
+                  <Activity className="size-4 text-primary" /> Live SEO Audit
+                  Logs
                 </h3>
                 <Button
                   variant="outline"
@@ -968,18 +1156,28 @@ ${Object.entries(grouped)
 
               <Accordion type="multiple" className="w-full">
                 {Object.entries(grouped).map(([group, checks]) => {
-                  const groupErrors = checks.filter((c) => !c.pass && c.severity === "error").length;
-                  const groupWarnings = checks.filter((c) => !c.pass && c.severity === "warning").length;
+                  const groupErrors = checks.filter(
+                    (c) => !c.pass && c.severity === "error",
+                  ).length;
+                  const groupWarnings = checks.filter(
+                    (c) => !c.pass && c.severity === "warning",
+                  ).length;
                   const GroupIconComponent = GROUP_ICONS[group] || FileText;
 
                   return (
-                    <AccordionItem key={group} value={group} className="border-b border-border">
+                    <AccordionItem
+                      key={group}
+                      value={group}
+                      className="border-b border-border"
+                    >
                       <AccordionTrigger className="rounded-none w-full flex items-center justify-between gap-2 py-3 px-4 hover:bg-sidebar-accent hover:no-underline cursor-pointer transition-colors text-left">
                         <div className="flex items-center gap-2">
                           <span className="size-6 bg-muted rounded-md flex items-center justify-center border text-muted-foreground select-none shrink-0">
                             <GroupIconComponent className="size-3.5" />
                           </span>
-                          <span className="text-xs font-bold text-foreground">{group}</span>
+                          <span className="text-xs font-bold text-foreground">
+                            {group}
+                          </span>
                         </div>
 
                         <div className="flex items-center gap-1.5 ml-auto mr-2">
@@ -1001,12 +1199,20 @@ ${Object.entries(grouped)
                           .sort((a, b) => {
                             const severityA = a.pass ? "pass" : a.severity;
                             const severityB = b.pass ? "pass" : b.severity;
-                            return (SEVERITY_ORDER[severityA] ?? 99) - (SEVERITY_ORDER[severityB] ?? 99);
+                            return (
+                              (SEVERITY_ORDER[severityA] ?? 99) -
+                              (SEVERITY_ORDER[severityB] ?? 99)
+                            );
                           })
                           .map((check) => {
-                            const cfg = check.pass ? SEVERITY_CONFIG.pass : SEVERITY_CONFIG[check.severity];
+                            const cfg = check.pass
+                              ? SEVERITY_CONFIG.pass
+                              : SEVERITY_CONFIG[check.severity];
                             return (
-                              <div key={check.id} className="flex gap-3 py-3 pl-8 pr-4 transition-colors border-t border-border/40">
+                              <div
+                                key={check.id}
+                                className="flex gap-3 py-3 pl-8 pr-4 transition-colors border-t border-border/40"
+                              >
                                 <cfg.Icon className={cn("size-4", cfg.color)} />
                                 <div className="space-y-1 select-text text-left flex-1 min-w-0">
                                   <h4 className="text-xs font-bold text-foreground leading-tight">
@@ -1015,9 +1221,12 @@ ${Object.entries(grouped)
                                   <p className="text-[11px] text-muted-foreground leading-snug">
                                     {check.message}
                                   </p>
-                                  {check.visual?.type === "heading-tree" && check.visual.items && (
-                                    <HeadingTreeVisualizer items={check.visual.items} />
-                                  )}
+                                  {check.visual?.type === "heading-tree" &&
+                                    check.visual.items && (
+                                      <HeadingTreeVisualizer
+                                        items={check.visual.items}
+                                      />
+                                    )}
                                 </div>
                               </div>
                             );
@@ -1050,7 +1259,7 @@ ${Object.entries(grouped)
             </Button>
           </SheetFooter>
         </SheetContent>
-      </Sheet >
+      </Sheet>
     </>
   );
 }

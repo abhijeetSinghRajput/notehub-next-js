@@ -83,7 +83,7 @@ interface AdminStore {
 
   fetchUserByUsername: (
     username: string,
-    options?: FetchUsersOptions
+    options?: FetchUsersOptions,
   ) => Promise<IUser | null>;
 
   fetchUserSessions: (userId: string) => Promise<any[]>;
@@ -107,25 +107,56 @@ interface AdminStore {
   batchUpdateUsers: (
     userIds: string[],
     action: "delete" | "ban" | "unban" | "assignRole",
-    role?: "user" | "admin"
+    role?: "user" | "admin",
   ) => Promise<{ success: boolean; message?: string }>;
 
   updateUser: (
     userId: string,
-    data: { fullName?: string; userName?: string; bio?: string; role?: string; isBanned?: boolean; skills?: string[]; socials?: any[] }
+    data: {
+      fullName?: string;
+      userName?: string;
+      bio?: string;
+      role?: string;
+      isBanned?: boolean;
+      skills?: string[];
+      socials?: any[];
+    },
   ) => Promise<{ success: boolean; message?: string; user?: any }>;
 
-  uploadUserAvatar: (userId: string, file: File) => Promise<{ success: boolean; user?: any }>;
-  removeUserAvatar: (userId: string) => Promise<{ success: boolean; user?: any }>;
-  uploadUserCover: (userId: string, file: File) => Promise<{ success: boolean; user?: any }>;
-  removeUserCover: (userId: string) => Promise<{ success: boolean; user?: any }>;
-  createUser: (data: any) => Promise<{ success: boolean; message?: string; user?: IUser }>;
+  uploadUserAvatar: (
+    userId: string,
+    file: File,
+  ) => Promise<{ success: boolean; user?: any }>;
+  removeUserAvatar: (
+    userId: string,
+  ) => Promise<{ success: boolean; user?: any }>;
+  uploadUserCover: (
+    userId: string,
+    file: File,
+  ) => Promise<{ success: boolean; user?: any }>;
+  removeUserCover: (
+    userId: string,
+  ) => Promise<{ success: boolean; user?: any }>;
+  createUser: (
+    data: any,
+  ) => Promise<{ success: boolean; message?: string; user?: IUser }>;
 
   isLoadingBlogs: boolean;
+  isLoadingBlogStats: boolean;
   blogsError: string | null;
   fetchBlogs: (
-    query: BlogsQuery
+    query: BlogsQuery,
   ) => Promise<{ blogs: any[]; pagination: any; success: boolean }>;
+  getBlogStats: () => Promise<{
+    success: boolean;
+    stats: {
+      all: number;
+      good: number;
+      warning: number;
+      critical: number;
+    };
+    message?: string;
+  }>;
 }
 
 export const useAdminStore = create<AdminStore>((set, get) => ({
@@ -135,6 +166,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
   singleUserCache: {},
 
   isLoadingBlogs: false,
+  isLoadingBlogStats: false,
   blogsError: null,
 
   fetchBlogs: async (query) => {
@@ -154,9 +186,48 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       return response.data;
     } catch (error: any) {
       const err = error as AxiosError<ApiErrorResponse>;
-      const message = err?.response?.data?.message || err?.message || "Failed to fetch blogs.";
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to fetch blogs.";
       set({ isLoadingBlogs: false, blogsError: message });
-      return { success: false, blogs: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 20 } };
+      return {
+        success: false,
+        blogs: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+          itemsPerPage: 20,
+        },
+      };
+    }
+  },
+
+  getBlogStats: async () => {
+    set({ isLoadingBlogStats: true });
+    try {
+      const response = await axiosInstance.get("/admin/blogs/stats");
+
+      return response.data;
+    } catch (error) {
+      const err = error as AxiosError<ApiErrorResponse>;
+
+      return {
+        success: false,
+        stats: {
+          all: 0,
+          good: 0,
+          warning: 0,
+          critical: 0,
+        },
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to fetch stats.",
+      };
+    } finally {
+      set({ isLoadingBlogStats: false });
     }
   },
 
@@ -279,7 +350,10 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       const err = error as AxiosError<ApiErrorResponse>;
       set({
         isLoadingUsers: false,
-        usersError: err?.response?.data?.message || err?.message || "Failed to fetch user.",
+        usersError:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to fetch user.",
       });
       return null;
     }
@@ -297,11 +371,15 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
 
   terminateSession: async (userId, sessionId) => {
     try {
-      await axiosInstance.delete(`/admin/users/${userId}/sessions/${sessionId}`);
+      await axiosInstance.delete(
+        `/admin/users/${userId}/sessions/${sessionId}`,
+      );
       toast.success("Session terminated");
       return true;
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to terminate session");
+      toast.error(
+        error.response?.data?.message || "Failed to terminate session",
+      );
       return false;
     }
   },
@@ -312,14 +390,18 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       toast.success("All sessions terminated");
       return true;
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to terminate sessions");
+      toast.error(
+        error.response?.data?.message || "Failed to terminate sessions",
+      );
       return false;
     }
   },
 
   updateUserPassword: async (userId, password) => {
     try {
-      await axiosInstance.patch(`/admin/users/${userId}/password`, { password });
+      await axiosInstance.patch(`/admin/users/${userId}/password`, {
+        password,
+      });
       toast.success("Password updated successfully");
       return true;
     } catch (error: any) {
@@ -361,21 +443,28 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       const err = error as AxiosError<ApiErrorResponse>;
       return {
         success: false,
-        message: err?.response?.data?.message || err?.message || "Batch update failed.",
+        message:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Batch update failed.",
       };
     }
   },
 
   updateUser: async (userId, data) => {
     try {
-      const response = await axiosInstance.patch(`/admin/users/${userId}`, data);
+      const response = await axiosInstance.patch(
+        `/admin/users/${userId}`,
+        data,
+      );
       get().clearUsersCache(); // invalidate cache
       return response.data;
     } catch (error: any) {
       const err = error as AxiosError<ApiErrorResponse>;
       return {
         success: false,
-        message: err?.response?.data?.message || err?.message || "User update failed.",
+        message:
+          err?.response?.data?.message || err?.message || "User update failed.",
       };
     }
   },
@@ -384,9 +473,13 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await axiosInstance.post(`/admin/users/${userId}/avatar`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axiosInstance.post(
+        `/admin/users/${userId}/avatar`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       toast.success(res.data.message || "Avatar updated");
       return { success: true, user: res.data.user };
     } catch (error: any) {
@@ -412,9 +505,13 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await axiosInstance.post(`/admin/users/${userId}/cover`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axiosInstance.post(
+        `/admin/users/${userId}/cover`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       toast.success(res.data.message || "Cover updated");
       return { success: true, user: res.data.user };
     } catch (error: any) {
@@ -445,7 +542,10 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       const err = error as AxiosError<ApiErrorResponse>;
       return {
         success: false,
-        message: err?.response?.data?.message || err?.message || "User creation failed.",
+        message:
+          err?.response?.data?.message ||
+          err?.message ||
+          "User creation failed.",
       };
     }
   },

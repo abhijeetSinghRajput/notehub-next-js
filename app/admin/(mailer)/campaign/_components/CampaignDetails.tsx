@@ -14,6 +14,7 @@ import { Liquid } from "liquidjs";
 import PreviewSheet from "./preview-sheet";
 import { toast } from "sonner";
 import { Campaign } from "@/types/mailer.types";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 const liquidEngine = new Liquid({
   strictFilters: false,
@@ -26,25 +27,16 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
   const [previews, setPreviews] = useState<
     { email: string; html: string; subject: string; previewText: string }[]
   >([]);
-  const [copied, setCopied] = useState(false);
 
-  const handleCopyEmails = async () => {
+  const { copied, copy } = useCopyToClipboard();
+
+  const handleCopyEmails = () => {
     if (!emails.length || copied) return;
 
-    try {
-      await navigator.clipboard.writeText(emails.join("\n"));
-
-      setCopied(true);
-      toast.success(
-        `${emails.length} email${emails.length > 1 ? "s" : ""} copied`,
-      );
-
-      setTimeout(() => {
-        setCopied(false);
-      }, 3000);
-    } catch {
-      toast.error("Failed to copy emails");
-    }
+    copy(
+      emails.join("\n"),
+      `${emails.length} email${emails.length > 1 ? "s" : ""} copied`,
+    );
   };
 
   const emails = campaign.emails ?? [];
@@ -181,9 +173,9 @@ const CampaignDetails = ({ campaign }: { campaign: Campaign }) => {
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg">
-              <DialogHeader className="flex flex-row pr-4 justify-between items-start">
+              <DialogHeader className="flex flex-row pr-8 justify-between items-start">
                 <div>
-                  <DialogTitle>Recipients</DialogTitle>
+                  <DialogTitle className="text-start">Recipients</DialogTitle>
                   <DialogDescription>
                     All email addresses included in this campaign.
                   </DialogDescription>

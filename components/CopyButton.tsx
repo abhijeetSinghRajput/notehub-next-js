@@ -3,11 +3,15 @@ import { Copy, CopyCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export const CopyButton: React.FC<{ codeElement: HTMLElement }> = ({ codeElement }) => {
+export const CopyButton = ({
+  text,
+}: {
+  text: string;
+}) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    const codeContent = codeElement?.innerText || "";
+    const codeContent = text || "";
     await navigator.clipboard.writeText(codeContent);
     toast.success("Content copied to clipboard!");
     setCopied(true);
@@ -22,7 +26,11 @@ export const CopyButton: React.FC<{ codeElement: HTMLElement }> = ({ codeElement
       disabled={copied}
       className="gap-2 size-7"
     >
-      {copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+      {copied ? (
+        <CopyCheck className="h-4 w-4" />
+      ) : (
+        <Copy className="h-4 w-4" />
+      )}
     </Button>
   );
 };

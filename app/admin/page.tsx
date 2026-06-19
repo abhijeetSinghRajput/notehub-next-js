@@ -16,9 +16,7 @@ import { useRouter } from "nextjs-toploader/app";
 import SortSelector from "@/components/SortSelector";
 import {
   Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+  TooltipContent, TooltipTrigger
 } from "@/components/ui/tooltip";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -39,8 +37,6 @@ import {
 } from "@/components/ui/chart";
 import { formatTimeAgo } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { axiosInstance } from "@/lib/axios";
 
 const chartConfig = {
   healthy: {
@@ -59,7 +55,7 @@ const chartConfig = {
 
 export default function AdminOverviewPage() {
   const router = useRouter();
-  const { fetchBlogs, isLoadingBlogs } = useAdminStore();
+  const { fetchBlogs, getBlogStats, isLoadingBlogs, isLoadingBlogStats } = useAdminStore();
 
   const [blogs, setBlogs] = useState<any[]>([]);
   const [search, setSearch] = useState("");
@@ -93,41 +89,26 @@ export default function AdminOverviewPage() {
   useEffect(() => {
     setPage(1);
     fetchData(1, health, debouncedSearch, sortBy, sortDirection, true);
+    fetchStats();
   }, [health, debouncedSearch, sortBy, sortDirection]);
 
-  // Fetch count statistics for all health filters in the background when search string changes
-  useEffect(() => {
-    let active = true;
-    const fetchCounts = async () => {
-      try {
-        const filters: HealthFilter[] = ["all", "good", "warning", "critical"];
-        const promises = filters.map((h) =>
-          fetchBlogs({
-            page: 1,
-            limit: 1,
-            search: debouncedSearch,
-            health: h,
-          }),
-        );
-        const results = await Promise.all(promises);
-        if (!active) return;
 
+  const fetchStats = async () => {
+    try {
+      const res = await getBlogStats();
+      if (res && res.success) {
+        const { all, good, warning, critical } = res.stats;
         setCounts({
-          all: results[0]?.success ? results[0].pagination.totalItems : 0,
-          good: results[1]?.success ? results[1].pagination.totalItems : 0,
-          warning: results[2]?.success ? results[2].pagination.totalItems : 0,
-          critical: results[3]?.success ? results[3].pagination.totalItems : 0,
+          all,
+          good,
+          warning,
+          critical,
         });
-      } catch (err) {
-        console.error("Failed to fetch dashboard counts:", err);
       }
-    };
-
-    fetchCounts();
-    return () => {
-      active = false;
-    };
-  }, [debouncedSearch, fetchBlogs]);
+    } catch (err) {
+      console.error("Error in fetching blogs:", err);
+    }
+  };
 
   const fetchData = async (
     pageNum: number,
@@ -261,15 +242,6 @@ export default function AdminOverviewPage() {
     },
   ];
 
-  const fetchGsc = () => {
-    try {
-      const data = axiosInstance.get("/admin/gsc/auth");
-      console.log(data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   return (
     <div className="flex p-4 max-w-7xl mx-auto flex-col gap-6">
       {/* Header */}
@@ -280,11 +252,9 @@ export default function AdminOverviewPage() {
             <span>Health Monitor</span>
           </div>
           <div>
-
-          <h1 className="text-[22px] font-medium text-foreground leading-tight tracking-tight">
-            Blogs health overview
-          </h1>
-          <Button onClick={fetchGsc}>Fetch GSC</Button>
+            <h1 className="text-[22px] font-medium text-foreground leading-tight tracking-tight">
+              Blogs health overview
+            </h1>
           </div>
           <p className="text-[13px] text-muted-foreground/80 mt-1 leading-relaxed max-w-125">
             SEO compliance, quality scores, and structural health across all
@@ -559,7 +529,7 @@ export default function AdminOverviewPage() {
                   isActive ? "text-background" : "text-foreground"
                 }`}
               >
-                {isLoadingBlogs && countValue === 0 ? (
+                {isLoadingBlogStats && countValue === 0 ? (
                   <Loader2 className="h-5 w-5 animate-spin inline-block text-muted-foreground/60" />
                 ) : (
                   countValue

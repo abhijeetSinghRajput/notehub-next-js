@@ -1,18 +1,7 @@
 "use client";
 
-import {
-  useMemo,
-  useRef,
-  useState,
-  useCallback,
-  memo,
-} from "react";
-import {
-  Check,
-  ChevronsUpDown,
-  Copy,
-  CopyCheck,
-} from "lucide-react";
+import { useMemo, useRef, useState, useCallback, memo } from "react";
+import { Check, ChevronsUpDown, Copy, CopyCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { NodeViewContent, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 // ─── LanguageSelector ─────────────────────────────────────────────────────────
 
@@ -38,91 +28,105 @@ interface LanguageSelectorProps {
   onSelect: (lang: string) => void;
 }
 
-const LanguageSelector = memo(({ language, languages, onSelect }: LanguageSelectorProps) => {
-  const [open, setOpen] = useState(false);
+const LanguageSelector = memo(
+  ({ language, languages, onSelect }: LanguageSelectorProps) => {
+    const [open, setOpen] = useState(false);
 
-  const handleSelect = useCallback(
-    (lang: string) => {
-      onSelect(lang);
-      setOpen(false);
-    },
-    [onSelect]
-  );
+    const handleSelect = useCallback(
+      (lang: string) => {
+        onSelect(lang);
+        setOpen(false);
+      },
+      [onSelect],
+    );
 
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="min-w-32 justify-between h-7"
-          contentEditable={false}
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="min-w-32 justify-between h-7"
+            contentEditable={false}
+          >
+            {language || "Select language…"}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-50 bg-neutral-800 border-neutral-800 p-0"
+          align="start"
         >
-          {language || "Select language…"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-50 bg-neutral-800 border-neutral-800 p-0" align="start">
-        <Command className="bg-transparent text-neutral-50 border-neutral-800">
-          <CommandInput
-            placeholder="Search language…"
-            className="h-9 placeholder:text-neutral-400"
-            wrapperClassName="border-[#595959]"
-          />
-          <CommandList>
-            <CommandEmpty>No language found.</CommandEmpty>
-            <CommandGroup>
-              {languages.map((lang) => (
-                <CommandItem
-                  key={lang}
-                  value={lang}
-                  onSelect={handleSelect}
-                  style={{ color: "white" }}
-                  className="data-[selected=true]:bg-neutral-700 data-[selected=true]:text-white"
-                >
-                  {lang}
-                  <Check
-                    className={cn(
-                      "ml-auto h-3 w-3",
-                      language === lang ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-});
+          <Command className="bg-transparent text-neutral-50 border-neutral-800">
+            <CommandInput
+              placeholder="Search language…"
+              className="h-9 placeholder:text-neutral-400"
+              wrapperClassName="border-[#595959]"
+            />
+            <CommandList>
+              <CommandEmpty>No language found.</CommandEmpty>
+              <CommandGroup>
+                {languages.map((lang) => (
+                  <CommandItem
+                    key={lang}
+                    value={lang}
+                    onSelect={handleSelect}
+                    style={{ color: "white" }}
+                    className="data-[selected=true]:bg-neutral-700 data-[selected=true]:text-white"
+                  >
+                    {lang}
+                    <Check
+                      className={cn(
+                        "ml-auto h-3 w-3",
+                        language === lang ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  },
+);
 LanguageSelector.displayName = "LanguageSelector";
 
 // ─── CopyButton ───────────────────────────────────────────────────────────────
 
-const CopyButton = memo(({ codeRef }: { codeRef: React.RefObject<HTMLPreElement | null> }) => {
-  const [copied, setCopied] = useState(false);
+const CopyButton = memo(
+  ({ codeRef }: { codeRef: React.RefObject<HTMLPreElement | null> }) => {
+    const { copied, copy } = useCopyToClipboard({
+      successMessage: "Code copied",
+    });
 
-  const handleCopy = useCallback(async () => {
-    const text = codeRef.current?.textContent ?? "";
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
-  }, [codeRef]);
+    const handleCopy = useCallback(() => {
+      const text = codeRef.current?.textContent ?? "";
 
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={handleCopy}
-      className="size-7"
-      tooltip={copied ? "Copied!" : "Copy code"}
-    >
-      {copied ? <CopyCheck className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-    </Button>
-  );
-});
+      if (!text) return;
+
+      copy(text);
+    }, [codeRef, copy]);
+
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleCopy}
+        className="size-7"
+        tooltip={copied ? "Copied!" : "Copy code"}
+      >
+        {copied ? (
+          <CopyCheck className="h-3.5 w-3.5" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </Button>
+    );
+  },
+);
 CopyButton.displayName = "CopyButton";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -149,13 +153,11 @@ const CodeBlockComponent: React.FC<NodeViewProps> = ({
     (lang: string) => {
       updateAttributes({ language: lang === language ? "" : lang });
     },
-    [language, updateAttributes]
+    [language, updateAttributes],
   );
 
   return (
-    <NodeViewWrapper
-      className="code-block relative rounded-2xl overflow-hidden"
-    >
+    <NodeViewWrapper className="code-block relative rounded-2xl overflow-hidden">
       {/* ── Header ── */}
       <header className="rounded-t-lg w-full flex items-center justify-between py-2 px-4">
         <LanguageSelector

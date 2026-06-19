@@ -3,7 +3,23 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Globe, Lock, Pencil, MoreHorizontal, Users, Check, Hash, TextCursor, Loader2, X, Settings, Trash2, Copy } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Globe,
+  Lock,
+  Pencil,
+  MoreHorizontal,
+  Users,
+  Check,
+  Hash,
+  TextCursor,
+  Loader2,
+  X,
+  Settings,
+  Trash2,
+  Copy,
+} from "lucide-react";
 import { cn, format, formatTimeAgo } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
 import BadgeIcon from "@/components/icons/BadgeIcon";
@@ -35,6 +51,7 @@ import { useNoteStore } from "@/app/stores/useNoteStore";
 import { BaseCollaboratorsDialog } from "../CollaboratorsDialog";
 import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 export type NoteHeaderProps = {
   note: INote;
@@ -61,13 +78,14 @@ export default function NoteHeader({
   onEdit,
 }: NoteHeaderProps) {
   const router = useRouter();
-  const { updateNote, updateNoteCollaborators, status, deleteNote } = useNoteStore();
+  const { updateNote, updateNoteCollaborators, status, deleteNote } =
+    useNoteStore();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCollaboratorsOpen, setIsCollaboratorsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isMdCopied, setIsMdCopied] = useState(false);
+  const { copied: isMdCopied, copy } = useCopyToClipboard();
 
   const [formData, setFormData] = useState({
     name: note.name || "",
@@ -113,11 +131,14 @@ export default function NoteHeader({
     const checkAvailability = async () => {
       setIsCheckingSlug(true);
       try {
-        const collectionId = typeof note.collectionId === "string" ? note.collectionId : (note.collectionId as { _id: string })?._id;
+        const collectionId =
+          typeof note.collectionId === "string"
+            ? note.collectionId
+            : (note.collectionId as { _id: string })?._id;
         if (!collectionId) return;
 
         const res = await axiosInstance.get(
-          `/note/check-availability?collectionId=${collectionId}&slug=${formData.slug}&noteId=${note._id}`
+          `/note/check-availability?collectionId=${collectionId}&slug=${formData.slug}&noteId=${note._id}`,
         );
         setIsSlugAvailable(res.data.available);
       } catch (error) {
@@ -177,17 +198,11 @@ export default function NoteHeader({
     }
   };
 
-
-  const handleCopyMarkdown = useCallback(async () => {
+  const handleCopyMarkdown = useCallback(() => {
     const md = `# ${note.name}\n\n${htmlToMarkdown(note.content)}`;
-    try {
-      await navigator.clipboard.writeText(md);
-      setIsMdCopied(true);
-      setTimeout(() => setIsMdCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy markdown");
-    }
-  }, [note.name, note.content]);
+
+    copy(md, "Markdown copied");
+  }, [note.name, note.content, copy]);
 
   return (
     <div className="space-y-10 mb-8 sm:mb-16 px-4 py-12 border-b border-dashed">
@@ -204,18 +219,28 @@ export default function NoteHeader({
             </div>
             <div className="flex items-center gap-2 bg-muted/50 px-3 py-1 rounded-full">
               <Clock className="size-4" />
-              <span>Updated {formatTimeAgo(new Date(note.contentUpdatedAt))}</span>
+              <span>
+                Updated {formatTimeAgo(new Date(note.contentUpdatedAt))}
+              </span>
             </div>
             <div className="flex items-center gap-2 bg-primary/5 px-3 py-1 rounded-full text-primary">
               <Hash className="size-4" />
               <span>{readingTime} min read</span>
             </div>
             {showVisibility && (
-              <div className={cn(
-                "flex items-center gap-2 px-3 py-1 border rounded-full",
-                note.visibility === "public" ? "bg-green-500/5 border-green-500/20 text-green-600 dark:text-green-400" : "bg-destructive/5 border-destructive/20 text-destructive"
-              )}>
-                {note.visibility === "public" ? <Globe className="size-4" /> : <Lock className="size-4" />}
+              <div
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1 border rounded-full",
+                  note.visibility === "public"
+                    ? "bg-green-500/5 border-green-500/20 text-green-600 dark:text-green-400"
+                    : "bg-destructive/5 border-destructive/20 text-destructive",
+                )}
+              >
+                {note.visibility === "public" ? (
+                  <Globe className="size-4" />
+                ) : (
+                  <Lock className="size-4" />
+                )}
                 <span className="capitalize">{note.visibility}</span>
               </div>
             )}
@@ -224,21 +249,34 @@ export default function NoteHeader({
             {showEdit && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="bg-background/50 backdrop-blur-sm border rounded-full w-10 h-10">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="bg-background/50 backdrop-blur-sm border rounded-full w-10 h-10"
+                  >
                     <MoreHorizontal className="size-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => setIsSettingsOpen(true)} className="gap-2">
+                  <DropdownMenuItem
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="gap-2"
+                  >
                     <Settings />
                     Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setIsCollaboratorsOpen(true)} className="gap-2">
+                  <DropdownMenuItem
+                    onClick={() => setIsCollaboratorsOpen(true)}
+                    className="gap-2"
+                  >
                     <Users />
                     Manage Collaborators
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onEdit} className="gap-2 text-primary focus:text-primary">
+                  <DropdownMenuItem
+                    onClick={onEdit}
+                    className="gap-2 text-primary focus:text-primary"
+                  >
                     <Pencil />
                     Edit Content
                   </DropdownMenuItem>
@@ -255,7 +293,6 @@ export default function NoteHeader({
             )}
           </div>
         </div>
-
       </div>
 
       {/* --- AUTHOR & COLLABORATORS --- */}
@@ -310,33 +347,31 @@ export default function NoteHeader({
               </>
             )}
           </Button>
-
         </div>
-
       </div>
-        {/* Collaborators List */}
-        {(note.collaborators && note.collaborators.length > 0) && (
-          <div
-            className="group flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
-            onClick={() => setIsCollaboratorsOpen(true)}
-          >
-            <div className="flex -space-x-3 overflow-hidden">
-              {(note.collaborators as IUser[]).map((col, i) => (
-                <TooltipWrapper key={col._id || i} message={col.fullName}>
-                  <div className="inline-block relative bg-muted border-2 border-background rounded-full ring-1 ring-primary/5 size-10 overflow-hidden group-hover:scale-105 transition-transform">
-                    <Image
-                      src={col.avatar || "/avatar.svg"}
-                      alt={col.fullName || "Collaborator"}
-                      width={40}
-                      height={40}
-                      className="object-cover"
-                    />
-                  </div>
-                </TooltipWrapper>
-              ))}
-            </div>
+      {/* Collaborators List */}
+      {note.collaborators && note.collaborators.length > 0 && (
+        <div
+          className="group flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+          onClick={() => setIsCollaboratorsOpen(true)}
+        >
+          <div className="flex -space-x-3 overflow-hidden">
+            {(note.collaborators as IUser[]).map((col, i) => (
+              <TooltipWrapper key={col._id || i} message={col.fullName}>
+                <div className="inline-block relative bg-muted border-2 border-background rounded-full ring-1 ring-primary/5 size-10 overflow-hidden group-hover:scale-105 transition-transform">
+                  <Image
+                    src={col.avatar || "/avatar.svg"}
+                    alt={col.fullName || "Collaborator"}
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                  />
+                </div>
+              </TooltipWrapper>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
       {/* --- DIALOGS --- */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
@@ -366,7 +401,12 @@ export default function NoteHeader({
               </div>
               <Switch
                 checked={formData.visibility === "public"}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, visibility: checked ? "public" : "private" }))}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    visibility: checked ? "public" : "private",
+                  }))
+                }
               />
             </div>
 
@@ -376,7 +416,9 @@ export default function NoteHeader({
                 <Input
                   id="title"
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   placeholder="Note title..."
                 />
                 <Button
@@ -384,10 +426,16 @@ export default function NoteHeader({
                   size="icon"
                   onClick={() => {
                     setManualSlug(false);
-                    setFormData(prev => ({ ...prev, slug: slugify(formData.name) }));
+                    setFormData((prev) => ({
+                      ...prev,
+                      slug: slugify(formData.name),
+                    }));
                   }}
                   tooltip="Auto-generate slug from title"
-                  className={cn(!manualSlug && "text-primary bg-primary/5 border-primary/20")}
+                  className={cn(
+                    !manualSlug &&
+                      "text-primary bg-primary/5 border-primary/20",
+                  )}
                 >
                   <Hash className="size-4" />
                 </Button>
@@ -400,15 +448,20 @@ export default function NoteHeader({
                   id="slug"
                   value={formData.slug}
                   onChange={(e) => {
-                    const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
-                    setFormData(prev => ({ ...prev, slug: val }));
+                    const val = e.target.value
+                      .toLowerCase()
+                      .replace(/[^a-z0-9-]+/g, "-");
+                    setFormData((prev) => ({ ...prev, slug: val }));
                     setManualSlug(true);
                   }}
                   placeholder="url-friendly-slug"
                   className={cn(
                     "pr-10",
-                    isSlugAvailable === true && formData.slug !== note.slug && "border-green-500/50 focus-visible:ring-green-500/20",
-                    isSlugAvailable === false && "border-red-500/50 focus-visible:ring-red-500/20"
+                    isSlugAvailable === true &&
+                      formData.slug !== note.slug &&
+                      "border-green-500/50 focus-visible:ring-green-500/20",
+                    isSlugAvailable === false &&
+                      "border-red-500/50 focus-visible:ring-red-500/20",
                   )}
                 />
                 <div className="top-1/2 right-3 absolute flex items-center gap-1.5 -translate-y-1/2">
@@ -432,10 +485,15 @@ export default function NoteHeader({
                 Changing the slug will change the URL of this note.
               </p>
             </div>
-
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsSettingsOpen(false)} disabled={isSaving}>Cancel</Button>
+            <Button
+              variant="ghost"
+              onClick={() => setIsSettingsOpen(false)}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
             <Button onClick={handleUpdateNote} disabled={isSaving}>
               {isSaving ? "Saving..." : "Save Changes"}
             </Button>
@@ -448,28 +506,37 @@ export default function NoteHeader({
           <DialogHeader className="text-left">
             <DialogTitle>Are you sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the note.
+              This action cannot be undone. This will permanently delete the
+              note.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-row gap-2 ml-auto">
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isSaving}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isSaving}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={async () => {
-              setIsSaving(true);
-              try {
-                await deleteNote(note._id);
-                setIsDeleteDialogOpen(false);
-                const currentUrl = window.location.pathname;
-                const urlParts = currentUrl.split("/");
-                urlParts.pop(); // remove noteSlug
-                router.push(urlParts.join("/"));
-              } catch (error) {
-                console.error("Delete failed", error);
-              } finally {
-                setIsSaving(false);
-              }
-            }} disabled={isSaving}>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                setIsSaving(true);
+                try {
+                  await deleteNote(note._id);
+                  setIsDeleteDialogOpen(false);
+                  const currentUrl = window.location.pathname;
+                  const urlParts = currentUrl.split("/");
+                  urlParts.pop(); // remove noteSlug
+                  router.push(urlParts.join("/"));
+                } catch (error) {
+                  console.error("Delete failed", error);
+                } finally {
+                  setIsSaving(false);
+                }
+              }}
+              disabled={isSaving}
+            >
               {isSaving ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
@@ -484,7 +551,7 @@ export default function NoteHeader({
         currentCollaborators={note.collaborators as IUser[]}
         closeDialog={() => setIsCollaboratorsOpen(false)}
         updateNoteCollaborators={updateNoteCollaborators}
-        updateCollectionCollaborators={async () => { }} // Not used here
+        updateCollectionCollaborators={async () => {}} // Not used here
         isSaving={status.collaborator.state === "saving"}
       />
     </div>

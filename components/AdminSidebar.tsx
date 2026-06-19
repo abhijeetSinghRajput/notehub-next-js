@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Ban,
+  DatabaseZap,
   FileText,
-  LayoutDashboard,
-  Send,
+  LayoutDashboard, Send,
   UserRoundCheck,
-  UsersRound,
+  UsersRound
 } from "lucide-react";
 
 import {
@@ -48,6 +48,7 @@ const adminNavItems = [
   { title: "Overview", href: "/admin", icon: LayoutDashboard },
   { title: "Link Graph", href: "/admin/graph", icon: GraphIcon },
   { title: "Users", href: "/admin/users", icon: UsersRound },
+  { title: "Query Console", href: "/admin/query", icon: DatabaseZap },
 ];
 
 const mailerNavItems = [
