@@ -20,6 +20,7 @@ export type BlogsQuery = {
   limit: number;
   search: string;
   health: HealthFilter;
+  indexed?: boolean | undefined;
   sortBy?: string;
   sortDirection?: "asc" | "desc";
 };
@@ -155,6 +156,11 @@ interface AdminStore {
       warning: number;
       critical: number;
     };
+    gsc: {
+      indexed: number;
+      notIndexed: number;
+      lastSynced: string;
+    };
     message?: string;
   }>;
 }
@@ -180,6 +186,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
           health: query.health,
           sortBy: query.sortBy,
           sortDirection: query.sortDirection,
+          indexed: query.indexed,
         },
       });
       set({ isLoadingBlogs: false });

@@ -302,11 +302,7 @@ function ResultPanel({
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7">
                 Pipeline
-                {pipelineOpen ? (
-                  <ChevronUp />
-                ) : (
-                  <ChevronDown />
-                )}
+                {pipelineOpen ? <ChevronUp /> : <ChevronDown />}
               </Button>
             </CollapsibleTrigger>
           </Collapsible>
@@ -319,11 +315,7 @@ function ResultPanel({
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="end">
               <DropdownMenuItem className="gap-1.5 text-xs" onClick={copyJSON}>
-                {copied ? (
-                  <Check />
-                ) : (
-                  <Copy />
-                )}
+                {copied ? <Check /> : <Copy />}
                 {copied ? "Copied" : "Copy to clipboard"}
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -624,7 +616,6 @@ function PlaygroundMode() {
               <span className="text-xs font-mono text-muted-foreground">
                 db.&lt;collection&gt;.aggregate([...])
               </span>
-              <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button className="text-muted-foreground hover:text-foreground transition-colors">
@@ -639,7 +630,6 @@ function PlaygroundMode() {
                     {PLAYGROUND_HINT}
                   </TooltipContent>
                 </Tooltip>
-              </TooltipProvider>
             </div>
             <Button
               size="sm"
@@ -647,11 +637,7 @@ function PlaygroundMode() {
               disabled={!query.trim() || loading}
               className="gap-2 h-7 text-xs"
             >
-              {loading ? (
-                <Loader2 className=" animate-spin" />
-              ) : (
-                <Play />
-              )}
+              {loading ? <Loader2 className=" animate-spin" /> : <Play />}
               {loading ? "Running…" : "Run"}
             </Button>
           </div>
@@ -716,9 +702,9 @@ export default function QueryConsolePage() {
   return (
     <div>
       {/* Header */}
-      <div className="p-6 max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <div className="p-6 max-w-6xl mx-auto flex items-start justify-between gap-3">
         <div className="flex gap-2 items-start">
-          <div className="flex items-center shrink-0 justify-center w-9 h-9 rounded-lg bg-muted">
+          <div className="hidden sm:flex items-center shrink-0 justify-center w-9 h-9 rounded-lg bg-muted">
             <DatabaseZap className="w-4 h-4 text-muted-foreground" />
           </div>
           <div>
@@ -734,41 +720,28 @@ export default function QueryConsolePage() {
         </div>
 
         {/* Mode toggle */}
-        <div className="flex border rounded-md overflow-hidden">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "rounded-none h-9 w-9",
-                    mode === "ai" && "bg-muted",
-                  )}
-                  onClick={() => setMode("ai")}
-                >
-                  <Sparkle className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">AI query</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "rounded-none h-9 w-9 border-l",
-                    mode === "console" && "bg-muted",
-                  )}
-                  onClick={() => setMode("console")}
-                >
-                  <Terminal className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Playground</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div className="flex shrink-0 border rounded-md overflow-hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            tooltip="AI query"
+            className={cn("shrink-0 rounded-none h-9 w-9", mode === "ai" && "bg-muted")}
+            onClick={() => setMode("ai")}
+          >
+            <Sparkle className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            tooltip="Playground"
+            className={cn(
+              "shrink-0 rounded-none h-9 w-9 border-l",
+              mode === "console" && "bg-muted",
+            )}
+            onClick={() => setMode("console")}
+          >
+            <Terminal className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
