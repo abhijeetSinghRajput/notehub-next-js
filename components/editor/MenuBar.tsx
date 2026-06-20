@@ -120,7 +120,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
 
 
   const handleContentSave = async () => {
-    const APP_URL = process.env.NEXT_PUBLIC_APP_URL;
+    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
     if (!noteId) return;
 
     let content = editor
@@ -136,7 +136,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
       (match, before, href, after) => {
         const isInternal =
           href.startsWith("/") ||
-          href.startsWith(APP_URL);
+          href.startsWith(BASE_URL);
 
         if (!isInternal) return match;
         console.log({before, href, after})
