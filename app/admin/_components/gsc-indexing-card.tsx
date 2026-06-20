@@ -121,7 +121,6 @@ export default function GscIndexingCard({
                   stackId="a"
                   cornerRadius={5}
                   forceCornerRadius={true}
-                  isAnimationActive={false}
                   className="stroke-transparent"
                 />
 
@@ -132,7 +131,6 @@ export default function GscIndexingCard({
                   fillOpacity={0}
                   strokeOpacity={0}
                   stackId="a"
-                  isAnimationActive={false}
                   className="stroke-transparent"
                 />
 
@@ -143,7 +141,6 @@ export default function GscIndexingCard({
                   stackId="a"
                   cornerRadius={5}
                   forceCornerRadius={true}
-                  isAnimationActive={false}
                   className="stroke-transparent"
                 />
 

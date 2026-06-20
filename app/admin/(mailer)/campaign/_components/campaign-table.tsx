@@ -276,7 +276,7 @@ const CampaignTable = ({ onViewJobs }: CampaignTableProps) => {
                   ) : c.stats.total > 0 ? (
                     <div className="space-y-1 min-w-40">
                       <div className="text-muted-foreground text-xs">
-                        {c.stats.sent} / sent · {c.stats.failed} failed ·{" "}
+                        {c.stats.sent} sent · {c.stats.failed} failed ·{" "}
                         {c.stats.total} total
                       </div>
                       <Progress

@@ -6,7 +6,7 @@ import {
   Ban,
   DatabaseZap,
   FileText,
-  LayoutDashboard, Send,
+  LayoutDashboard, Library, MailX, Send,
   UserRoundCheck,
   UsersRound
 } from "lucide-react";
@@ -45,17 +45,17 @@ const GraphIcon = () => (
 );
 
 const adminNavItems = [
-  { title: "Overview", href: "/admin", icon: LayoutDashboard },
-  { title: "Link Graph", href: "/admin/graph", icon: GraphIcon },
+  { title: "Blogs", href: "/admin", icon: Library },
   { title: "Users", href: "/admin/users", icon: UsersRound },
   { title: "Query Console", href: "/admin/query", icon: DatabaseZap },
+  { title: "Link Graph", href: "/admin/graph", icon: GraphIcon },
 ];
 
 const mailerNavItems = [
   { title: "Campaigns", href: "/admin/campaign", icon: Send },
   { title: "Templates", href: "/admin/template", icon: FileText },
   { title: "Contacts", href: "/admin/contact", icon: UserRoundCheck },
-  { title: "Unsubscribers", href: "/admin/unsubscribers", icon: Ban },
+  { title: "Unsubscribers", href: "/admin/unsubscribers", icon: MailX },
 ];
 
 export function AdminSidebar({

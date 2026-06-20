@@ -722,21 +722,20 @@ export default function QueryConsolePage() {
         {/* Mode toggle */}
         <div className="flex shrink-0 border rounded-md overflow-hidden">
           <Button
-            variant="ghost"
+            variant={mode === "ai" ? "default" : "ghost"}
             size="icon"
             tooltip="AI query"
-            className={cn("shrink-0 rounded-none h-9 w-9", mode === "ai" && "bg-muted")}
+            className={cn("shrink-0 rounded-none h-9 w-9")}
             onClick={() => setMode("ai")}
           >
             <Sparkle className="w-4 h-4" />
           </Button>
           <Button
-            variant="ghost"
+            variant={mode === "console" ? "default" : "ghost"}
             size="icon"
             tooltip="Playground"
             className={cn(
               "shrink-0 rounded-none h-9 w-9 border-l",
-              mode === "console" && "bg-muted",
             )}
             onClick={() => setMode("console")}
           >

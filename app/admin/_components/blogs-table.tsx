@@ -7,6 +7,10 @@ import {
   MoreHorizontal,
   Calendar,
   Clock,
+  X,
+  Download,
+  FileJson,
+  FileSpreadsheet,
 } from "lucide-react";
 import {
   Table,
@@ -22,8 +26,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
-import { formatTimeAgo } from "@/lib/utils";
+import { cn, formatTimeAgo } from "@/lib/utils";
 import { useRouter } from "nextjs-toploader/app";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Props = {
   blogs: any[];
@@ -35,7 +48,12 @@ type Props = {
 
 const getInitials = (name: string) => {
   if (!name) return "U";
-  return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 };
 
 const getScoreLabelClass = (score: number) => {
@@ -49,7 +67,7 @@ const renderScoreRing = (score: number) => {
   const c = 2 * Math.PI * r;
   const off = c - (score / 100) * c;
   let strokeColor = "stroke-emerald-500";
-  if (score < 50)      strokeColor = "stroke-rose-500";
+  if (score < 50) strokeColor = "stroke-rose-500";
   else if (score < 90) strokeColor = "stroke-amber-500";
 
   return (
@@ -59,9 +77,19 @@ const renderScoreRing = (score: number) => {
       role="img"
       aria-label={`${score} out of 100`}
     >
-      <circle cx="18" cy="18" r={r} fill="none" className="stroke-border" strokeWidth="3" />
       <circle
-        cx="18" cy="18" r={r} fill="none"
+        cx="18"
+        cy="18"
+        r={r}
+        fill="none"
+        className="stroke-border"
+        strokeWidth="3"
+      />
+      <circle
+        cx="18"
+        cy="18"
+        r={r}
+        fill="none"
         className={`${strokeColor} transition-all duration-500 ease-out`}
         strokeWidth="3"
         strokeDasharray={`${c.toFixed(2)}`}
@@ -69,7 +97,12 @@ const renderScoreRing = (score: number) => {
         strokeLinecap="round"
         transform="rotate(-90 18 18)"
       />
-      <text x="18" y="22" textAnchor="middle" className="fill-foreground font-medium text-[9px]">
+      <text
+        x="18"
+        y="22"
+        textAnchor="middle"
+        className="fill-foreground font-medium text-[9px]"
+      >
         {score}
       </text>
     </svg>
@@ -84,6 +117,87 @@ export default function BlogsTable({
   onLoadMore,
 }: Props) {
   const router = useRouter();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === blogs.length && blogs.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(blogs.map((u) => u._id));
+    }
+  };
+
+  const toggleSelectUser = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const clearSelection = () => setSelectedIds([]);
+  const getSelectedBlogs = () =>
+    blogs.filter((blog) => selectedIds.includes(blog._id));
+
+  const downloadFile = (
+    content: string,
+    fileName: string,
+    mimeType: string,
+  ) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  const exportSelectedAsJSON = () => {
+    const selectedBlogs = getSelectedBlogs();
+
+    downloadFile(
+      JSON.stringify(selectedBlogs, null, 2),
+      `blogs-${Date.now()}.json`,
+      "application/json",
+    );
+  };
+
+  const exportSelectedAsCSV = () => {
+    const selectedBlogs = getSelectedBlogs();
+
+    const rows = selectedBlogs.map((blog) => ({
+      title: blog.name,
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/${blog.userId?.userName}/${blog.collectionId?.slug}/${blog.slug}`,
+      slug: blog.slug,
+      author: blog.userId?.fullName,
+      username: blog.userId?.userName,
+      collection: blog.collectionId?.name,
+      seoScore: blog.seoScore,
+      visibility: blog.visibility,
+      indexed: blog.isIndexed,
+      createdAt: blog.createdAt,
+      updatedAt: blog.contentUpdatedAt,
+    }));
+
+    if (!rows.length) return;
+
+    const headers = Object.keys(rows[0]);
+
+    const csv = [
+      headers.join(","),
+      ...rows.map((row) =>
+        headers
+          .map(
+            (header) =>
+              `"${String(row[header as keyof typeof row] ?? "").replace(/"/g, '""')}"`,
+          )
+          .join(","),
+      ),
+    ].join("\n");
+
+    downloadFile(csv, `blogs-${Date.now()}.csv`, "text/csv;charset=utf-8;");
+  };
 
   return (
     <div>
@@ -91,24 +205,40 @@ export default function BlogsTable({
         <Table>
           <TableHeader>
             <TableRow className="text-xs">
+              <TableHead className="w-12 text-center">
+                <Checkbox
+                  checked={
+                    blogs.length > 0 && selectedIds.length === blogs.length
+                  }
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all"
+                  className="cursor-pointer hover:border-foreground/50"
+                />
+              </TableHead>
               <TableHead>Blog &amp; author</TableHead>
               <TableHead>SEO score</TableHead>
               <TableHead>Search Index</TableHead>
               <TableHead>Visibility</TableHead>
-              <TableHead>{sortBy === "updated" ? "Updated" : "Created"}</TableHead>
+              <TableHead>
+                {sortBy === "updated" ? "Updated" : "Created"}
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {blogs.length > 0 ? (
               blogs.map((blog) => {
-                const score          = blog.seoScore ?? 100;
-                const username       = blog.userId?.userName || "user";
+                const score = blog.seoScore ?? 100;
+                const username = blog.userId?.userName || "user";
                 const collectionSlug = blog.collectionId?.slug || "collection";
-                const noteSlug       = blog.slug || "note";
-                const blogPath       = `/${username}/${collectionSlug}/${noteSlug}`;
-                const dateToFormat   = sortBy === "updated" ? blog.contentUpdatedAt : blog.createdAt;
-                const formattedDate  = formatTimeAgo(dateToFormat?.toString?.() ?? "");
+                const noteSlug = blog.slug || "note";
+                const blogPath = `/${username}/${collectionSlug}/${noteSlug}`;
+                const dateToFormat =
+                  sortBy === "updated" ? blog.contentUpdatedAt : blog.createdAt;
+                const formattedDate = formatTimeAgo(
+                  dateToFormat?.toString?.() ?? "",
+                );
+                const isChecked = selectedIds.includes(blog._id as string);
 
                 return (
                   <TableRow
@@ -122,12 +252,29 @@ export default function BlogsTable({
                     }}
                     tabIndex={0}
                     role="link"
-                    className="group hover:bg-secondary/20 transition-colors duration-100 cursor-pointer focus:outline-none focus:bg-secondary/20"
+                    className={cn("cursor-pointer", isChecked && "bg-muted/50")}
                   >
+                    <TableCell
+                      className="text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={isChecked}
+                        onCheckedChange={() =>
+                          toggleSelectUser(blog._id as string)
+                        }
+                        aria-label={`Select ${blog.name}`}
+                        className="cursor-pointer hover:border-foreground/50"
+                      />
+                    </TableCell>
+
                     {/* Blog & Author */}
                     <TableCell className="px-3.5 py-3 align-middle max-w-sm">
                       <div className="flex items-center gap-2.5 overflow-hidden">
-                        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div className="relative size-8 shrink-0 rounded-full overflow-hidden">
@@ -146,12 +293,20 @@ export default function BlogsTable({
                                 )}
                               </div>
                             </TooltipTrigger>
-                            <TooltipContent align="end" className="max-w-64 text-pretty">
+                            <TooltipContent
+                              align="start"
+                              side="bottom"
+                              className="max-w-64 text-pretty"
+                            >
                               <div>
-                                <p className="text-sm font-medium">{blog.userId?.fullName || "Anonymous"}</p>
+                                <p className="text-sm font-medium">
+                                  {blog.userId?.fullName || "Anonymous"}
+                                </p>
                                 <div className="text-muted-foreground text-xs">
                                   <p>{`@${blog.userId?.userName || "anonymous"}`}</p>
-                                  {blog.userId?.email && <p>{blog.userId.email}</p>}
+                                  {blog.userId?.email && (
+                                    <p>{blog.userId.email}</p>
+                                  )}
                                 </div>
                               </div>
                             </TooltipContent>
@@ -163,7 +318,9 @@ export default function BlogsTable({
                           </div>
                           <div className="text-[11px] text-muted-foreground/60 mt-0.5 flex items-center gap-1 select-none">
                             <Folder className="size-3 text-muted-foreground/50 shrink-0" />
-                            <span className="truncate">{blog.collectionId?.name || "General"}</span>
+                            <span className="truncate">
+                              {blog.collectionId?.name || "General"}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -174,9 +331,17 @@ export default function BlogsTable({
                       <div className="flex items-center gap-2.5">
                         {renderScoreRing(score)}
                         <div className="flex flex-col gap-0.5 select-none">
-                          <div className="text-[13px] font-medium text-foreground leading-none">{score}</div>
-                          <div className={`text-[10px] font-semibold uppercase tracking-[0.05em] leading-none ${getScoreLabelClass(score)}`}>
-                            {score >= 80 ? "Healthy" : score >= 50 ? "Warning" : "Critical"}
+                          <div className="text-[13px] font-medium text-foreground leading-none">
+                            {score}
+                          </div>
+                          <div
+                            className={`text-[10px] font-semibold uppercase tracking-[0.05em] leading-none ${getScoreLabelClass(score)}`}
+                          >
+                            {score >= 80
+                              ? "Healthy"
+                              : score >= 50
+                                ? "Warning"
+                                : "Critical"}
                           </div>
                         </div>
                       </div>
@@ -184,7 +349,8 @@ export default function BlogsTable({
 
                     {/* Search Index */}
                     <TableCell className="px-3.5 py-3 align-middle select-none">
-                      {blog.isIndexed === null || blog.isIndexed === undefined ? (
+                      {blog.isIndexed === null ||
+                      blog.isIndexed === undefined ? (
                         <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 dark:bg-zinc-500/20">
                           Unknown
                         </span>
@@ -201,11 +367,13 @@ export default function BlogsTable({
 
                     {/* Visibility */}
                     <TableCell className="px-3.5 py-3 align-middle select-none">
-                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${
-                        blog.visibility === "public"
-                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 dark:bg-emerald-500/20"
-                          : "bg-rose-500/10 text-rose-700 dark:text-rose-400 dark:bg-rose-500/20"
-                      }`}>
+                      <span
+                        className={`text-[11px] font-medium px-2 py-0.5 rounded ${
+                          blog.visibility === "public"
+                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 dark:bg-emerald-500/20"
+                            : "bg-rose-500/10 text-rose-700 dark:text-rose-400 dark:bg-rose-500/20"
+                        }`}
+                      >
                         {blog.visibility === "public" ? "Public" : "Private"}
                       </span>
                     </TableCell>
@@ -213,10 +381,11 @@ export default function BlogsTable({
                     {/* Date */}
                     <TableCell className="px-3.5 py-3 align-middle select-none">
                       <div className="text-xs text-muted-foreground flex items-center gap-1.25">
-                        {sortBy === "updated"
-                          ? <Clock className="size-3.5 text-muted-foreground/60 shrink-0" />
-                          : <Calendar className="size-3.5 text-muted-foreground/60 shrink-0" />
-                        }
+                        {sortBy === "updated" ? (
+                          <Clock className="size-3.5 text-muted-foreground/60 shrink-0" />
+                        ) : (
+                          <Calendar className="size-3.5 text-muted-foreground/60 shrink-0" />
+                        )}
                         <span>{formattedDate}</span>
                       </div>
                     </TableCell>
@@ -239,8 +408,12 @@ export default function BlogsTable({
                       </div>
                     ) : (
                       <>
-                        <div className="text-[14px] font-medium text-muted-foreground/80 mb-1">No blogs found</div>
-                        <div className="text-xs text-muted-foreground/60">Try adjusting your filters or search criteria.</div>
+                        <div className="text-[14px] font-medium text-muted-foreground/80 mb-1">
+                          No blogs found
+                        </div>
+                        <div className="text-xs text-muted-foreground/60">
+                          Try adjusting your filters or search criteria.
+                        </div>
                       </>
                     )}
                   </div>
@@ -271,6 +444,47 @@ export default function BlogsTable({
               </>
             )}
           </button>
+        </div>
+      )}
+
+      {/* ── BATCH ACTIONS BAR ── */}
+      {selectedIds.length > 0 && (
+        <div className="border-t min-h-16 z-50 sticky bottom-0 slide-in-from-bottom-2 bg-card px-4 py-3  transition-all animate-in fade-in">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-2">
+            <span className="mr-auto pl-2 font-medium text-sm">
+              {selectedIds.length} Blog(s) selected
+            </span>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={exportSelectedAsJSON}>
+                  <FileJson className="mr-2 h-4 w-4" />
+                  Export as JSON
+                </DropdownMenuItem>
+
+                <DropdownMenuItem onClick={exportSelectedAsCSV}>
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Export as CSV
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={clearSelection}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       )}
     </div>

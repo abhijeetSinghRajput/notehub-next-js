@@ -195,7 +195,17 @@ export default function TemplateForm({ initialValues, templateId }: Props) {
         savedId = data.template._id;
         toast.success("Template created");
       }
-      generateAndUploadPreview(savedId, form.htmlBody).catch(() =>
+      const previewCtx = {
+        ...TEMPLATE_GLOBALS,
+        user: SAMPLE_USER,
+        extra: JSON.parse(sampleJson || "{}"),
+        unsubscribe_url: "[unsubscribe_url]",
+      };
+      const renderedHtml = await liquidEngine.parseAndRender(
+        form.htmlBody,
+        previewCtx,
+      );
+      generateAndUploadPreview(savedId, renderedHtml).catch(() =>
         console.warn("Preview generation failed silently"),
       );
       router.push("/admin/template");
