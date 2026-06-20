@@ -168,7 +168,7 @@ export default function BlogsTable({
 
     const rows = selectedBlogs.map((blog) => ({
       title: blog.name,
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/${blog.userId?.userName}/${blog.collectionId?.slug}/${blog.slug}`,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/${blog.userId?.userName}/${blog.collectionId?.slug}/${blog.slug}`,
       slug: blog.slug,
       author: blog.userId?.fullName,
       username: blog.userId?.userName,
