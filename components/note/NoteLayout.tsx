@@ -1,23 +1,3 @@
-/* components/note/NoteLayout.tsx
- * Fix #3 — DOM size / 315 children in .tiptap
- *
- * The actual DOM is generated server-side from `note.content` so we
- * cannot reduce the node count directly, but we can:
- *  a) Use CSS `content-visibility: auto` on the content div so the
- *     browser skips layout/paint for off-screen sections — this alone
- *     cuts style & layout time by 60-70% for long notes.
- *  b) Defer non-critical components (ScrollTopButton, Footer) with
- *     dynamic import + ssr:false so they don't block the LCP paint.
- *  c) Wrap ImageLightbox in dynamic import — it's only needed after a
- *     click, so there's zero reason to ship it in the initial bundle.
- *
- * Fix #5 — LCP element render delay
- *  - The note title h1 is now visible (not sr-only) but visually matches
- *    the design. Making the LCP element real text (not hidden) lets the
- *    browser start painting it immediately.
- *  - `content-visibility: auto` on the tiptap div defers everything
- *    below the fold, making the initial paint dramatically faster.
- */
 "use client";
 
 import { memo, useCallback, useState } from "react";
@@ -30,19 +10,16 @@ import FloatingActionButtons, {
 import SideNavToc from "./SideNavToc";
 import type { INote } from "@/types/model";
 import { useNoteInteractions } from "@/hooks/useNoteInteractions";
+import RelatedNotes, { IRelatedNote } from "./RelatedNotes";
 
-
-// Fix #3 / #4 — lazy load non-critical UI
 const ImageLightbox = dynamic(() => import("@/components/ImageLightbox"), {
   ssr: false,
 });
 const ScrollTopButton = dynamic(() => import("@/components/ScrollTopButton"), {
   ssr: false,
 });
-// ✅ Best for Footer — SSR'd but not blocking LCP
 const Footer = dynamic(() => import("@/components/Footer"));
 
-// Memo wrappers (kept for parity, dynamic already wraps in a new component)
 const MemoScrollTopButton = memo(ScrollTopButton);
 
 export type NoteLayoutProps = {
@@ -54,6 +31,9 @@ export type NoteLayoutProps = {
   selectedImageIndex: number | null;
   noteImages: { src: string; alt: string }[];
   onCloseLightbox: () => void;
+  // ── related notes ──────────────────────────────────────────
+  relatedNotes?: IRelatedNote[];
+  relatedLoading?: boolean;
 };
 
 export default function NoteLayout({
@@ -63,23 +43,19 @@ export default function NoteLayout({
   fontSize,
   fontFamily,
   noteImages,
+  relatedNotes = [],
+  relatedLoading = false,
 }: NoteLayoutProps) {
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
-    null,
-  );
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const containerRef = useNoteInteractions({
     noteImages,
     setSelectedImageIndex,
   });
 
-  const handleCloseLightbox = useCallback(
-    () => setSelectedImageIndex(null),
-    [],
-  );
+  const handleCloseLightbox = useCallback(() => setSelectedImageIndex(null), []);
 
   return (
     <>
-      {/* Fix #3 — Only mount Lightbox when actually open (saves DOM nodes) */}
       {selectedImageIndex !== null && noteImages.length > 0 && (
         <ImageLightbox
           slides={noteImages}
@@ -88,7 +64,6 @@ export default function NoteLayout({
         />
       )}
 
-      {/* Side-rail TOC (lg+ screens) */}
       <SideNavToc
         toc={note?.tableOfContent ?? []}
         activeId={fabProps.activeId}
@@ -99,16 +74,6 @@ export default function NoteLayout({
         <div className="w-full mx-auto relative px-4 max-w-3xl">
           <NoteHeader {...headerProps} />
 
-          {/*
-            Fix #3 + #6 — content-visibility:auto tells the browser it may
-            skip layout and paint for off-screen content sections.
-            `contain-intrinsic-size` gives a size hint so the scrollbar
-            doesn't jump when sections are rendered.
-
-            This alone cuts Style & Layout from ~1,168ms to ~200-400ms on
-            long notes, because the browser only fully lays out what's
-            in the viewport on first paint.
-          */}
           <div
             className="tiptap note-view pb-20"
             ref={containerRef}
@@ -116,17 +81,18 @@ export default function NoteLayout({
               fontSize: fontSize.size,
               fontFamily: fontFamily,
               lineHeight: "1.7",
-              // Fix #6 — defer off-screen layout work
               contentVisibility: "auto",
-              containIntrinsicSize: "0 3000px", // rough estimate; adjust per avg note length
+              containIntrinsicSize: "0 3000px",
             }}
             dangerouslySetInnerHTML={{ __html: note?.content || "" }}
           />
 
+          {/* ── Related notes — below fold, zero LCP impact ── */}
+          <RelatedNotes notes={relatedNotes} loading={relatedLoading} />
+
           <FloatingActionButtons {...fabProps} />
         </div>
 
-        {/* Fix #3 — Footer + ScrollTopButton deferred, not in LCP path */}
         <MemoScrollTopButton />
         <Footer className="pb-20 mt-32" />
       </div>

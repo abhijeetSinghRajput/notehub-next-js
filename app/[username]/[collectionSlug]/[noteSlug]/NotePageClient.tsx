@@ -36,13 +36,17 @@ import PrivateNote from "@/components/note/PrivateNote";
 import EmptyNoteContent from "@/components/note/EmptyNoteContent";
 import NoteLayout from "@/components/note/NoteLayout";
 
-import { useNoteContentProcessing, extractImagesFromHtml } from "@/hooks/useNoteContentProcessing";
+import {
+  useNoteContentProcessing,
+  extractImagesFromHtml,
+} from "@/hooks/useNoteContentProcessing";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { useTocTracking } from "@/hooks/useTocTracking";
 import { processNoteContentClient } from "@/lib/note/processNoteContentClient";
 import NProgress from "nprogress";
 
 import type { FC } from "react";
+import { IRelatedNote } from "@/components/note/RelatedNotes";
 
 interface NotePageClientProps {
   initialNote: INote | null;
@@ -80,6 +84,8 @@ const NotePageClient: FC<NotePageClientProps> = ({
     useState<{ src: string; alt: string }[]>(initialImages);
   const [note, setNote] = useState<INote | null>(initialNote ?? null);
   const [author, setAuthor] = useState<IUser | null>(initialAuthor ?? null);
+  const [relatedNotes, setRelatedNotes] = useState<IRelatedNote[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
 
   // Sync state with props when they change (e.g. after router.refresh())
   useEffect(() => {
@@ -172,7 +178,9 @@ const NotePageClient: FC<NotePageClientProps> = ({
         // We run the same pipeline (hljs, KaTeX, code headers, buttons) so
         // the rendered note looks identical to an SSR-rendered one.
         const rawNote = response.data.note;
-        const processedContent = await processNoteContentClient(rawNote.content ?? "");
+        const processedContent = await processNoteContentClient(
+          rawNote.content ?? "",
+        );
         const processedNote = { ...rawNote, content: processedContent };
 
         // Extract images from the now-processed HTML so the lightbox works.
@@ -227,13 +235,43 @@ const NotePageClient: FC<NotePageClientProps> = ({
     const ric =
       window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 50));
     const handle = ric(() => {
-      document.getElementById(hash)?.scrollIntoView({ behavior: "instant", block: "start" });
+      document
+        .getElementById(hash)
+        ?.scrollIntoView({ behavior: "instant", block: "start" });
     });
     return () => {
       if (window.cancelIdleCallback)
         window.cancelIdleCallback(handle as number);
     };
   }, [note?.content]);
+
+  useEffect(() => {
+    // Don't fetch until we have a note, and only for public notes
+    if (!note || !author) return;
+
+    let cancelled = false;
+
+    const fetchRelated = async () => {
+      setRelatedLoading(true);
+      try {
+        const res = await axiosInstance.get(
+          `/note/${author.userName}/${collectionSlug}/${note.slug}/related`,
+        );
+        if (!cancelled) {
+          setRelatedNotes(res.data.notes ?? []);
+        }
+      } catch {
+        // related notes are non-critical — fail silently
+      } finally {
+        if (!cancelled) setRelatedLoading(false);
+      }
+    };
+
+    fetchRelated();
+    return () => {
+      cancelled = true;
+    };
+  }, [note?.slug, author?.userName, collectionSlug]);
 
   if (isLoading) return <NoteSkeleton />;
   if (isPrivate) return <PrivateNote />;
@@ -274,6 +312,8 @@ const NotePageClient: FC<NotePageClientProps> = ({
       selectedImageIndex={selectedImageIndex}
       noteImages={noteImages}
       onCloseLightbox={handleCloseLightbox}
+      relatedNotes={relatedNotes}
+      relatedLoading={relatedLoading}
     />
   );
 };
