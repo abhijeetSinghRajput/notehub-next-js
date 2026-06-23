@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 export const FONT_PRESETS = {
-  original: "Roboto, sans-serif",
+  original: "Geist, sans-serif",
   classic: '"Merriweather", serif',
   bookish: '"Lora", serif',
 } as const;
@@ -53,7 +53,7 @@ export const useEditorStore = create<EditorStoreState>((set) => ({
   editorFontFamily:
     (typeof window !== "undefined"
       ? window.localStorage.getItem("editorFontFamily")
-      : null) || "Roboto, sans-serif",
+      : null) || "Geist, sans-serif",
 
   setFontSize: (index) => {
     if (typeof window !== "undefined") {

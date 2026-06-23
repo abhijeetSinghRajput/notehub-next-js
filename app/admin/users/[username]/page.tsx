@@ -489,12 +489,12 @@ export default function AdminUserEditPage() {
               {/* BASIC INFO */}
               <div>
                 <div className="flex items-center gap-6 pb-4">
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                   <div className="flex items-center gap-2">
                     <UserRoundPen className="size-4 text-muted-foreground" />
                     <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">BASIC INFO</Label>
                   </div>
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                 </div>
 
                 <div className="gap-4 grid sm:grid-cols-2">
@@ -558,12 +558,12 @@ export default function AdminUserEditPage() {
               {/* SOCIAL LINKS */}
               <div className="space-y-4">
                 <div className="flex items-center gap-6 pb-4">
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                   <div className="flex items-center gap-2">
                     <LinkIcon className="size-4 text-muted-foreground" />
                     <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">SOCIAL LINKS</Label>
                   </div>
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                 </div>
 
                 {formData.socials.map((social: { url: string }, index: number) => (
@@ -619,12 +619,12 @@ export default function AdminUserEditPage() {
               {/* ACCOUNT SETTINGS */}
               <div>
                 <div className="flex items-center gap-6 pb-4">
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                   <div className="flex items-center gap-2">
                     <UserRoundPen className="size-4 text-muted-foreground" />
                     <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">ACCOUNT SETTINGS</Label>
                   </div>
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                 </div>
                 <div className="gap-4 grid grid-cols-2">
                   <div className="space-y-3">
@@ -668,12 +668,12 @@ export default function AdminUserEditPage() {
               {/* AVATAR */}
               <div className="space-y-4">
                 <div className="flex items-center gap-6 pb-4">
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                   <div className="flex items-center gap-2">
                     <Camera className="size-4 text-muted-foreground" />
                     <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">Profile Photo</Label>
                   </div>
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                 </div>
                 <div className="flex sm:flex-row flex-col items-start sm:items-center gap-8">
                   <div className="relative size-36 shrink-0">
@@ -711,12 +711,12 @@ export default function AdminUserEditPage() {
               {/* COVER */}
               <div className="space-y-4">
                 <div className="flex items-center gap-6 pb-4">
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                   <div className="flex items-center gap-2">
                     <ImageIcon className="size-4 text-muted-foreground" />
                     <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">Cover Photo</Label>
                   </div>
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                 </div>
                 <div className="flex flex-col gap-5">
                   <button
@@ -761,12 +761,12 @@ export default function AdminUserEditPage() {
               {/* ACTIVE SESSIONS */}
               <div>
                 <div className="flex items-center gap-6 pb-4">
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                   <div className="flex items-center gap-2">
                     <Monitor className="size-4 text-muted-foreground" />
                     <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">ACTIVE SESSIONS</Label>
                   </div>
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                 </div>
 
                 <div className="space-y-4">
@@ -843,12 +843,12 @@ export default function AdminUserEditPage() {
               {/* SECURITY SETTINGS */}
               <div>
                 <div className="flex items-center gap-6 pb-4">
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="size-4 text-muted-foreground" />
                     <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">SECURITY SETTINGS</Label>
                   </div>
-                  <span className="flex-1 border-b"></span>
+                  <span className="flex-1 border-b"/>
                 </div>
 
                 <div className="space-y-4 bg-card/50 p-6 border rounded-xl">

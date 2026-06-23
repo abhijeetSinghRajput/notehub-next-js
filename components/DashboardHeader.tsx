@@ -14,18 +14,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import TooltipWrapper from "@/components/TooltipWrapper";
-import GithubIcon from "@/components/icons/githubIcon";
 import Link from "next/link";
 import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "nextjs-toploader/app";
 import AddNoteDialog from "./AddNoteDialog";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
-import NProgress from "nprogress";
+import LoginButton from "./LoginButton";
+import { Suspense } from "react";
 
 const DashboardHeader = () => {
   const { authUser } = useAuthStore();
   const { open, isMobile, openMobile } = useSidebar();
   const router = useRouter();
+
   const shouldShowTrigger = isMobile ? !openMobile : !open;
 
   return (
@@ -60,14 +61,9 @@ const DashboardHeader = () => {
                   <Settings className="h-4 w-4" />
                 </Button>
               </TooltipWrapper>
-              <Button
-                onClick={() => {
-                  NProgress.start();
-                  router.push("/login");
-                }}
-              >
-                Login
-              </Button>
+              <Suspense fallback={null}>
+                <LoginButton />
+              </Suspense>
             </div>
           ) : (
             <>

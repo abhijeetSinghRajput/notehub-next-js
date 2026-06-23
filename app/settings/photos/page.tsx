@@ -115,12 +115,12 @@ const Photos = () => {
           {/* ── AVATAR SECTION ── */}
           <div className="space-y-4">
             <div className="flex items-center gap-6 pb-4">
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
               <div className="flex items-center gap-2">
                 <User className="size-4" />
                 <Label>PROFILE PHOTO</Label>
               </div>
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
@@ -190,12 +190,12 @@ const Photos = () => {
           {/* ── COVER SECTION ── */}
           <div className="space-y-4">
             <div className="flex items-center gap-6 pb-4">
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
               <div className="flex items-center gap-2">
                 <ImageIcon className="size-4" />
                 <Label>PROFILE COVER</Label>
               </div>
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
             </div>
 
             <div className="flex flex-col gap-6 items-start">

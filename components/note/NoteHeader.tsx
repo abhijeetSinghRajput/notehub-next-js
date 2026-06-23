@@ -335,11 +335,11 @@ export default function NoteHeader({
             tooltip="Copy note as Markdown"
             size="sm"
             variant={"outline"}
-            className="gap-1 hover:bg-primary/5 border-dashed w-22 h-7 font-semibold hover:text-primary text-xs transition-colors shrink-0"
+            className={cn("border-dashed w-22 h-7 text-xs", isMdCopied && "text-emerald-500 hover:text-emerald-500")}
           >
             {isMdCopied ? (
               <>
-                <Check className="size-3 text-emerald-500" /> Copied!
+                <Check className="size-3" /> Copied!
               </>
             ) : (
               <>

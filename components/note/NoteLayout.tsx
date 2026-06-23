@@ -11,6 +11,7 @@ import SideNavToc from "./SideNavToc";
 import type { INote } from "@/types/model";
 import { useNoteInteractions } from "@/hooks/useNoteInteractions";
 import RelatedNotes, { IRelatedNote } from "./RelatedNotes";
+import TopToc from "./TopToc";
 
 const ImageLightbox = dynamic(() => import("@/components/ImageLightbox"), {
   ssr: false,
@@ -56,6 +57,8 @@ export default function NoteLayout({
 
   return (
     <>
+      <TopToc {...fabProps} />
+
       {selectedImageIndex !== null && noteImages.length > 0 && (
         <ImageLightbox
           slides={noteImages}
@@ -65,7 +68,7 @@ export default function NoteLayout({
       )}
 
       <SideNavToc
-        toc={note?.tableOfContent ?? []}
+        toc={fabProps.toc}
         activeId={fabProps.activeId}
         onItemClick={fabProps.handleTocItemClick}
       />

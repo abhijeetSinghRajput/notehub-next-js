@@ -419,7 +419,7 @@ export default function UserManagementPage() {
                             <span
                               className="bg-red-500 rounded-full size-2"
                               title="Banned"
-                            ></span>
+                            />
                           )}
                         </p>
                         <p className="text-muted-foreground text-xs truncate">

@@ -145,12 +145,12 @@ const UpdateEmailCard = () => {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-6 pb-4">
-        <span className="border-b flex-1"></span>
+        <span className="border-b flex-1"/>
         <div className="flex items-center gap-2">
           <Mail className="size-4" />
           <Label htmlFor="new-email">UPDATE EMAIL ADDRESS</Label>
         </div>
-        <span className="border-b flex-1"></span>
+        <span className="border-b flex-1"/>
       </div>
       <div className="space-y-4">
         <div className="flex gap-2 bg-accent/50 p-2 px-3 rounded-xl items-center">

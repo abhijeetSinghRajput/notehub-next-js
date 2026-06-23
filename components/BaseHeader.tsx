@@ -7,9 +7,9 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import { SearchButton } from "@/components/SearchButton";
 import { ModeToggleMini } from "@/components/mode-toggle";
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import Link from "next/link";
@@ -17,7 +17,8 @@ import AppBreadcrumbs from "./AppBreadCrumb";
 import { useRouter } from "nextjs-toploader/app";
 import AddNoteDialog from "./AddNoteDialog";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
-import nProgress from "nprogress";
+import LoginButton from "./LoginButton";
+import { Suspense } from "react";
 
 const BaseHeader = () => {
   const { authUser } = useAuthStore();
@@ -46,14 +47,9 @@ const BaseHeader = () => {
                   <Settings className="h-4 w-4" />
                 </Button>
               </TooltipWrapper>
-              <Button
-                onClick={() => {
-                  nProgress.start();
-                  router.push("/login");
-                }}
-              >
-                Login
-              </Button>
+              <Suspense fallback={null}>
+                <LoginButton />
+              </Suspense>
             </div>
           ) : (
             <>

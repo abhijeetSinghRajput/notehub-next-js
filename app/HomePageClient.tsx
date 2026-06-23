@@ -117,12 +117,12 @@ const HomePageClient = ({ initialData }: Props) => {
 
       <div id="articles" className="scroll-mt-20 space-y-3 sm:space-y-4">
         <div className="flex items-center gap-6 pb-4">
-          {/* <span className="border-b flex-1"></span> */}
+          {/* <span className="border-b flex-1"/> */}
           <div className="flex items-center gap-2">
             <Bookmark className="size-4" />
             <Label htmlFor="articles">Articles</Label>
           </div>
-          <span className="border-b flex-1"></span>
+          <span className="border-b flex-1"/>
         </div>
 
         {articles.map((note, index) => (

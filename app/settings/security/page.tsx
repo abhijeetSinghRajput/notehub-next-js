@@ -120,12 +120,12 @@ function PasswordUpdateSection({ updatePassword, isResettingPassword }: Password
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-6 pb-4">
-        <span className="border-b flex-1"></span>
+        <span className="border-b flex-1"/>
         <div className="flex items-center gap-2">
           <Key className="size-4" />
           <Label htmlFor="currentPassword">CHANGE PASSWORD</Label>
         </div>
-        <span className="border-b flex-1"></span>
+        <span className="border-b flex-1"/>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Current Password */}
@@ -251,12 +251,12 @@ function ActiveSessionsSection() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-6 pb-4">
-        <span className="border-b flex-1"></span>
+        <span className="border-b flex-1"/>
         <div className="flex items-center gap-2">
           <ShieldCheck className="size-4" />
           <Label>ACTIVE SESSIONS</Label>
         </div>
-        <span className="border-b flex-1"></span>
+        <span className="border-b flex-1"/>
       </div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

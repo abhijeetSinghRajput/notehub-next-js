@@ -1,7 +1,7 @@
 /* app/layout.tsx */
 
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Geist } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -25,10 +25,10 @@ import React from "react";
 const baseUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.trim() || "http://localhost:3000";
 
-const roboto = Roboto({
+const geist = Geist({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
-  variable: "--font-roboto",       //  Next.js was synthesising it (wasted bytes)
+  variable: "--font-geist",       //  Next.js was synthesising it (wasted bytes)
   display: "swap",
 });
 
@@ -153,7 +153,7 @@ export default function RootLayout({
         />
         <link rel="dns-prefetch" href="https://notehub-38kp.onrender.com" />
       </head>
-      <body className={`${roboto.variable} antialiased`}>
+      <body className={`${geist.variable} antialiased`}>
         <NextTopLoader
           color="#6366f1"
           height={4}

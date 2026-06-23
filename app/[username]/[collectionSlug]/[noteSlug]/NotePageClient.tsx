@@ -102,7 +102,23 @@ const NotePageClient: FC<NotePageClientProps> = ({
   const [tocOpen, setTocOpen] = useState(false);
 
   const fontSize = FONT_SIZE[editorFontSizeIndex] ?? FONT_SIZE[1];
-  const toc = note?.tableOfContent ?? [];
+  const toc = useMemo(() => {
+    const baseToc = note?.tableOfContent ?? [];
+
+    if (relatedNotes.length === 0) {
+      return baseToc;
+    }
+
+    return [
+      ...baseToc,
+      {
+        id: "related-articles",
+        text: "Related Articles",
+        level: 1,
+        order: baseToc.length + 1,
+      },
+    ];
+  }, [note?.tableOfContent, relatedNotes.length]);
 
   const progress = useScrollProgress();
   const activeId = useTocTracking(toc);

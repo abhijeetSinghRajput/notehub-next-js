@@ -27,24 +27,24 @@ const Appearance = () => {
         <CardContent className="space-y-8">
           <div className="space-y-4">
             <div className="flex items-center gap-6 pb-4">
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
               <div className="flex items-center gap-2">
                 <Palette className="size-4" />
                 <LabelComponent>THEME</LabelComponent>
               </div>
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
             </div>
             <ThemeSelector />
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center gap-6 pb-4">
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
               <div className="flex items-center gap-2">
                 <CircleDot className="size-4" />
                 <LabelComponent>RADIUS</LabelComponent>
               </div>
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
             </div>
             <Radius />
           </div>

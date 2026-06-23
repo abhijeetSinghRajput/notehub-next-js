@@ -49,7 +49,7 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
                 <Bookmark className="size-4" />
                 <Label htmlFor="articles">Articles</Label>
               </div>
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
             </div>
 
             {notes.map((note: any) => {

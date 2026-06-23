@@ -268,12 +268,12 @@ const ProfileSettingsClient = () => {
 
           <div className="space-y-4">
             <div className="flex items-center gap-6 pb-4">
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
               <div className="flex items-center gap-2">
                 <UserRoundPen className="size-4" />
                 <Label htmlFor="fullName">BASIC INFO</Label>
               </div>
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
             </div>
 
             <LabeledInput
@@ -328,12 +328,12 @@ const ProfileSettingsClient = () => {
 
           <div className="space-y-3">
             <div className="flex items-center gap-6 pb-4">
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
               <div className="flex items-center gap-2">
                 <LinkIcon className="size-4" />
                 <Label htmlFor="socials">SOCIAL LINKS</Label>
               </div>
-              <span className="border-b flex-1"></span>
+              <span className="border-b flex-1"/>
             </div>
 
             {socials.map((social, index) => (

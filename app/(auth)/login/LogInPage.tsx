@@ -67,7 +67,14 @@ const LogInPage = () => {
     const success = await login(result.data);
     if (success) {
       NProgress.start();
-      router.push("/");
+      const redirect = searchParams.get("redirect");
+
+      const invalidRedirects = ["/login", "/signup", "/forgot-password"];
+
+      const destination =
+        redirect && !invalidRedirects.includes(redirect) ? redirect : "/";
+
+      router.replace(destination);
     }
   };
 

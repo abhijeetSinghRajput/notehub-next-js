@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 
 type TocItem = {
@@ -49,17 +50,17 @@ const TableOfContent = ({ noteLink, data = [] }: TableOfContentProps) => {
             ))}
 
             {/* Content */}
-            <div className="relative z-10">
-              <a
+            <div className="relative z-10 space-y-3">
+              <Link
                 href={`${noteLink}#${item.id}`}
                 className={`block transition-colors hover:text-primary hover:underline ${
                   indentLevel === 0
-                    ? "text-base font-semibold"
-                    : "text-sm font-medium text-primary/70"
+                    ? "text-base font-medium"
+                    : "text-sm text-primary/70"
                 }`}
               >
                 {item.text}
-              </a>
+              </Link>
             </div>
           </div>
         );
