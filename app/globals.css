@@ -268,3 +268,20 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 .ͼo .cm-gutters {
   background: #1e1e1e !important;
 }
+
+.yarl__root {
+  --yarl__color_backdrop: var(--background);
+  --yarl__color_button: var(--foreground);
+  --yarl__color_button_active: var(--primary);
+  --yarl__thumbnails_thumbnail_border_color: var(--border);
+  --yarl__thumbnails_thumbnail_active_border_color: var(--primary);
+}
+
+.yarl__container {
+  background: color-mix(in oklch, var(--background) 55%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.yarl__root * {
+  filter: none !important;
+}

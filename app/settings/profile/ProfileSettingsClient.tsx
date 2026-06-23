@@ -25,6 +25,7 @@ import { axiosInstance } from "@/lib/axios";
 
 import axios from "axios";
 import ProfileTag from "@/components/profile-tag";
+import SectionDivider from "@/components/ui/section-divider";
 
 type EditableUser = {
   _id: string;
@@ -171,11 +172,15 @@ const ProfileSettingsClient = () => {
       data.bio = bio.trim();
     }
 
-    if (JSON.stringify(cleanedSocials) !== JSON.stringify(cleanedOriginalSocials)) {
+    if (
+      JSON.stringify(cleanedSocials) !== JSON.stringify(cleanedOriginalSocials)
+    ) {
       data.socials = cleanedSocials;
     }
 
-    if (JSON.stringify(skills) !== JSON.stringify(currentProfile.skills || [])) {
+    if (
+      JSON.stringify(skills) !== JSON.stringify(currentProfile.skills || [])
+    ) {
       data.skills = skills;
     }
 
@@ -190,11 +195,9 @@ const ProfileSettingsClient = () => {
           data,
         );
 
-        const updatedUser =
-          response?.user ||
+        const updatedUser = response?.user ||
           response?.updatedUser ||
-          response?.data ||
-          { ...currentProfile, ...data };
+          response?.data || { ...currentProfile, ...data };
 
         setTargetUser((prev) => ({
           ...(prev || currentProfile),
@@ -244,69 +247,56 @@ const ProfileSettingsClient = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className=" space-y-6">
       <h1 className="sr-only">Profile Settings</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {isEditingOtherUser ? "Edit User Profile" : "Profile Information"}
-          </CardTitle>
-          <CardDescription className="text-sm text-muted-foreground">
-            {isEditingOtherUser
-              ? "Admin mode: edit this user's name, username, bio, and social links."
-              : "Edit your name, username, bio, and social links."}
-          </CardDescription>
-        </CardHeader>
+      {formError && (
+        <Alert variant="destructive">
+          <AlertDescription>{formError}</AlertDescription>
+        </Alert>
+      )}
 
-        <CardContent className="space-y-6">
-          {formError && (
-            <Alert variant="destructive">
-              <AlertDescription>{formError}</AlertDescription>
-            </Alert>
-          )}
+      <div className="space-y-10 p-4 pt-6 max-w-3xl mx-auto">
+        {/* ── BASIC INFO ── */}
+        <div className="space-y-4">
+          <SectionDivider icon={UserRoundPen} label="BASIC INFO" />
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-6 pb-4">
-              <span className="border-b flex-1"/>
-              <div className="flex items-center gap-2">
-                <UserRoundPen className="size-4" />
-                <Label htmlFor="fullName">BASIC INFO</Label>
-              </div>
-              <span className="border-b flex-1"/>
-            </div>
+          <LabeledInput
+            id="fullName"
+            label="Full Name"
+            type="text"
+            placeholder="Enter full name"
+            value={fullName}
+            onChange={(e) => {
+              setFullName(e.target.value);
+              setFormError("");
+            }}
+          />
 
-            <LabeledInput
-              id="fullName"
-              label="Full Name"
-              type="text"
-              placeholder="Enter full name"
-              value={fullName}
-              onChange={(e) => {
-                setFullName(e.target.value);
-                setFormError("");
-              }}
-            />
-
-            <LabeledInput
-              id="userName"
-              label="Username"
-              type="text"
-              placeholder="Enter username"
-              value={userName}
-              onChange={(e) => {
-                const val = e.target.value;
-                setUserName(val);
-                const { error } = validateUsername(val);
-                setUserNameError(error);
-                setFormError("");
-              }}
-              error={userNameError}
-            />
-          </div>
+          <LabeledInput
+            id="userName"
+            label="Username"
+            type="text"
+            placeholder="Enter username"
+            value={userName}
+            onChange={(e) => {
+              const val = e.target.value;
+              setUserName(val);
+              const { error } = validateUsername(val);
+              setUserNameError(error);
+              setFormError("");
+            }}
+            error={userNameError}
+          />
 
           <div className="space-y-2">
-            <Label htmlFor="bio">Bio</Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="bio">Bio</Label>
+              <p className="text-xs text-muted-foreground text-right">
+                {bio.length}/250
+              </p>
+            </div>
+
             <Textarea
               id="bio"
               placeholder="Tell people a little about yourself..."
@@ -319,85 +309,75 @@ const ProfileSettingsClient = () => {
               rows={3}
               className="resize-none"
             />
-            <p className="text-xs text-muted-foreground text-right">
-              {bio.length}/250
-            </p>
           </div>
+        </div>
 
+        {/* ── SKILLS ── */}
+        <div className="space-y-4">
           <ProfileTag value={skills} onChange={setSkills} />
+        </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center gap-6 pb-4">
-              <span className="border-b flex-1"/>
-              <div className="flex items-center gap-2">
-                <LinkIcon className="size-4" />
-                <Label htmlFor="socials">SOCIAL LINKS</Label>
-              </div>
-              <span className="border-b flex-1"/>
-            </div>
+        {/* ── SOCIAL LINKS ── */}
+        <div className="space-y-4">
+          <SectionDivider icon={LinkIcon} label="SOCIAL LINKS" />
 
-            {socials.map((social, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <div className="relative flex items-center w-full">
-                  <div className="absolute left-3 text-muted-foreground">
-                    {(() => {
-                      const Icon = getPlatformIcon(social.url);
-                      return <Icon size={16} className="size-4" />;
-                    })()}
-                  </div>
-
-                  <Input
-                    type="url"
-                    placeholder="https://example.com/username"
-                    value={social.url}
-                    onChange={(e) => updateSocial(index, e.target.value)}
-                    className="flex-1 pl-9"
-                  />
+          {socials.map((social, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <div className="relative flex items-center w-full">
+                <div className="absolute left-3 text-muted-foreground">
+                  {(() => {
+                    const Icon = getPlatformIcon(social.url);
+                    return <Icon size={16} className="size-4" />;
+                  })()}
                 </div>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeSocial(index)}
-                  className="shrink-0 text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
+                <Input
+                  type="url"
+                  placeholder="https://example.com/username"
+                  value={social.url}
+                  onChange={(e) => updateSocial(index, e.target.value)}
+                  className="flex-1 pl-9"
+                />
               </div>
-            ))}
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addSocial}
-              className="gap-2"
-            >
-              <Plus className="size-4" />
-              Add social link
-            </Button>
-          </div>
-
-          {isDirty && (
-            <div className="flex items-center justify-end gap-3 pt-2 border-t">
-              <Button variant="ghost" onClick={handleReset} disabled={isSaving}>
-                Cancel
-              </Button>
-
-              <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  "Save changes"
-                )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => removeSocial(index)}
+                className="shrink-0 text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="size-4" />
               </Button>
             </div>
-          )}
-          {!isEditingOtherUser && <UpdateEmailCard />}
-        </CardContent>
-      </Card>
+          ))}
 
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addSocial}
+            className="gap-2"
+          >
+            <Plus className="size-4" />
+            Add social link
+          </Button>
+        </div>
+
+      </div>
+        {/* ── SAVE BAR ── */}
+      {isDirty && (
+        <div className="flex items-center bg-background/80 backdrop-blur-sm sticky bottom-0 z-10 justify-end gap-3 p-3 px-4 border-t">
+          <Button variant="ghost" onClick={handleReset} disabled={isSaving}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              "Save changes"
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

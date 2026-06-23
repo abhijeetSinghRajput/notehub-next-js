@@ -1,8 +1,8 @@
 // src/pages/Security.tsx
-"use client"
+"use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {  Loader2, Key, ShieldCheck  } from "lucide-react";
+import { Loader2, Key, ShieldCheck } from "lucide-react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import {
   Card,
@@ -19,43 +19,44 @@ import { Monitor, Smartphone, Globe, MapPin, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import UpdateEmailCard from "@/components/UpdateEmailCard";
+import SectionDivider from "@/components/ui/section-divider";
 
 const Security = () => {
   const { updatePassword, isResettingPassword } = useAuthStore();
 
   return (
-      <>
+    <div className="p-4 pt-6 max-w-3xl mx-auto">
       <h1 className="sr-only">Security Settings</h1>
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Security Settings</CardTitle>
-          <CardDescription>
-            Change your password and security settings.
-          </CardDescription>
-        </CardHeader>
 
-        <CardContent className="space-y-8">
-          <PasswordUpdateSection
-            updatePassword={async ({ currentPassword, newPassword }) => {
-              await updatePassword({ currentPassword, newPassword });
-            }}
-            isResettingPassword={isResettingPassword}
-          />
-          <div className="border-t pt-8">
-            <ActiveSessionsSection />
-          </div>
-        </CardContent>
-      </Card>
-      </>
+      <div className="space-y-10">
+        <PasswordUpdateSection
+          updatePassword={async ({ currentPassword, newPassword }) => {
+            await updatePassword({ currentPassword, newPassword });
+          }}
+          isResettingPassword={isResettingPassword}
+        />
+
+        <UpdateEmailCard />
+
+        <ActiveSessionsSection />
+      </div>
+    </div>
   );
-}
+};
 
 interface PasswordUpdateSectionProps {
-  updatePassword: (args: { currentPassword: string; newPassword: string }) => Promise<void>;
+  updatePassword: (args: {
+    currentPassword: string;
+    newPassword: string;
+  }) => Promise<void>;
   isResettingPassword: boolean;
 }
 
-function PasswordUpdateSection({ updatePassword, isResettingPassword }: PasswordUpdateSectionProps) {
+function PasswordUpdateSection({
+  updatePassword,
+  isResettingPassword,
+}: PasswordUpdateSectionProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -119,14 +120,7 @@ function PasswordUpdateSection({ updatePassword, isResettingPassword }: Password
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-6 pb-4">
-        <span className="border-b flex-1"/>
-        <div className="flex items-center gap-2">
-          <Key className="size-4" />
-          <Label htmlFor="currentPassword">CHANGE PASSWORD</Label>
-        </div>
-        <span className="border-b flex-1"/>
-      </div>
+      <SectionDivider icon={Key} label="CHANGE PASSWORD" />
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Current Password */}
         <LabeledInput
@@ -245,22 +239,22 @@ function ActiveSessionsSection() {
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-6 pb-4">
-        <span className="border-b flex-1"/>
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="size-4" />
-          <Label>ACTIVE SESSIONS</Label>
-        </div>
-        <span className="border-b flex-1"/>
-      </div>
+      <SectionDivider icon={ShieldCheck} label="ACTIVE SESSIONS" />
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="text-sm text-muted-foreground">Manage devices currently logged into your account.</p>
+          <p className="text-sm text-muted-foreground">
+            Manage devices currently logged into your account.
+          </p>
         </div>
         {sessions.length > 1 && (
           <Button variant="outline" onClick={handleLogoutOther}>
@@ -271,29 +265,51 @@ function ActiveSessionsSection() {
 
       <div className="space-y-4 mt-6">
         {sessions.map((session) => {
-          const isMobile = session.deviceName.toLowerCase().includes("mobile") || session.deviceName.toLowerCase().includes("android") || session.deviceName.toLowerCase().includes("ios");
+          const isMobile =
+            session.deviceName.toLowerCase().includes("mobile") ||
+            session.deviceName.toLowerCase().includes("android") ||
+            session.deviceName.toLowerCase().includes("ios");
           return (
-            <div key={session.sessionId} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4 bg-card">
+            <div
+              key={session.sessionId}
+              className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4 bg-card"
+            >
               <div className="flex items-start gap-4">
                 <div className="p-2 bg-muted rounded-full">
-                  {isMobile ? <Smartphone className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
+                  {isMobile ? (
+                    <Smartphone className="h-5 w-5" />
+                  ) : (
+                    <Monitor className="h-5 w-5" />
+                  )}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-medium">{session.deviceName}</p>
-                    {session.isCurrent && <Badge variant="secondary">This device</Badge>}
+                    {session.isCurrent && (
+                      <Badge variant="secondary">This device</Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                    <span className="flex items-center gap-1"><Globe className="h-3 w-3" /> {session.ip}</span>
-                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {session.location}</span>
+                    <span className="flex items-center gap-1">
+                      <Globe className="h-3 w-3" /> {session.ip}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" /> {session.location}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <Clock className="h-3 w-3" /> Last active: {new Date(session.lastActiveAt).toLocaleString()}
+                    <Clock className="h-3 w-3" /> Last active:{" "}
+                    {new Date(session.lastActiveAt).toLocaleString()}
                   </div>
                 </div>
               </div>
               {!session.isCurrent && (
-                <Button variant="ghost" size="sm" onClick={() => handleKillSession(session.sessionId)} className="text-destructive hover:text-destructive hover:bg-destructive/10 self-start sm:self-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleKillSession(session.sessionId)}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 self-start sm:self-center"
+                >
                   Log out
                 </Button>
               )}
