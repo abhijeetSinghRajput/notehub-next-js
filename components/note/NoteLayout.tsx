@@ -10,7 +10,7 @@ import FloatingActionButtons, {
 import SideNavToc from "./SideNavToc";
 import type { INote } from "@/types/model";
 import { useNoteInteractions } from "@/hooks/useNoteInteractions";
-import RelatedNotes, { IRelatedNote } from "./RelatedNotes";
+import RelatedNotes from "./RelatedNotes";
 import TopToc from "./TopToc";
 
 const ImageLightbox = dynamic(() => import("@/components/ImageLightbox"), {
@@ -33,7 +33,7 @@ export type NoteLayoutProps = {
   noteImages: { src: string; alt: string }[];
   onCloseLightbox: () => void;
   // ── related notes ──────────────────────────────────────────
-  relatedNotes?: IRelatedNote[];
+  relatedNotes?: INote[];
   relatedLoading?: boolean;
 };
 
