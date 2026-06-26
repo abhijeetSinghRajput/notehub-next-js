@@ -83,7 +83,7 @@ const NotePageClient: FC<NotePageClientProps> = ({
     useState<{ src: string; alt: string }[]>(initialImages);
   const [note, setNote] = useState<INote | null>(initialNote ?? null);
   const [author, setAuthor] = useState<IUser | null>(initialAuthor ?? null);
-  const [relatedNotes, setRelatedNotes] = useState<IRelatedNote[]>([]);
+  const [relatedNotes, setRelatedNotes] = useState<INote[]>([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
 
   // Sync state with props when they change (e.g. after router.refresh())
