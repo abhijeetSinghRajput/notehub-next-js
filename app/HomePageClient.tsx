@@ -89,49 +89,58 @@ const HomePageClient = ({ initialData }: Props) => {
       <div className="border-x py-8">
         {/* Hero */}
         <section className="ml-4 screen-line-bottom">
-          <div className="py-8 sm:py-16 flex flex-col sm:flex-row items-center gap-8 sm:gap-12">
-            {/* Text content */}
-            <div className="flex-1 min-w-0">
-              <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground mb-5 max-w-2xl leading-tight">
-                Share What You Know.
-                <br />
-                Explore What You Don't.
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                A student community built on sharing knowledge freely — where
-                every note you upload helps someone else move forward.
-              </p>
-              <div className="flex flex-wrap gap-3 mt-8">
-                <Button asChild>
-                  {authUser ? (
-                    <Link href="/about">
-                      About us
-                      <ArrowRight className="w-4 h-4 ml-1.5" />
-                    </Link>
-                  ) : (
-                    <Link href="/login">
-                      Login
-                      <ArrowRight className="w-4 h-4 ml-1.5" />
-                    </Link>
-                  )}
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href="/contact">Contact us</Link>
-                </Button>
-              </div>
-            </div>
-
-            {/* Hero image — hidden on mobile, visible from sm breakpoint */}
-            <div className="relative overflow-hidden flex flex-1 justify-end items-center">
+          <div className="relative py-8 sm:py-16 flex flex-col-reverse sm:flex-row items-center gap-8 sm:gap-12">
+            {/* Hero image — full width on mobile, absolute on sm+ */}
+            <div className="w-full sm:absolute sm:right-0 sm:top-0 sm:bottom-0 flex sm:justify-end sm:items-center">
               <Image
                 src="/hero.svg"
                 alt="NoteHub hero illustration"
                 width={520}
                 height={420}
                 priority
-                className="w-full max-w-sm lg:max-w-md xl:max-w-lg object-contain
-                   dark:invert dark:brightness-90"
+                className="w-full sm:w-auto sm:max-w-sm lg:max-w-md xl:max-w-lg object-contain
+                   opacity-75 dark:invert dark:brightness-90"
               />
+            </div>
+
+            {/* Text content */}
+            <div className="relative text-center sm:text-left z-10 flex-1 min-w-0">
+              {/* Gradient backdrop — only on sm+ when image overlaps */}
+              <div
+                className="hidden sm:block absolute inset-0 left-0 -top-4 -bottom-4
+                      bg-linear-to-r from-background via-background/80 to-transparent
+                      pointer-events-none"
+              />
+
+              <div className="relative">
+                <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground mb-5 max-w-2xl leading-tight">
+                  Share What You Know.
+                  <br />
+                  Explore What You Don't.
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+                  A student community built on sharing knowledge freely — where
+                  every note you upload helps someone else move forward.
+                </p>
+                <div className="flex flex-wrap gap-3 mt-8 justify-center sm:justify-start">
+                  <Button asChild>
+                    {authUser ? (
+                      <Link href="/about">
+                        About us
+                        <ArrowRight className="w-4 h-4 ml-1.5" />
+                      </Link>
+                    ) : (
+                      <Link href="/login">
+                        Login
+                        <ArrowRight className="w-4 h-4 ml-1.5" />
+                      </Link>
+                    )}
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/contact">Contact us</Link>
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
