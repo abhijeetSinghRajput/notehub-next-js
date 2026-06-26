@@ -7,6 +7,7 @@ import HealthSummaryCard from "./_components/health-summary-card";
 import HealthFilterCards from "./_components/health-filter-cards";
 import BlogsControlBar from "./_components/blogs-control-bar";
 import BlogsTable from "./_components/blogs-table";
+import { axiosInstance } from "@/lib/axios";
 
 export default function AdminOverviewPage() {
   const { fetchBlogs, getBlogStats, isLoadingBlogs, isLoadingBlogStats } =
@@ -24,6 +25,8 @@ export default function AdminOverviewPage() {
   const [sortBy, setSortBy] = useState("updated");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const [gscSyncing, setGscSyncing] = useState(false);
 
   const [counts, setCounts] = useState({
     all: 0,
@@ -107,6 +110,23 @@ export default function AdminOverviewPage() {
     }
   };
 
+  const syncGsc = async () => {
+    setGscSyncing(true);
+
+    try {
+      const { data } = await axiosInstance.get("/admin/gsc/sync");
+
+      if (data.success) {
+        await fetchStats(); // Refresh everything from the server
+        // toast.success(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setGscSyncing(false);
+    }
+  };
+
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
@@ -133,6 +153,8 @@ export default function AdminOverviewPage() {
           notIndexed={gsc.notIndexed}
           total={counts.all || totalItems}
           lastSynced={gsc.lastSynced}
+          onSync={syncGsc}
+          syncing={gscSyncing}
         />
         <HealthSummaryCard
           good={counts.good}

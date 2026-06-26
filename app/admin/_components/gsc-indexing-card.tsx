@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   type ChartConfig,
@@ -7,6 +8,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { formatTimeAgo } from "@/lib/utils";
+import { RefreshCcw } from "lucide-react";
 import {
   Label,
   PolarAngleAxis,
@@ -20,6 +23,8 @@ type Props = {
   notIndexed: number;
   total: number;
   lastSynced: string | null;
+  onSync: () => void;
+  syncing: boolean;
 };
 
 const chartConfig = {
@@ -41,6 +46,8 @@ export default function GscIndexingCard({
   notIndexed,
   total,
   lastSynced,
+  onSync,
+  syncing,
 }: Props) {
   const visualIndexed = indexed > 0 ? Math.max(indexed, MIN_VISUAL) : 0;
   const visualNotIndexed =
@@ -61,7 +68,7 @@ export default function GscIndexingCard({
           </CardTitle>
           {lastSynced && (
             <span className="text-[10px] text-muted-foreground/50">
-              Synced {new Date(lastSynced).toLocaleDateString()}
+              Synced {formatTimeAgo(lastSynced?.toString?.() ?? "")}
             </span>
           )}
         </div>
@@ -87,6 +94,15 @@ export default function GscIndexingCard({
               </span>
             </span>
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={syncing}
+            onClick={onSync}
+          >
+            <RefreshCcw className={syncing ? "animate-spin" : ""} />
+            {syncing ? "Syncing..." : "Sync"}
+          </Button>
           {!lastSynced && (
             <span className="text-[10px] text-muted-foreground/50 mt-1">
               Not synced yet
