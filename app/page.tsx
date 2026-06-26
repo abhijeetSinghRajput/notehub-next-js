@@ -8,7 +8,7 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "");
 const getInitialNotes = cache(async () => {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
   try {
-    const res = await fetch(`${apiBaseUrl}/note?server=true&page=1&limit=10`, {
+    const res = await fetch(`${apiBaseUrl}/note?server=true&page=1&limit=21`, {
       next: { revalidate: 60 }, // cache for 60s instead of no-store
     });
     const json = await res.json();

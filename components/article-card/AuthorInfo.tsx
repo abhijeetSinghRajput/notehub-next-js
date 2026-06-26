@@ -60,8 +60,7 @@ export function AuthorInfo({ author, note, collection, isOwner }: AuthorInfoProp
         </div>
 
         <span className="text-sm text-muted-foreground">
-          {`@${author?.userName}`} •{" "}
-          {formatTimeAgo(note.contentUpdatedAt?.toString?.() ?? "")}
+          {`@${author?.userName}`}
         </span>
       </div>
     </Link>

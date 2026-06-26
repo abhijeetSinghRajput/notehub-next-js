@@ -275,30 +275,6 @@ export const noteTransformer = (
   }
 };
 
-export const noteToArticle = (note: PopulatedNote) => {
-  const content = note.content || "";
-  const transformed = noteTransformer(content, {
-    headings: true,
-    images: true,
-    description: true,
-  });
-
-  let description = "";
-  if (transformed.description) {
-    description = transformed.description;
-  } else if (note.name) {
-    description = note.name;
-  }
-
-  return {
-    ...note,
-    article: {
-      ...transformed,
-      description,
-      images: transformed.images || [],
-    },
-  };
-};
 
 /**
  * Basic fuzzy match + scoring

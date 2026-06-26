@@ -49,7 +49,7 @@ export function NoteTitle({ note, isRenaming, onRename }: NoteTitleProps) {
     <Input
       ref={inputRef}
       defaultValue={note.name}
-      className="font-bold h-8 flex-1"
+      className="font-bold h-8 flex-1 border-none outline-none bg-transparent rounded-none ring-0 focus-visible:ring-0"
       onBlur={handleSave}
       onKeyDown={handleKeyDown}
       onClick={(e) => e.stopPropagation()}

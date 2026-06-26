@@ -44,6 +44,7 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --color-line: color-mix(in oklab, var(--border) 64%, var(--background));
 }
 
 @layer base {
@@ -147,7 +148,6 @@
   background-color: #2383e247;
   color: var(--foreground) !important;
 }
-
 
 /* Hide scrollbar completely for specific containers */
 .scrollbar-hide::-webkit-scrollbar {
@@ -284,4 +284,12 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 
 .yarl__root * {
   filter: none !important;
+}
+
+@utility screen-line-top {
+    @apply relative before:absolute before:top-0 before:left-[-100vw] before:h-px before:w-[200vw] before:bg-border/50;
+}
+
+@utility screen-line-bottom {
+    @apply relative after:absolute after:bottom-0 after:left-[-100vw] after:h-px after:w-[200vw] after:bg-border/50;
 }
