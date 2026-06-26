@@ -46,7 +46,6 @@ import { processNoteContentClient } from "@/lib/note/processNoteContentClient";
 import NProgress from "nprogress";
 
 import type { FC } from "react";
-import { IRelatedNote } from "@/components/note/RelatedNotes";
 
 interface NotePageClientProps {
   initialNote: INote | null;
