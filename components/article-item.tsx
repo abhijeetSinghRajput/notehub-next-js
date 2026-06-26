@@ -1,4 +1,4 @@
-import { cn, formatTimeAgo } from "@/lib/utils";
+import { cn, format } from "@/lib/utils";
 import { INote } from "@/types/model";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,6 @@ export function ArticleItem({ note }: { note: INote }) {
   if (!author || !collection) return null;
 
   const isOwner = author.userName === authUser?.userName;
-  const isPublic = note.visibility === "public" && collection.visibility === "public";
 
   const url = `/${author.userName}/${collection.slug}/${note.slug}`;
   const collectionHref = `/${author.userName}/${collection.slug}`;
@@ -34,7 +33,6 @@ export function ArticleItem({ note }: { note: INote }) {
       authorAvatar: author.avatar || "",
       collection: collection.name || "",
     }).toString()}`;
-  const createdAt = note.contentUpdatedAt ?? note.createdAt;
 
   return (
     <>
@@ -67,15 +65,13 @@ export function ArticleItem({ note }: { note: INote }) {
             className="absolute top-3 left-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <Badge variant="secondary" asChild>
-              <Link href={collectionHref}>{collection.name}</Link>
-            </Badge>
+            <Badge variant="secondary">{collection.name}</Badge>
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 p-2">
+        <div className="flex flex-1 flex-col gap-4 p-2">
           {/* title + description */}
-          <div className="group/link">
+          <div className="group/link flex-1">
             <h2 className="mb-2 text-base font-medium leading-snug tracking-tight text-foreground transition duration-300 group-hover:text-primary">
               {displayTitle}
             </h2>
@@ -85,49 +81,38 @@ export function ArticleItem({ note }: { note: INote }) {
               </p>
             )}
           </div>
+
           <div className="flex justify-between items-center gap-2">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="relative size-10 shrink-0 rounded-full overflow-hidden bg-muted">
-                  <CloudinaryImage
-                    src={author?.avatar || "/avatar.svg"}
-                    alt={author?.fullName || "User Profile Photo"}
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                    loading="lazy"
-                    fetchPriority="low"
-                  />
-                </div>
-                {author.role === "admin" && (
-                  <span className="absolute -bottom-0.5 -right-0.5 bg-background rounded-full border-2 border-background size-4.5 text-blue-500 flex items-center justify-center">
-                    <BadgeIcon />
-                  </span>
-                )}
-              </div>
+              <CloudinaryImage
+                src={author?.avatar || "/avatar.svg"}
+                alt={author?.fullName || "User Profile Photo"}
+                width={24}
+                height={24}
+                className="rounded-full object-cover shrink-0"
+                loading="lazy"
+                fetchPriority="low"
+              />
               <div>
-                <div className="flex gap-2 items-center text-sm">
-                  <span className="font-medium">{author?.fullName}</span>
-
-                  {isOwner && (
-                    <Badge
-                      variant="ghost"
-                      className="p-1 border-none text-muted-foreground"
-                    >
-                      {isPublic ? (
-                        <Globe className="size-4!" />
-                      ) : (
-                        <Lock className="size-4! fill-destructive/20 stroke-destructive" />
-                      )}
-                    </Badge>
+                <div className="flex gap-2 items-center text-sm font-medium text-muted-foreground/60">
+                  {author && (
+                    <span className="truncate">
+                      {author.fullName ?? author.userName}
+                    </span>
                   )}
+
+                  {author.role === "admin" && (
+                    <span className="size-3.5 text-blue-500 flex items-center justify-center">
+                      <BadgeIcon />
+                    </span>
+                  )}
+
                 </div>
-                <span className="text-muted-foreground">{author?.userName}</span>
               </div>
             </div>
 
-            <span className="text-muted-foreground/60 inline-flex items-center gap-1.5 text-sm">
-              {formatTimeAgo(note.contentUpdatedAt?.toString?.() ?? "")}
+            <span className="text-xs whitespace-nowrap font-medium text-muted-foreground/60">
+              {format(new Date(note.createdAt), "MMM d, yyyy")}
             </span>
           </div>
         </div>

@@ -85,7 +85,7 @@ export const ArticleCard = memo(function ArticleCard({
           />
 
           {/* gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-60" />
+          <div className="absolute inset-0 bg-linear-to-t from-background via-background/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-60" />
 
           {/* collection badge — top left */}
           <div

@@ -67,7 +67,7 @@
     a {
       color: var(--muted-foreground);
     }
-    a:hover{
+    a:hover {
       text-decoration: underline dotted;
     }
   }
@@ -287,9 +287,33 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 }
 
 @utility screen-line-top {
-    @apply relative before:absolute before:top-0 before:left-[-100vw] before:h-px before:w-[200vw] before:bg-border/50;
+  @apply relative before:absolute before:top-0 before:left-[-100vw] before:h-px before:w-[200vw] before:bg-border/50;
 }
 
 @utility screen-line-bottom {
-    @apply relative after:absolute after:bottom-0 after:left-[-100vw] after:h-px after:w-[200vw] after:bg-border/50;
+  @apply relative after:absolute after:bottom-0 after:left-[-100vw] after:h-px after:w-[200vw] after:bg-border/50;
+}
+
+
+.stripe-divider {
+  position: relative;
+  width: 100%;
+  height: 32px;   /* bump to 12px for a thick band */
+  overflow: visible;
+}
+
+.stripe-divider::before {
+  content: "";
+  position: absolute;
+  left: -100vw;
+  width: 200vw;
+  height: 100%;
+  background-image: repeating-linear-gradient(
+    315deg,
+    var(--border) 0,
+    var(--border) 1px,
+    transparent 0,
+    transparent 50%
+  );
+  background-size: 10px 10px;
 }

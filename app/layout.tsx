@@ -153,7 +153,7 @@ export default function RootLayout({
         />
         <link rel="dns-prefetch" href="https://notehub-38kp.onrender.com" />
       </head>
-      <body className={`${geist.variable} antialiased`}>
+      <body className={`${geist.variable} antialiased overflow-x-hidden`}>
         <NextTopLoader
           color="#6366f1"
           height={4}

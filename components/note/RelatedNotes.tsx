@@ -4,6 +4,7 @@ import Link from "next/link";
 import CloudinaryImage from "../ui/cloudinary-image";
 import { format } from "@/lib/utils";
 import { Label } from "../ui/label";
+import { ArticleItem } from "../article-item";
 
 export interface IRelatedNote {
   _id: string;
@@ -112,21 +113,31 @@ export default function RelatedNotes({
   if (!loading && !notes?.length) return null;
 
   return (
-    <section className="border-border">
-      <div className="flex items-center gap-6 pt-20 pb-16">
-        <span className="border-b flex-1" />
-        <h2 id="related-articles" className="flex items-center gap-2">
-          <Label className="text-3xl font-bold">Related Articles</Label>
-        </h2>
-        <span className="border-b flex-1" />
-      </div>
+    <section className="border-border screen-line-top">
+          <div className="stripe-divider"/>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {loading
-          ? Array.from({ length: 6 }).map((_, i) => (
-              <NoteCardSkeleton key={i} />
-            ))
-          : notes.map((note) => <NoteCard key={note._id} note={note} />)}
+      <h2
+        id="related-articles"
+        className="screen-line-top screen-line-bottom ml-4 font-heading text-3xl/none font-medium tracking-tight"
+      >
+        Related Articles
+      </h2>
+
+      <div className="screen-line-top relative py-6">
+        <div
+          className="pointer-events-none absolute inset-0 grid grid-cols-1 sm:grid-cols-2 gap-4"
+        >
+          <div className="border-x" />
+          <div className="border-x" />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <NoteCardSkeleton key={i} />
+              ))
+            : notes.map((note) => <ArticleItem key={note._id} note={note} />)}
+        </div>
       </div>
     </section>
   );
