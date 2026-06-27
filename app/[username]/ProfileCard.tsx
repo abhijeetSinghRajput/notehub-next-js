@@ -39,7 +39,7 @@ const ProfileCard = ({
   const hasSocials = Boolean(user.socials?.length);
 
   return (
-    <Card className="max-w-3xl mx-auto overflow-hidden shadow-sm">
+    <Card className="max-w-3xl border-none rounded-none mx-auto overflow-hidden shadow-sm">
       {/* Cover */}
       <div
         className="relative rounded-none w-full aspect-4/1 overflow-hidden cursor-pointer"

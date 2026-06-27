@@ -11,7 +11,21 @@ import { Forbidden, NotFound } from "@/components/collection/ErrorStates";
 import { CollectionHeader } from "@/components/CollectionHeader";
 import { ICollection, IUser } from "@/types/model";
 import NoteCard from "@/components/NoteCard";
-import { FileText, MoreHorizontal, Settings, Users, Trash2, Globe, Lock, Hash, Check, X, Loader2, Share2, Plus } from "lucide-react";
+import {
+  FileText,
+  MoreHorizontal,
+  Settings,
+  Users,
+  Trash2,
+  Globe,
+  Lock,
+  Hash,
+  Check,
+  X,
+  Loader2,
+  Share2,
+  Plus,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,7 +61,10 @@ interface CollectionPageClientProps {
   error?: number;
 }
 
-const CollectionPageClient = ({ initialData, error: initialError }: CollectionPageClientProps) => {
+const CollectionPageClient = ({
+  initialData,
+  error: initialError,
+}: CollectionPageClientProps) => {
   const params = useParams<{
     username: string;
     collectionSlug: string;
@@ -58,7 +75,9 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
 
   const [collectionData, setCollectionData] = useState(initialData);
   const [isLoading, setIsLoading] = useState(!initialData);
-  const [errorStatus, setErrorStatus] = useState<number | null>(initialError || null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(
+    initialError || null,
+  );
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [collectionShareLink, setCollectionShareLink] = useState("");
@@ -68,18 +87,29 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { status, collections: ownerCollections, renameCollection, updateCollectionVisibility, deleteCollection, updateCollectionCollaborators, createNote } = useNoteStore();
+  const {
+    status,
+    collections: ownerCollections,
+    renameCollection,
+    updateCollectionVisibility,
+    deleteCollection,
+    updateCollectionCollaborators,
+    createNote,
+  } = useNoteStore();
   const { authUser } = useAuthStore();
   const router = useRouter();
 
-  const isOwner = !!authUser && authUser.userName.toLowerCase() === username.toLowerCase();
+  const isOwner =
+    !!authUser && authUser.userName.toLowerCase() === username.toLowerCase();
   const isAdmin = authUser?.role === "admin";
   const hasManagementAccess = isOwner || isAdmin;
 
   // For owner, use store data
   const ownerCollection = useMemo(() => {
     if (isOwner) {
-      return ownerCollections.find((c: ICollection) => c.slug === collectionSlug);
+      return ownerCollections.find(
+        (c: ICollection) => c.slug === collectionSlug,
+      );
     }
     return null;
   }, [isOwner, ownerCollections, collectionSlug]);
@@ -170,7 +200,7 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
       setIsCheckingSlug(true);
       try {
         const res = await axiosInstance.get(
-          `/collection/check-availability?slug=${formData.slug}&collectionId=${collection._id}${isAdmin ? `&userId=${collection.userId}` : ""}`
+          `/collection/check-availability?slug=${formData.slug}&collectionId=${collection._id}${isAdmin ? `&userId=${collection.userId}` : ""}`,
         );
         setIsSlugAvailable(res.data.available);
       } catch (error) {
@@ -221,11 +251,13 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: collection?.name,
-        text: `Check out this collection: ${collection?.name}`,
-        url: collectionShareLink,
-      }).catch(console.error);
+      navigator
+        .share({
+          title: collection?.name,
+          text: `Check out this collection: ${collection?.name}`,
+          url: collectionShareLink,
+        })
+        .catch(console.error);
     } else {
       navigator.clipboard.writeText(collectionShareLink);
       toast.success("Link copied to clipboard");
@@ -255,7 +287,9 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
         setErrorStatus(null);
 
         // ✅ SINGLE API CALL - gets collection + author + notes + collaborators
-        const response = await axiosInstance.get(`/collection/${username}/${collectionSlug}`);
+        const response = await axiosInstance.get(
+          `/collection/${username}/${collectionSlug}`,
+        );
 
         setCollectionData(response.data);
       } catch (error: any) {
@@ -310,16 +344,26 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
               <div className="">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 border bg-background/50 backdrop-blur-sm">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full h-10 w-10 border bg-background/50 backdrop-blur-sm"
+                    >
                       <MoreHorizontal className="size-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem onClick={() => setIsSettingsOpen(true)} className="gap-2">
+                    <DropdownMenuItem
+                      onClick={() => setIsSettingsOpen(true)}
+                      className="gap-2"
+                    >
                       <Settings className="size-4" />
                       Settings
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsCollaboratorsOpen(true)} className="gap-2">
+                    <DropdownMenuItem
+                      onClick={() => setIsCollaboratorsOpen(true)}
+                      className="gap-2"
+                    >
                       <Users className="size-4" />
                       Manage Collaborators
                     </DropdownMenuItem>
@@ -338,22 +382,30 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>              
+              </div>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedNotes.map((note) => (
-            <NoteCard
-              key={note._id}
-              note={note}
-              isOwner={isOwner}
-              isAdmin={isAdmin}
-              username={username}
-              collectionSlug={collectionSlug}
-            />
-          ))}
+        <div className="screen-line-top border-x relative py-6">
+          <div className="pointer-events-none absolute inset-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="border-r" />
+            <div className="border-x" />
+            <div className="border-l" />
+          </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sortedNotes.map((note) => (
+                <NoteCard
+                  key={note._id}
+                  note={note}
+                  isOwner={isOwner}
+                  isAdmin={isAdmin}
+                  username={username}
+                  collectionSlug={collectionSlug}
+                />
+              ))}
+          </div>
         </div>
 
         {notes.length === 0 && (
@@ -363,9 +415,7 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
             </div>
             <div className="text-center space-y-1.5">
               <h3 className="text-lg font-semibold">
-                {isOwner
-                  ? "Start writing your first note"
-                  : "No notes yet"}
+                {isOwner ? "Start writing your first note" : "No notes yet"}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm">
                 {isOwner
@@ -405,7 +455,12 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
               </div>
               <Switch
                 checked={formData.visibility === "public"}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, visibility: checked ? "public" : "private" }))}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    visibility: checked ? "public" : "private",
+                  }))
+                }
               />
             </div>
 
@@ -415,7 +470,9 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   placeholder="Collection name..."
                 />
                 <Button
@@ -423,9 +480,15 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
                   size="icon"
                   onClick={() => {
                     setManualSlug(false);
-                    setFormData(prev => ({ ...prev, slug: slugify(formData.name) }));
+                    setFormData((prev) => ({
+                      ...prev,
+                      slug: slugify(formData.name),
+                    }));
                   }}
-                  className={cn(!manualSlug && "text-primary bg-primary/5 border-primary/20")}
+                  className={cn(
+                    !manualSlug &&
+                      "text-primary bg-primary/5 border-primary/20",
+                  )}
                 >
                   <Hash className="size-4" />
                 </Button>
@@ -438,15 +501,20 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
                   id="slug"
                   value={formData.slug}
                   onChange={(e) => {
-                    const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
-                    setFormData(prev => ({ ...prev, slug: val }));
+                    const val = e.target.value
+                      .toLowerCase()
+                      .replace(/[^a-z0-9-]+/g, "-");
+                    setFormData((prev) => ({ ...prev, slug: val }));
                     setManualSlug(true);
                   }}
                   placeholder="url-friendly-slug"
                   className={cn(
                     "pr-10",
-                    isSlugAvailable === true && formData.slug !== collection?.slug && "border-green-500/50 focus-visible:ring-green-500/20",
-                    isSlugAvailable === false && "border-red-500/50 focus-visible:ring-red-500/20"
+                    isSlugAvailable === true &&
+                      formData.slug !== collection?.slug &&
+                      "border-green-500/50 focus-visible:ring-green-500/20",
+                    isSlugAvailable === false &&
+                      "border-red-500/50 focus-visible:ring-red-500/20",
                   )}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
@@ -470,11 +538,23 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
                 Changing the slug will change the URL of this collection.
               </p>
             </div>
-
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsSettingsOpen(false)} disabled={isSaving}>Cancel</Button>
-            <Button onClick={handleUpdateCollection} disabled={isSaving || (formData.slug !== collection?.slug && isSlugAvailable === false)}>
+            <Button
+              variant="ghost"
+              onClick={() => setIsSettingsOpen(false)}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateCollection}
+              disabled={
+                isSaving ||
+                (formData.slug !== collection?.slug &&
+                  isSlugAvailable === false)
+              }
+            >
               {isSaving ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
@@ -486,26 +566,35 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
           <DialogHeader className="text-left">
             <DialogTitle>Delete Collection?</DialogTitle>
             <DialogDescription>
-              This will permanently delete the collection and all notes inside it. This action cannot be undone.
+              This will permanently delete the collection and all notes inside
+              it. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-row gap-2 ml-auto">
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isSaving}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isSaving}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={async () => {
-              if (!collection) return;
-              setIsSaving(true);
-              try {
-                await deleteCollection(collection._id);
-                setIsDeleteDialogOpen(false);
-                router.push(`/${username}`);
-              } catch (error) {
-                console.error("Delete failed", error);
-              } finally {
-                setIsSaving(false);
-              }
-            }} disabled={isSaving}>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (!collection) return;
+                setIsSaving(true);
+                try {
+                  await deleteCollection(collection._id);
+                  setIsDeleteDialogOpen(false);
+                  router.push(`/${username}`);
+                } catch (error) {
+                  console.error("Delete failed", error);
+                } finally {
+                  setIsSaving(false);
+                }
+              }}
+              disabled={isSaving}
+            >
               {isSaving ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
@@ -517,9 +606,9 @@ const CollectionPageClient = ({ initialData, error: initialError }: CollectionPa
         onOpenChange={setIsCollaboratorsOpen}
         type="collection"
         targetId={collection?._id || ""}
-        currentCollaborators={collection?.collaborators as IUser[] || []}
+        currentCollaborators={(collection?.collaborators as IUser[]) || []}
         closeDialog={() => setIsCollaboratorsOpen(false)}
-        updateNoteCollaborators={async () => { }} // Not used here
+        updateNoteCollaborators={async () => {}} // Not used here
         updateCollectionCollaborators={updateCollectionCollaborators}
         isSaving={status.collaborator.state === "saving"}
       />

@@ -95,7 +95,7 @@ const CollectionsSection = ({
 
   return (
     <>
-      <div className="flex justify-between items-center mb-6">
+      <div className="p-4 flex justify-between items-center screen-line-bottom">
         <div>
           <h2 className="text-2xl font-bold">Collections</h2>
           <p className="text-sm text-muted-foreground">

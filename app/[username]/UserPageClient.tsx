@@ -31,7 +31,8 @@ const UserPageClient = ({
   const { getAllCollections, collections: ownerCollections } = useNoteStore();
 
   const [user, setUser] = useState<IUser>(initialUser);
-  const [collections, setCollections] = useState<ICollection[]>(initialCollections);
+  const [collections, setCollections] =
+    useState<ICollection[]>(initialCollections);
   const [isLoadingCollections, setIsLoadingCollections] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -39,10 +40,12 @@ const UserPageClient = ({
   const searchParams = useSearchParams();
 
   // GitHub contributions state — seed with SSR data if available
-  const [contributions, setContributions] = useState<any | null>(githubData ?? null);
+  const [contributions, setContributions] = useState<any | null>(
+    githubData ?? null,
+  );
   const [isLoadingContributions, setIsLoadingContributions] = useState(false);
   const contributionsFetchedForRef = useRef<string | null>(null);
-  
+
   useEffect(() => {
     const githubStatus = searchParams.get("github");
     const reason = searchParams.get("reason");
@@ -62,13 +65,17 @@ const UserPageClient = ({
       toast.success("GitHub connected successfully!");
       window.history.replaceState({}, "", window.location.pathname);
     } else if (githubStatus === "error") {
-      const detail = reason ? (reasonMessages[reason] ?? `Error: ${reason}`) : "Failed to connect GitHub.";
+      const detail = reason
+        ? (reasonMessages[reason] ?? `Error: ${reason}`)
+        : "Failed to connect GitHub.";
       toast.error(detail);
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, [searchParams]);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Wait for auth to resolve before determining ownership
   const isOwner = !isCheckingAuth && authUser?.userName === username;
@@ -135,10 +142,15 @@ const UserPageClient = ({
     const fetchContributions = async () => {
       setIsLoadingContributions(true);
       try {
-        const res = await axiosInstance.get(`/auth/github/contributions/${profileUsername}`);
+        const res = await axiosInstance.get(
+          `/auth/github/contributions/${profileUsername}`,
+        );
         setContributions(res.data);
       } catch (err: any) {
-        console.error("Failed to fetch GitHub contributions:", err?.response?.data || err?.message);
+        console.error(
+          "Failed to fetch GitHub contributions:",
+          err?.response?.data || err?.message,
+        );
         // Don't show error toast — just silently fail; the UI has a fallback message
       } finally {
         setIsLoadingContributions(false);
@@ -168,12 +180,17 @@ const UserPageClient = ({
     contributionsFetchedForRef.current = null;
     setIsLoadingContributions(true);
     try {
-      const res = await axiosInstance.get(`/auth/github/contributions/${profileUsername}`);
+      const res = await axiosInstance.get(
+        `/auth/github/contributions/${profileUsername}`,
+      );
       setContributions(res.data);
       contributionsFetchedForRef.current = githubUsername;
     } catch (err: any) {
       toast.error("Could not refresh contribution data.");
-      console.error("Failed to refresh GitHub contributions:", err?.response?.data || err?.message);
+      console.error(
+        "Failed to refresh GitHub contributions:",
+        err?.response?.data || err?.message,
+      );
     } finally {
       setIsLoadingContributions(false);
     }
@@ -187,90 +204,125 @@ const UserPageClient = ({
       : "";
 
   if (!mounted) {
-    return <UserPageStatic user={initialUser} collections={initialCollections} githubData={githubData} />;
+    return (
+      <UserPageStatic
+        user={initialUser}
+        collections={initialCollections}
+        githubData={githubData}
+      />
+    );
   }
 
   const isGithubConnected = !!user?.github?.username;
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       {selectedImage && (
-        <ImageLightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
+        <ImageLightbox
+          src={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
       )}
 
-      <ProfileCard
-        user={user}
-        isOwner={isOwner}
-        isAdmin={isAdmin && !isOwner}
-        profileShareLink={profileShareLink}
-        onImageClick={setSelectedImage}
-      />
+      <div className="border-x max-w-3xl mx-auto">
+        {/* Profile Card */}
+        <div className="screen-line-bottom">
+          <ProfileCard
+            user={user}
+            isOwner={isOwner}
+            isAdmin={isAdmin && !isOwner}
+            profileShareLink={profileShareLink}
+            onImageClick={setSelectedImage}
+          />
+        </div>
 
-      {isOwner && isAdmin && <AdminDashboardCard />}
-
-      <div className="mx-auto max-w-3xl">
-        {/* Case 1: GitHub is connected — show heatmap, spinner, or error */}
-        {isGithubConnected && (
-          <div className="mt-8">
-            {isLoadingContributions ? (
-              <div className="flex justify-center items-center gap-2 py-8 text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">Loading contributions…</span>
-              </div>
-            ) : contributions?.weeks ? (
-              <GitHubContribution
-                weeks={contributions.weeks}
-                totalContributions={contributions.totalContributions ?? 0}
-                gh_username={contributions.username || user?.github?.username}
-                isOwner={isOwner}
-                onDisconnect={handleDisconnect}
-                onRefresh={handleRefetchContributions}
-              />
-            ) : (
-              <p className="py-4 text-muted-foreground text-sm text-center">
-                Could not load contribution data. Try refreshing.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Case 2: GitHub not connected AND this is the owner → show connect prompt */}
-        {!isGithubConnected && isOwner && (
-          <Card className="group mt-8 p-6">
-            <div className="flex sm:flex-row flex-col justify-between items-center gap-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-muted group-hover:bg-emerald-500/10 p-3 rounded-2xl transition-colors">
-                  <Github className="w-6 h-6 text-muted-foreground group-hover:text-emerald-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">
-                    Showcase your GitHub activity
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    Connect your GitHub account to display your contribution graph on your profile.
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={() => {
-                  const { connectGithub } = useAuthStore.getState();
-                  connectGithub();
-                }}
-              >
-                Connect GitHub
-              </Button>
+        {/* Admin Dashboard */}
+        {isOwner && isAdmin && (
+          <>
+            <div className="stripe-divider h-8" />
+            <div className="screen-line-top screen-line-bottom">
+              <AdminDashboardCard />
             </div>
-          </Card>
+          </>
         )}
-      </div>
 
-      <div className="mx-auto mt-8 max-w-3xl">
-        <CollectionsSection
-          collections={collections}
-          isOwner={isOwner}
-          isAdmin={isAdmin}
-          isLoading={isLoadingCollections}
-        />
+        {/* GitHub Contribution */}
+        {(isGithubConnected || isOwner) && (
+          <>
+            <div className="stripe-divider h-8" />
+            <div className="screen-line-top screen-line-bottom">
+              <div className="max-w-3xl mx-auto px-4 py-6">
+                {isGithubConnected && (
+                  <>
+                    {isLoadingContributions ? (
+                      <div className="flex justify-center items-center gap-2 py-8 text-muted-foreground">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Loading contributions…</span>
+                      </div>
+                    ) : contributions?.weeks ? (
+                      <GitHubContribution
+                        weeks={contributions.weeks}
+                        totalContributions={
+                          contributions.totalContributions ?? 0
+                        }
+                        gh_username={
+                          contributions.username || user?.github?.username
+                        }
+                        isOwner={isOwner}
+                        onDisconnect={handleDisconnect}
+                        onRefresh={handleRefetchContributions}
+                      />
+                    ) : (
+                      <p className="py-4 text-muted-foreground text-sm text-center">
+                        Could not load contribution data. Try refreshing.
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {!isGithubConnected && isOwner && (
+                  <Card className="group p-6">
+                    <div className="flex sm:flex-row flex-col justify-between items-center gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-muted group-hover:bg-emerald-500/10 p-3 rounded-2xl transition-colors">
+                          <Github className="w-6 h-6 text-muted-foreground group-hover:text-emerald-500" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">
+                            Showcase your GitHub activity
+                          </h3>
+                          <p className="text-muted-foreground text-sm">
+                            Connect your GitHub account to display your
+                            contribution graph on your profile.
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          const { connectGithub } = useAuthStore.getState();
+                          connectGithub();
+                        }}
+                      >
+                        Connect GitHub
+                      </Button>
+                    </div>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Collections */}
+        <div className="stripe-divider h-8" />
+        <div className="max-w-3xl mx-auto">
+          <CollectionsSection
+            collections={collections}
+            isOwner={isOwner}
+            isAdmin={isAdmin}
+            isLoading={isLoadingCollections}
+          />
+        </div>
       </div>
     </div>
   );
