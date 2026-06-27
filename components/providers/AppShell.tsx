@@ -43,7 +43,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="overflow-x-clip">
           <DashboardHeader />
           {children}  {/* ✅ SSR unaffected */}
         </SidebarInset>

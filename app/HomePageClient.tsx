@@ -118,7 +118,7 @@ const HomePageClient = ({ initialData }: Props) => {
                   <br />
                   Explore What You Don't.
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+                <p className="sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
                   A student community built on sharing knowledge freely — where
                   every note you upload helps someone else move forward.
                 </p>
@@ -218,7 +218,7 @@ const HomePageClient = ({ initialData }: Props) => {
   );
 
   return (
-    <div className="p-4">
+    <div className="p-4 pt-0">
       <h1 className="sr-only">NoteHub — Explore Public Notes</h1>
       <div className="flex gap-6 max-w-6xl mx-auto">{feed}</div>
     </div>

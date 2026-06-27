@@ -3,14 +3,11 @@ import { INote } from "@/types/model";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import CloudinaryImage from "./ui/cloudinary-image";
-import { Globe, Lock } from "lucide-react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import { useState } from "react";
 import BadgeIcon from "./icons/BadgeIcon";
 
 export function ArticleItem({ note }: { note: INote }) {
   const { authUser } = useAuthStore();
-  const [isRenaming, setIsRenaming] = useState(false);
 
   const author = typeof note.userId === "object" ? note.userId : null;
   const collection =
@@ -21,7 +18,6 @@ export function ArticleItem({ note }: { note: INote }) {
   const isOwner = author.userName === authUser?.userName;
 
   const url = `/${author.userName}/${collection.slug}/${note.slug}`;
-  const collectionHref = `/${author.userName}/${collection.slug}`;
 
   const displayTitle = note.seo?.title || note.name;
   const coverUrl =

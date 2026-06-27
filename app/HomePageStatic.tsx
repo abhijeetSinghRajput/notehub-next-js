@@ -67,7 +67,7 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
                   <br />
                   Explore What You Don't.
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+                <p className="sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
                   A student community built on sharing knowledge freely — where
                   every note you upload helps someone else move forward.
                 </p>
