@@ -3,12 +3,10 @@ import { INote } from "@/types/model";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import CloudinaryImage from "./ui/cloudinary-image";
-import { useAuthStore } from "@/app/stores/useAuthStore";
 import BadgeIcon from "./icons/BadgeIcon";
 import BlogCoverCard from "./BlogCoverCard";
 
 export function ArticleItem({ note }: { note: INote }) {
-  const { authUser } = useAuthStore();
 
   const author = typeof note.userId === "object" ? note.userId : null;
   const collection =
@@ -26,7 +24,7 @@ export function ArticleItem({ note }: { note: INote }) {
       <Link
         href={url}
         className={cn(
-          "flex flex-col gap-2 p-2 transition-[background-color] ease-out hover:bg-accent/30",
+          "flex flex-1 flex-col gap-2 p-2 transition-[background-color] ease-out hover:bg-accent/30",
           "screen-line-top screen-line-bottom",
         )}
       >

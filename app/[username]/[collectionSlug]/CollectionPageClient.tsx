@@ -357,7 +357,7 @@ const CollectionPageClient = ({
   }, [username, collectionSlug, initialData, isOwner]);
 
   // Loading state
-  if (status.collection.state === "loading" || isLoading) {
+  if (isLoading) {
     return <CollectionPageSkeleton />;
   }
 

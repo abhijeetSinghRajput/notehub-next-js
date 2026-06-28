@@ -11,7 +11,6 @@ import { Pencil, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import AddNoteDialog from "./AddNoteDialog";
-import Image from "next/image";
 import CloudinaryImage from "./ui/cloudinary-image";
 
 interface CollectionHeaderProps {

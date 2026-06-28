@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Badge } from "./ui/badge";
 
 function hashId(id: string): number {
   let hash = 0;
@@ -254,21 +255,15 @@ export default function BlogCoverCard({
           }}
         >
           {category && (
-            <span
+            <Badge
+              variant={"secondary"}
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                border: "0.5px solid rgba(255,255,255,0.25)",
-                borderRadius: "999px",
                 padding: "0.6cqi 2cqi",
                 fontSize: "3cqi",
-                color: "rgba(255,255,255,0.7)",
-                width: "max-content",
-                letterSpacing: "0.02em",
               }}
             >
               {category}
-            </span>
+            </Badge>
           )}
 
           {title && (
