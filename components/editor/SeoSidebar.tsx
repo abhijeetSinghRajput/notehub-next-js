@@ -1,0 +1,1055 @@
+"use client";
+
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+} from "react";
+import { useCurrentEditor, useEditorState } from "@tiptap/react";
+import { useNoteStore } from "@/app/stores/useNoteStore";
+import { useImageStore } from "@/app/stores/useImageStore";
+import { useDraftStore } from "@/app/stores/useDraftStore";
+import { useAuthStore } from "@/app/stores/useAuthStore";
+import { useSEOChecker, SEOInputData } from "@/hooks/useSEOChecker";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import FileDropZone from "../FileDropZone";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+import {
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Info,
+  Sparkles,
+  Image as ImageIcon,
+  FileText,
+  Activity,
+  Check,
+  Settings,
+  Type,
+  Link,
+  AlignLeft,
+  Share2,
+  X as XIcon,
+  Copy,
+} from "lucide-react";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
+import { INote } from "@/types/model";
+
+// Severity configs for diagnostics panel
+const SEVERITY_CONFIG = {
+  error: {
+    Icon: XCircle,
+    color:
+      "text-rose-500 border-rose-200 bg-rose-50 dark:bg-rose-950/20 dark:border-rose-900/50",
+  },
+  warning: {
+    Icon: AlertTriangle,
+    color:
+      "text-amber-500 border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/50",
+  },
+  info: {
+    Icon: Info,
+    color:
+      "text-blue-500 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-900/50",
+  },
+  pass: {
+    Icon: CheckCircle2,
+    color:
+      "text-emerald-500 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900/50",
+  },
+};
+
+const GROUP_ICONS = {
+  Title: Type,
+  "Meta Description": AlignLeft,
+  "Slug / URL": Link,
+  Content: FileText,
+  Images: ImageIcon,
+  "Social (OG)": Share2,
+  "Social (Twitter)": Share2,
+  Technical: Settings,
+} as Record<string, React.ComponentType<any>>;
+
+const SEVERITY_ORDER = {
+  error: 0,
+  warning: 1,
+  info: 2,
+  pass: 3,
+} as Record<string, number>;
+
+// ── Heading Tree Visualizer Utilities ─────────────────────────────────────────
+
+interface UIHeadingNode {
+  level: number;
+  text: string;
+  missingBefore?: number;
+  index: number;
+  parent?: UIHeadingNode;
+  children: UIHeadingNode[];
+  isLastChild: boolean;
+}
+
+function buildHeadingTree(
+  items: { level: number; text: string; missingBefore?: number }[],
+) {
+  const nodes: UIHeadingNode[] = items.map((item, index) => ({
+    level: item.level,
+    text: item.text,
+    missingBefore: item.missingBefore,
+    index,
+    children: [],
+    isLastChild: false,
+  }));
+
+  const activePath: UIHeadingNode[] = [];
+  const roots: UIHeadingNode[] = [];
+
+  for (const node of nodes) {
+    let parent: UIHeadingNode | undefined;
+    for (let j = activePath.length - 1; j >= 0; j--) {
+      if (activePath[j].level < node.level) {
+        parent = activePath[j];
+        break;
+      }
+    }
+
+    if (parent) {
+      node.parent = parent;
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+
+    while (
+      activePath.length > 0 &&
+      activePath[activePath.length - 1].level >= node.level
+    ) {
+      activePath.pop();
+    }
+    activePath.push(node);
+  }
+
+  function markLast(n: UIHeadingNode) {
+    if (n.children.length > 0) {
+      for (let i = 0; i < n.children.length; i++) {
+        n.children[i].isLastChild = i === n.children.length - 1;
+        markLast(n.children[i]);
+      }
+    }
+  }
+
+  for (let i = 0; i < roots.length; i++) {
+    roots[i].isLastChild = i === roots.length - 1;
+    markLast(roots[i]);
+  }
+
+  return nodes;
+}
+
+function getPrefix(node: UIHeadingNode): string {
+  if (!node.parent) return "";
+
+  const ancestors: UIHeadingNode[] = [];
+  let curr = node.parent;
+  while (curr) {
+    ancestors.unshift(curr);
+    curr = curr.parent!;
+  }
+
+  let prefix = "";
+  for (let i = 1; i < ancestors.length; i++) {
+    const anc = ancestors[i];
+    prefix += anc.isLastChild ? "    " : "│   ";
+  }
+
+  if (ancestors.length === 1) {
+    prefix = " " + (node.isLastChild ? "└── " : "├── ");
+  } else {
+    prefix = " " + prefix + (node.isLastChild ? "└── " : "├── ");
+  }
+
+  return prefix;
+}
+
+const HeadingTreeVisualizer = ({
+  items,
+}: {
+  items: { level: number; text: string; missingBefore?: number }[];
+}) => {
+  const nodes = useMemo(() => {
+    const builtNodes = buildHeadingTree(items);
+    return builtNodes.map((node) => ({
+      ...node,
+      prefix: getPrefix(node),
+    }));
+  }, [items]);
+
+  return (
+    <div className="mt-2 bg-muted rounded-lg border font-mono text-[11px] overflow-x-auto leading-relaxed shadow-inner max-w-full">
+      <div className="text-[9px] p-3 uppercase font-extrabold tracking-widest text-muted-foreground border-b select-none">
+        Heading Structure
+      </div>
+      <div className="space-y-1 p-3">
+        {nodes.map((node) => (
+          <div key={node.index} className="flex items-center min-w-0 py-0.5">
+            <span className="text-muted-foreground shrink-0 select-none whitespace-pre font-mono">
+              {node.prefix}
+            </span>
+            <span className="shrink-0 text-muted-foreground font-bold mr-1.5 select-none font-mono">
+              H{node.level}
+            </span>
+            <span
+              className={cn(
+                "truncate font-mono flex-1 min-w-0 mr-1.5",
+                node.missingBefore
+                  ? "text-destructive font-semibold"
+                  : "text-muted-foreground/80",
+              )}
+              style={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+              title={node.text}
+            >
+              {node.text}
+            </span>
+            {node.missingBefore && (
+              <span className="font-bold text-destructive shrink-0 select-none animate-pulse font-mono bg-destructive/20 border border-destructive/50 rounded px-1 text-[9px] py-0.5">
+                ❌ Missing H{node.missingBefore}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── Props ──────────────────────────────────────────────────────────────────────
+
+interface SeoSidebarProps {
+  // The live note object passed down from Tiptap (draft ?? fetched note)
+  note: INote;
+}
+
+export function SeoSidebar({ note }: SeoSidebarProps) {
+  const { editor } = useCurrentEditor();
+  const { updateNote } = useNoteStore();
+  const { galleryImages, getImages } = useImageStore();
+  const { drafts, setDraft } = useDraftStore();
+  const { authUser } = useAuthStore();
+  const collections = useNoteStore((state) => state.collections);
+
+  // Derive a stable noteId from the prop — never undefined
+  const noteId = note._id;
+
+  const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("fields");
+  const [isSaving, setIsSaving] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
+
+  // Overlay the draft on top of the server note so live edits are reflected
+  const draft = useDraftStore((state) => {
+    const userId = authUser?._id;
+    if (!userId) return null;
+    return state.drafts[userId]?.[noteId] || null;
+  });
+
+  // activeNote: draft takes priority over the prop (same logic as before)
+  const activeNote = draft ?? note;
+
+  // Reactively fetch images on open
+  useEffect(() => {
+    if (open) {
+      getImages().catch(console.error);
+    }
+  }, [open, getImages]);
+
+  // Form states
+  const [seoSlug, setSeoSlug] = useState("");
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [seoKeywords, setSeoKeywords] = useState<string[]>([]);
+  const [keywordInput, setKeywordInput] = useState("");
+  const [seoImageUrl, setSeoImageUrl] = useState("");
+  const [seoImageAlt, setSeoImageAlt] = useState("");
+
+  // ProseMirror document traversal to extract images reactively
+  const editorImages = useEditorState({
+    editor,
+    selector: ({ editor: e }) => {
+      if (!e) return [];
+      const imgs: { src: string; alt: string; title: string }[] = [];
+      e.state.doc.descendants((node) => {
+        if (node.type.name === "image") {
+          imgs.push({
+            src: node.attrs.src || "",
+            alt: node.attrs.alt || "",
+            title: node.attrs.title || "",
+          });
+        }
+      });
+      return imgs;
+    },
+  });
+
+  const editorImagesRef = useRef(editorImages);
+  useEffect(() => {
+    editorImagesRef.current = editorImages;
+  }, [editorImages]);
+
+  // Seed form fields when the noteId changes (i.e. a different note is opened).
+  // Closing/reopening the sheet keeps whatever the user typed.
+  const initializedForNoteRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!activeNote || initializedForNoteRef.current === noteId) return;
+
+    const contentStr = activeNote.content || "";
+    const fallbackText = contentStr
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    setSeoSlug(activeNote.slug || "");
+    setSeoTitle(activeNote.seo?.title || activeNote.name || "");
+    setSeoDescription(
+      activeNote.seo?.description || fallbackText.slice(0, 155) || "",
+    );
+    setSeoKeywords(
+      Array.isArray(activeNote.seo?.keywords)
+        ? [...activeNote.seo.keywords]
+        : [],
+    );
+    setKeywordInput("");
+
+    const dbUrl = activeNote.seo?.image?.url || "";
+    const dbAlt = activeNote.seo?.image?.alt || "";
+
+    if (dbUrl) {
+      setSeoImageUrl(dbUrl);
+      setSeoImageAlt(dbAlt);
+    } else {
+      const imgs = editorImagesRef.current;
+      if (imgs && imgs.length > 0) {
+        setSeoImageUrl(imgs[0].src);
+        setSeoImageAlt(imgs[0].alt || "");
+      } else {
+        setSeoImageUrl("");
+        setSeoImageAlt("");
+      }
+    }
+
+    initializedForNoteRef.current = noteId;
+  }, [noteId, activeNote]);
+
+  // Editor content HTML — reactive, zero re-render cost
+  const editorContent = useEditorState({
+    editor,
+    selector: ({ editor: e }) => e?.getHTML() || "",
+  });
+
+  // Compile SEO checker input
+  const seoInputData = useMemo<SEOInputData>(() => {
+    const contentStr = editorContent || "";
+    const fallbackText = contentStr
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    const firstPara = fallbackText.slice(0, 160);
+
+    const userName =
+      typeof activeNote.userId === "object" && activeNote.userId
+        ? activeNote.userId.userName
+        : authUser?.userName || "";
+
+    const collectionSlug =
+      typeof activeNote.collectionId === "object" && activeNote.collectionId
+        ? activeNote.collectionId.slug
+        : collections.find(
+            (c) =>
+              Array.isArray(c.notes) &&
+              c.notes.some((n) => n._id === activeNote._id),
+          )?.slug || "";
+
+    const noteSlug = seoSlug || activeNote.slug || "";
+    const canonicalUrl =
+      typeof window !== "undefined" && userName && collectionSlug && noteSlug
+        ? `${window.location.origin}/${userName}/${collectionSlug}/${noteSlug}`
+        : "";
+
+    return {
+      title: seoTitle || activeNote.name || "",
+      description: seoDescription || firstPara || "",
+      slug: noteSlug,
+      content: contentStr,
+      keywords: seoKeywords,
+      images: editorImages || [],
+      canonicalUrl,
+      ogTitle: seoTitle || activeNote.name || "",
+      ogDescription: seoDescription || firstPara || "",
+      twitterTitle: seoTitle || activeNote.name || "",
+      twitterDescription: seoDescription || firstPara || "",
+      author: authUser?.fullName || "",
+      publishDate: activeNote.createdAt || "",
+      category: "General",
+      tags: seoKeywords,
+      seoImageUrl,
+    };
+  }, [
+    activeNote,
+    seoSlug,
+    seoTitle,
+    seoDescription,
+    seoKeywords,
+    seoImageUrl,
+    editorContent,
+    editorImages,
+    authUser,
+    collections,
+  ]);
+
+  // Keep draft in sync with form changes
+  useEffect(() => {
+    if (!activeNote || !authUser?._id) return;
+
+    const normalizedSlug = seoSlug.trim().toLowerCase();
+    const nextSeo = {
+      title: seoTitle.trim(),
+      description: seoDescription.trim(),
+      keywords: seoKeywords,
+      image: { url: seoImageUrl.trim(), alt: seoImageAlt.trim() },
+    };
+
+    const currentSeo = activeNote.seo ?? {};
+    const slugMatches = (activeNote.slug || "") === normalizedSlug;
+    const seoMatches =
+      (currentSeo.title || "") === nextSeo.title &&
+      (currentSeo.description || "") === nextSeo.description &&
+      JSON.stringify(currentSeo.keywords || []) ===
+        JSON.stringify(nextSeo.keywords) &&
+      (currentSeo.image?.url || "") === nextSeo.image.url &&
+      (currentSeo.image?.alt || "") === nextSeo.image.alt;
+
+    if (slugMatches && seoMatches) return;
+
+    setDraft(noteId, {
+      ...activeNote,
+      slug: normalizedSlug || activeNote.slug || "",
+      seo: nextSeo,
+    });
+  }, [
+    activeNote,
+    authUser?._id,
+    noteId,
+    seoSlug,
+    seoTitle,
+    seoDescription,
+    seoKeywords,
+    seoImageUrl,
+    seoImageAlt,
+    setDraft,
+  ]);
+
+  const { score, grouped, summary } = useSEOChecker(seoInputData, 600);
+
+  // Save handler — still uses _id via PATCH /note/:id
+  const handleSaveSeo = async () => {
+    if (!noteId || !activeNote) return;
+    setIsSaving(true);
+
+    const seoObject = {
+      title: seoTitle.trim(),
+      description: seoDescription.trim(),
+      keywords: seoKeywords,
+      image: { url: seoImageUrl.trim(), alt: seoImageAlt.trim() },
+    };
+
+    try {
+      const isDraftNote = noteId.startsWith("draft-");
+      const userId = authUser?._id;
+
+      if (isDraftNote && userId) {
+        setDraft(noteId, {
+          ...activeNote,
+          slug: seoSlug.trim().toLowerCase(),
+          seo: seoObject,
+        });
+        toast.success("Draft SEO settings updated locally");
+      } else {
+        await updateNote(noteId, {
+          slug: seoSlug.trim().toLowerCase(),
+          seo: seoObject,
+        });
+
+        // Keep draft in sync if one exists
+        if (userId && drafts[userId]?.[noteId]) {
+          setDraft(noteId, {
+            ...activeNote,
+            slug: seoSlug.trim().toLowerCase(),
+            seo: seoObject,
+          });
+        }
+      }
+      setOpen(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save SEO settings");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAutoFill = () => {
+    if (!editor) return;
+    const html = editor.getHTML();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+
+    if (!seoSlug && activeNote.name) {
+      setSeoSlug(
+        activeNote.name
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "")
+          .replace(/(^-|-$)+/g, ""),
+      );
+    }
+
+    if (activeNote.name) setSeoTitle(activeNote.name);
+
+    const p = doc.querySelector("p");
+    if (p) {
+      setSeoDescription(
+        (p.textContent?.trim() || "").replace(/\s+/g, " ").slice(0, 155),
+      );
+    } else {
+      setSeoDescription(
+        html
+          .replace(/<[^>]*>/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 155),
+      );
+    }
+
+    const img = doc.querySelector("img");
+    if (img) {
+      setSeoImageUrl(img.getAttribute("src") || "");
+      setSeoImageAlt(img.getAttribute("alt") || "");
+    } else if (galleryImages.length > 0) {
+      setSeoImageUrl(galleryImages[0].url);
+      setSeoImageAlt("");
+    }
+
+    toast.success("Auto-filled SEO fields from content");
+  };
+
+  const handleCopySeoReport = () => {
+    const markdownReport = `# SEO Audit Report for "${activeNote.name || "Untitled Note"}"
+**SEO Score**: ${score}/100
+
+## Summary
+* **Passed Checks**: ${summary.passed}
+* **Errors**: ${summary.errors}
+* **Warnings**: ${summary.warnings}
+
+## Grouped Diagnostics
+${Object.entries(grouped)
+  .map(([group, checks]) => {
+    const checkLines = checks
+      .map((c) => {
+        const status = c.pass ? "✅ [PASS]" : `❌ [${c.severity.toUpperCase()}]`;
+        return `- ${status} **${c.label}**: ${c.message}`;
+      })
+      .join("\n");
+    return `### ${group}\n${checkLines}`;
+  })
+  .join("\n\n")}
+`;
+    copy(markdownReport, "SEO report copied as Markdown");
+  };
+
+  if (!editor) return null;
+
+  const isKeywordsOutOfBounds = seoKeywords.length < 3 || seoKeywords.length > 8;
+
+  const ringColor =
+    score >= 90
+      ? "stroke-emerald-500"
+      : score >= 50
+        ? "stroke-amber-500"
+        : "stroke-rose-500";
+  const textColor =
+    score >= 90
+      ? "text-emerald-500"
+      : score >= 50
+        ? "text-amber-500"
+        : "text-rose-500";
+  const trackStroke =
+    score >= 90
+      ? "rgba(16, 185, 129, 0.15)"
+      : score >= 50
+        ? "rgba(245, 158, 11, 0.15)"
+        : "rgba(239, 68, 68, 0.15)";
+  const gaugeFill =
+    score >= 90
+      ? "rgba(16, 185, 129, 0.08)"
+      : score >= 50
+        ? "rgba(245, 158, 11, 0.08)"
+        : "rgba(239, 68, 68, 0.08)";
+
+  return (
+    <>
+      {/* Floating circular progress trigger button */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="fixed right-6 bottom-6 z-40 flex items-center justify-center rounded-full bg-background/95 backdrop-blur-md border shadow-2xl cursor-pointer transition-all duration-300 hover:scale-108 active:scale-95 group hover:border-muted-foreground/30"
+        style={{ width: "60px", height: "60px" }}
+        title={`SEO Score: ${score}/100`}
+      >
+        <svg className="lh-gauge absolute inset-0 size-full" viewBox="0 0 120 120">
+          <circle
+            className="lh-gauge-base transition-colors duration-500"
+            r="56" cx="60" cy="60" strokeWidth="8"
+            style={{ stroke: trackStroke, fill: gaugeFill }}
+          />
+          <circle
+            className={cn("fill-none transition-all duration-700 ease-out", ringColor)}
+            r="56" cx="60" cy="60" strokeWidth="8" strokeLinecap="round"
+            style={{
+              transform: "rotate(-87.9537deg)",
+              transformOrigin: "60px 60px",
+              strokeDasharray: `${(score / 100) * 351.858}, 351.858`,
+            }}
+          />
+        </svg>
+        <div className="flex flex-col items-center justify-center z-10 select-none">
+          <span className={cn("text-base font-extrabold leading-none tracking-tight", textColor)}>
+            {score}
+          </span>
+          <span className="text-[8px] text-muted-foreground font-semibold uppercase tracking-widest leading-none mt-0.5">
+            SEO
+          </span>
+        </div>
+      </button>
+
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent className="bg-sidebar w-full sm:max-w-md md:max-w-lg h-full flex flex-col p-0 border-l shadow-2xl">
+          <SheetHeader className="p-6 pb-4 border-b shrink-0">
+            <div className="flex items-center gap-4">
+              <div
+                className="relative flex items-center justify-center shrink-0 select-none"
+                style={{ width: "48px", height: "48px" }}
+              >
+                <svg className="lh-gauge absolute inset-0 size-full" viewBox="0 0 120 120">
+                  <circle
+                    className="lh-gauge-base transition-colors duration-500"
+                    r="56" cx="60" cy="60" strokeWidth="8"
+                    style={{ stroke: trackStroke, fill: gaugeFill }}
+                  />
+                  <circle
+                    className={cn("fill-none transition-all duration-700 ease-out", ringColor)}
+                    r="56" cx="60" cy="60" strokeWidth="8" strokeLinecap="round"
+                    style={{
+                      transform: "rotate(-87.9537deg)",
+                      transformOrigin: "60px 60px",
+                      strokeDasharray: `${(score / 100) * 351.858}, 351.858`,
+                    }}
+                  />
+                </svg>
+                <span className={cn("text-xs font-black z-10", textColor)}>{score}</span>
+              </div>
+
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <SheetTitle className="text-base font-bold tracking-tight leading-none text-foreground">
+                  SEO Optimizer
+                </SheetTitle>
+                <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold">
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30">
+                    <CheckCircle2 className="size-3" /> {summary.passed} Passed
+                  </span>
+                  {summary.errors > 0 && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30">
+                      <XCircle className="size-3" /> {summary.errors} Errors
+                    </span>
+                  )}
+                  {summary.warnings > 0 && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
+                      <AlertTriangle className="size-3" /> {summary.warnings} Warnings
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </SheetHeader>
+
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
+            <TabsList variant="line" className="p-0 grid w-full grid-cols-2">
+              <TabsTrigger
+                value="fields"
+                className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:bg-sidebar-accent! rounded-none"
+              >
+                <Settings className="size-3.5" /> Meta Fields
+              </TabsTrigger>
+              <TabsTrigger
+                value="diagnostics"
+                className="text-xs font-semibold gap-1.5 py-2 data-[state=active]:bg-sidebar-accent! rounded-none"
+              >
+                <Activity className="size-3.5" /> SEO Audit
+              </TabsTrigger>
+            </TabsList>
+
+            {/* TAB 1: SEO Meta Fields */}
+            <TabsContent value="fields" className="flex-1 overflow-y-auto space-y-5 m-0 p-4">
+              <div className="flex items-center justify-between pb-1 border-b">
+                <h3 className="text-sm font-semibold flex items-center gap-1.5 text-foreground">
+                  <FileText className="size-4 text-primary" /> Meta Tags Setup
+                </h3>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={handleAutoFill}
+                  className="text-xs h-7 gap-1 font-semibold hover:bg-primary/5 hover:text-primary transition-colors border-dashed"
+                >
+                  <Sparkles className="size-3" /> Auto-Fill Content
+                </Button>
+              </div>
+
+              {/* Slug */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="seo-slug" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Note URL Slug
+                  </Label>
+                  <span className={cn("text-[10px] font-semibold", seoSlug.length >= 3 && seoSlug.length <= 75 ? "text-emerald-500" : "text-muted-foreground")}>
+                    {seoSlug.length}/75 chars
+                  </span>
+                </div>
+                <Input
+                  id="seo-slug"
+                  value={seoSlug}
+                  onChange={(e) =>
+                    setSeoSlug(
+                      e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+                    )
+                  }
+                  placeholder={activeNote.slug || "enter-note-slug..."}
+                  maxLength={75}
+                  className="h-10 text-sm font-semibold"
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Updates the note slug used for routing and canonical URLs. Formatted automatically to lowercase with hyphens.
+                </p>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="seo-title" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    SEO Meta Title
+                  </Label>
+                  <span className={cn("text-[10px] font-semibold", seoTitle.length >= 50 && seoTitle.length <= 60 ? "text-emerald-500" : "text-muted-foreground")}>
+                    {seoTitle.length}/60 chars
+                  </span>
+                </div>
+                <Input
+                  id="seo-title"
+                  value={seoTitle}
+                  onChange={(e) => setSeoTitle(e.target.value)}
+                  placeholder={activeNote.name || "Enter descriptive SEO title..."}
+                  maxLength={70}
+                  className="h-10 text-sm font-medium"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="seo-desc" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Meta Description
+                  </Label>
+                  <span className={cn("text-[10px] font-semibold", seoDescription.length >= 120 && seoDescription.length <= 155 ? "text-emerald-500" : "text-muted-foreground")}>
+                    {seoDescription.length}/155 chars
+                  </span>
+                </div>
+                <Textarea
+                  id="seo-desc"
+                  value={seoDescription}
+                  onChange={(e) => setSeoDescription(e.target.value)}
+                  placeholder="Summarize your blog post to captivate users in search lists..."
+                  maxLength={170}
+                  rows={3}
+                  className="text-sm font-medium resize-none p-3"
+                />
+              </div>
+
+              {/* Keywords */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="seo-keywords-input" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Focus Keywords (3–8 tags)
+                  </Label>
+                  <span className={cn("text-[10px] font-semibold transition-colors", isKeywordsOutOfBounds ? "text-warn" : "text-emerald-500")}>
+                    {seoKeywords.length} / 3–8 tags
+                  </span>
+                </div>
+                {seoKeywords.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-1.5">
+                    {seoKeywords.map((kw) => (
+                      <span key={kw} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                        {kw}
+                        <button
+                          type="button"
+                          aria-label={`Remove keyword ${kw}`}
+                          onClick={() => setSeoKeywords((prev) => prev.filter((k) => k !== kw))}
+                          className="hover:text-rose-500 transition-colors cursor-pointer"
+                        >
+                          <XIcon className="size-2.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <Input
+                  id="seo-keywords-input"
+                  value={keywordInput}
+                  onChange={(e) => setKeywordInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === ",") {
+                      e.preventDefault();
+                      const trimmed = keywordInput.trim().replace(/,+$/, "");
+                      if (trimmed && !seoKeywords.includes(trimmed)) {
+                        setSeoKeywords((prev) => [...prev, trimmed]);
+                      }
+                      setKeywordInput("");
+                    } else if (e.key === "Backspace" && keywordInput === "" && seoKeywords.length > 0) {
+                      setSeoKeywords((prev) => prev.slice(0, -1));
+                    }
+                  }}
+                  onPaste={(e) => {
+                    const pasted = e.clipboardData.getData("text");
+                    const tokens = pasted.split(/[,;\n]+/).map((t) => t.trim()).filter(Boolean);
+                    if (tokens.length > 1 || (tokens.length === 1 && pasted.includes(","))) {
+                      e.preventDefault();
+                      setSeoKeywords((prev) => {
+                        const existing = new Set(prev);
+                        return [...prev, ...tokens.filter((t) => !existing.has(t))];
+                      });
+                      setKeywordInput("");
+                    }
+                  }}
+                  onBlur={() => {
+                    const trimmed = keywordInput.trim().replace(/,+$/, "");
+                    if (trimmed && !seoKeywords.includes(trimmed)) {
+                      setSeoKeywords((prev) => [...prev, trimmed]);
+                      setKeywordInput("");
+                    }
+                  }}
+                  placeholder={seoKeywords.length === 0 ? "Type a keyword and press Enter or comma" : "Add another keyword..."}
+                  className={cn(
+                    "h-10 text-sm font-medium transition-all duration-300",
+                    isKeywordsOutOfBounds
+                      ? "border-warn/60! focus-visible:border-warn! focus-visible:ring-warn/40!"
+                      : "focus-visible:border-ring focus-visible:ring-ring/50",
+                  )}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Press{" "}
+                  <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">Enter</kbd>{" "}
+                  or{" "}
+                  <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">,</kbd>{" "}
+                  to add &nbsp;·&nbsp;{" "}
+                  <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono bg-muted">⌫</kbd>{" "}
+                  to remove last
+                </p>
+                {isKeywordsOutOfBounds && (
+                  <p className="text-[10px] text-warn font-semibold mt-1 flex items-center gap-1">
+                    ⚠️ Aim for between 3 and 8 focus keywords to optimize search visibility.
+                  </p>
+                )}
+              </div>
+
+              {/* Featured Image */}
+              <div className="space-y-3 pt-3 border-t">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <ImageIcon className="size-4 text-primary" /> Feature Image & Alt
+                </h4>
+                {seoImageUrl ? (
+                  <div className="relative border rounded-lg overflow-hidden bg-muted/20 aspect-1200/630 flex flex-col justify-end">
+                    <img src={seoImageUrl} alt="SEO Preview" className="absolute inset-0 size-full object-cover" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/10 to-transparent" />
+                    <div className="relative p-3 flex justify-between items-center text-white z-10">
+                      <span className="text-[10px] font-bold bg-primary/95 text-primary-foreground px-2 py-0.5 rounded uppercase tracking-wider">
+                        Active SEO Cover
+                      </span>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        type="button"
+                        onClick={() => setSeoImageUrl("")}
+                        className="size-6 rounded-full cursor-pointer"
+                        title="Remove image"
+                      >
+                        <span className="sr-only">Remove</span>×
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center bg-muted/10 text-muted-foreground">
+                    <ImageIcon className="size-8 mb-2 text-muted-foreground/60" />
+                    <span className="text-xs font-semibold">No Featured Image Selected</span>
+                    <span className="text-[10px] mt-0.5">Select from your upload gallery or upload a new one.</span>
+                  </div>
+                )}
+                {seoImageUrl && (
+                  <div className="space-y-1">
+                    <Label htmlFor="seo-image-alt" className="text-[11px] font-semibold text-muted-foreground">
+                      Image Alt Text (Accessibility)
+                    </Label>
+                    <Input
+                      id="seo-image-alt"
+                      value={seoImageAlt}
+                      onChange={(e) => setSeoImageAlt(e.target.value)}
+                      placeholder="Write rich alt description for screen readers..."
+                      className="h-8 text-xs font-medium"
+                    />
+                  </div>
+                )}
+                <div className="space-y-1.5 pt-1 border-t">
+                  <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                    Upload New Image to Gallery
+                  </span>
+                  <FileDropZone
+                    onImageSelect={(url) => {
+                      setSeoImageUrl(url);
+                      toast.success("Uploaded cover image and selected");
+                    }}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* TAB 2: SEO Diagnostics */}
+            <TabsContent value="diagnostics" className="flex-1 overflow-y-auto space-y-4 m-0">
+              <div className="flex items-center justify-between px-4 py-2 border-b">
+                <h3 className="text-sm font-semibold flex items-center gap-1.5 text-foreground">
+                  <Activity className="size-4 text-primary" /> Live SEO Audit Logs
+                </h3>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={handleCopySeoReport}
+                  className="text-xs h-7 gap-1 font-semibold hover:bg-primary/5 hover:text-primary transition-colors border-dashed shrink-0"
+                >
+                  {copied ? (
+                    <><Check className="size-3 text-emerald-500" /> Copied!</>
+                  ) : (
+                    <><Copy className="size-3" /> Copy Markdown</>
+                  )}
+                </Button>
+              </div>
+
+              <Accordion type="multiple" className="w-full">
+                {Object.entries(grouped).map(([group, checks]) => {
+                  const groupErrors = checks.filter((c) => !c.pass && c.severity === "error").length;
+                  const groupWarnings = checks.filter((c) => !c.pass && c.severity === "warning").length;
+                  const GroupIconComponent = GROUP_ICONS[group] || FileText;
+
+                  return (
+                    <AccordionItem key={group} value={group} className="border-b border-border">
+                      <AccordionTrigger className="rounded-none w-full flex items-center justify-between gap-2 py-3 px-4 hover:bg-sidebar-accent hover:no-underline cursor-pointer transition-colors text-left">
+                        <div className="flex items-center gap-2">
+                          <span className="size-6 bg-muted rounded-md flex items-center justify-center border text-muted-foreground select-none shrink-0">
+                            <GroupIconComponent className="size-3.5" />
+                          </span>
+                          <span className="text-xs font-bold text-foreground">{group}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 ml-auto mr-2">
+                          {groupErrors > 0 && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30">
+                              {groupErrors}E
+                            </span>
+                          )}
+                          {groupWarnings > 0 && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
+                              {groupWarnings}W
+                            </span>
+                          )}
+                        </div>
+                      </AccordionTrigger>
+
+                      <AccordionContent className="p-0">
+                        {[...checks]
+                          .sort((a, b) => {
+                            const sA = a.pass ? "pass" : a.severity;
+                            const sB = b.pass ? "pass" : b.severity;
+                            return (SEVERITY_ORDER[sA] ?? 99) - (SEVERITY_ORDER[sB] ?? 99);
+                          })
+                          .map((check) => {
+                            const cfg = check.pass ? SEVERITY_CONFIG.pass : SEVERITY_CONFIG[check.severity];
+                            return (
+                              <div key={check.id} className="flex gap-3 py-3 pl-8 pr-4 transition-colors border-t border-border/40">
+                                <cfg.Icon className={cn("size-4", cfg.color)} />
+                                <div className="space-y-1 select-text text-left flex-1 min-w-0">
+                                  <h4 className="text-xs font-bold text-foreground leading-tight">{check.label}</h4>
+                                  <p className="text-[11px] text-muted-foreground leading-snug">{check.message}</p>
+                                  {check.visual?.type === "heading-tree" && check.visual.items && (
+                                    <HeadingTreeVisualizer items={check.visual.items} />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
+            </TabsContent>
+          </Tabs>
+
+          <SheetFooter className="p-6 border-t bg-muted/10 flex flex-row gap-2 shrink-0">
+            <Button variant="ghost" type="button" onClick={() => setOpen(false)} className="flex-1 cursor-pointer font-semibold">
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSaveSeo}
+              disabled={isSaving}
+              className="flex-1 font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
+            >
+              {isSaving ? "Saving..." : "Save SEO Details"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+}

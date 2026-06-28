@@ -7,7 +7,6 @@
  * the client, eliminating one full DOM parse + forced reflow after hydration.
  */
 import { Metadata } from "next";
-import { JSDOM } from "jsdom"; // already in your dep tree via unified/rehype
 import NotePageClient from "./NotePageClient";
 import { getDefaultMetadata } from "@/lib/metadata";
 import { processNoteContent } from "@/lib/note/processNoteContent";

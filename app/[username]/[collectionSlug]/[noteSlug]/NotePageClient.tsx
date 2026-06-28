@@ -150,7 +150,7 @@ const NotePageClient: FC<NotePageClientProps> = ({
   const handleNavigateToEditor = useCallback(() => {
     if (note?._id) {
       NProgress.start();
-      router.push(`/note/${String(note._id)}/editor`);
+      router.push(`/${username}/${collectionSlug}/${noteSlug}/edit`);
       return;
     }
     toast.error("Note not loaded yet!");
