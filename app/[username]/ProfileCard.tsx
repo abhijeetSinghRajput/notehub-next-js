@@ -118,7 +118,7 @@ const ProfileCard = ({
               {hasBio && (
                 <div
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="group relative cursor-pointer p-2 -m-2 rounded-xl transition-all duration-200"
+                  className="group relative cursor-pointer mt-2! rounded-xl transition-all duration-200"
                   role="button"
                   aria-expanded={isExpanded}
                   title={isExpanded ? "Click to collapse" : "Click to expand"}
@@ -143,7 +143,7 @@ const ProfileCard = ({
                       <Badge
                         key={skill}
                         variant="secondary"
-                        className="h-6 rounded-md transition-all duration-200 shrink-0"
+                        className="h-6 gap-1.5 rounded-md transition-all duration-200 shrink-0"
                       >
                         <img 
                           src={devicon?.icon || `/devicons/${skill}.svg`} 
