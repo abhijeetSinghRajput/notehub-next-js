@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import CloudinaryImage from "./ui/cloudinary-image";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import BadgeIcon from "./icons/BadgeIcon";
+import BlogCoverCard from "./BlogCoverCard";
 
 export function ArticleItem({ note }: { note: INote }) {
   const { authUser } = useAuthStore();
@@ -20,15 +21,7 @@ export function ArticleItem({ note }: { note: INote }) {
   const url = `/${author.userName}/${collection.slug}/${note.slug}`;
 
   const displayTitle = note.seo?.title || note.name;
-  const coverUrl =
-    note.seo?.image?.url ||
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/og-note?${new URLSearchParams({
-      title: note.name || "Note",
-      authorName: author.fullName || "User",
-      authorUsername: `@${author.userName ?? "notehub"}`,
-      authorAvatar: author.avatar || "",
-      collection: collection.name || "",
-    }).toString()}`;
+  const coverUrl = note.seo?.image?.url ?? null;
 
   return (
     <>
@@ -41,28 +34,35 @@ export function ArticleItem({ note }: { note: INote }) {
           "md:nth-[3n+1]:screen-line-top md:nth-[3n+1]:screen-line-bottom",
         )}
       >
-        {/* Image */}
+        {/* Cover — image if available, BlogCoverCard as fallback */}
         <div className="relative aspect-video w-full cursor-pointer overflow-hidden">
-          <CloudinaryImage
-            src={coverUrl}
-            alt={displayTitle}
-            fill
-            className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-            sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 40vw"
-            loading="lazy"
-            fetchPriority="low"
-          />
-
-          {/* gradient overlay */}
-          <div className="absolute inset-0 bg-linear-to-t from-background via-background/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-60" />
-
-          {/* collection badge — top left */}
-          <div
-            className="absolute top-3 left-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Badge variant="secondary">{collection.name}</Badge>
-          </div>
+          {coverUrl ? (
+            <>
+              <CloudinaryImage
+                src={coverUrl}
+                alt={displayTitle}
+                fill
+                className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 40vw"
+                loading="lazy"
+                fetchPriority="low"
+              />
+              {/* gradient overlay */}
+              <div className="absolute inset-0 bg-linear-to-t from-background via-background/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-60" />
+              {/* collection badge — top left */}
+              <div
+                className="absolute top-3 left-3"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Badge variant="secondary">{collection.name}</Badge>
+              </div>
+            </>
+          ) : (
+            <BlogCoverCard
+              category={collection.name}
+              title={displayTitle}
+            />
+          )}
         </div>
 
         <div className="flex flex-1 flex-col gap-4 p-2">
@@ -96,13 +96,11 @@ export function ArticleItem({ note }: { note: INote }) {
                       {author.fullName ?? author.userName}
                     </span>
                   )}
-
                   {author.role === "admin" && (
                     <span className="size-3.5 text-blue-500 flex items-center justify-center">
                       <BadgeIcon />
                     </span>
                   )}
-
                 </div>
               </div>
             </div>

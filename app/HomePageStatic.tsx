@@ -33,7 +33,7 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
   if (!notes?.length) return null;
 
   return (
-    <div id="static-feed" className="p-4">
+    <div id="static-feed" className="p-4 pt-0 max-w-6xl mx-auto">
       <h1 className="sr-only">NoteHub — Explore Public Notes</h1>
 
       <div className="border-x py-8">
@@ -86,6 +86,8 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
             </div>
           </div>
         </section>
+
+        <div className="stripe-divider h-12"></div>
 
         <h2
           id="articles"
