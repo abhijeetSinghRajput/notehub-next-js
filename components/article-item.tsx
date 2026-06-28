@@ -29,9 +29,7 @@ export function ArticleItem({ note }: { note: INote }) {
         href={url}
         className={cn(
           "flex flex-col gap-2 p-2 transition-[background-color] ease-out hover:bg-accent/30",
-          "max-sm:screen-line-top max-sm:screen-line-bottom",
-          "sm:max-md:nth-[2n+1]:screen-line-top sm:max-md:nth-[2n+1]:screen-line-bottom",
-          "md:nth-[3n+1]:screen-line-top md:nth-[3n+1]:screen-line-bottom",
+          "screen-line-top screen-line-bottom",
         )}
       >
         {/* Cover — image if available, BlogCoverCard as fallback */}
@@ -59,8 +57,9 @@ export function ArticleItem({ note }: { note: INote }) {
             </>
           ) : (
             <BlogCoverCard
+              id={note._id}
               category={collection.name}
-              title={displayTitle}
+              title={note.name}
             />
           )}
         </div>

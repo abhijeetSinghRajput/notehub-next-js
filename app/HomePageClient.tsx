@@ -2,12 +2,10 @@
 import { useEffect, useCallback, useRef, useState } from "react";
 import { useNoteStore } from "@/app/stores/useNoteStore";
 import { ArticleCardSkeleton } from "@/components/ArticleCardSkeleton";
-import { ArrowRight, Bookmark, CheckCircle2 } from "lucide-react";
-import { ArticleCard } from "@/components/article-card";
+import { ArrowRight, CheckCircle2, ChevronDown } from "lucide-react";
 import HomePageStatic from "./HomePageStatic";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Label } from "@/components/ui/label";
 import { ArticleItem } from "@/components/article-item";
 import Image from "next/image";
 import { useAuthStore } from "./stores/useAuthStore";
@@ -82,11 +80,11 @@ const HomePageClient = ({ initialData }: Props) => {
   }
 
   const feed = (
-    <div className="flex-1 space-y-3 sm:space-y-4">
+    <div className="flex-1">
       <h1 className="sr-only">NoteHub — Explore Public Notes</h1>
 
       {/* Section label */}
-      <div className="border-x py-8">
+      <div className="border-x pt-8">
         {/* Hero */}
         <section className="screen-line-bottom">
           <div className="relative py-8 sm:py-16 flex flex-col-reverse sm:flex-row items-center gap-8 sm:gap-12">
@@ -164,9 +162,9 @@ const HomePageClient = ({ initialData }: Props) => {
                 "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
             }}
           >
-            <div className="border-r border-line" />
-            <div className="border-l md:border-x" />
-            <div className="border-l max-md:hidden" />
+            <div className="border-r" />
+            <div className="border-l" />
+            <div className="border-l" />
           </div>
           <section
             className="scroll-mt-20 grid gap-6 sm:gap-4"
@@ -183,18 +181,31 @@ const HomePageClient = ({ initialData }: Props) => {
       </div>
 
       {/* Loading skeletons */}
-      {status.note.state === "loading" && (
-        <section
-          className="grid gap-4"
-          style={{
-            gridTemplateColumns:
-              "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
-          }}
-        >
-          {[...Array(9)].map((_, i) => (
-            <ArticleCardSkeleton key={i} />
-          ))}
-        </section>
+      {(status.note.state === "loading") && (
+        <div className="border-x relative pb-6">
+          <div
+            className="pointer-events-none absolute inset-0  grid gap-6 sm:gap-4"
+            style={{
+              gridTemplateColumns:
+                "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
+            }}
+          >
+            <div className="border-r" />
+            <div className="border-l" />
+            <div className="border-l" />
+          </div>
+          <section
+            className="scroll-mt-20 grid gap-6 sm:gap-4"
+            style={{
+              gridTemplateColumns:
+                "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
+            }}
+          >
+            {[...Array(9)].map((_, i) => (
+              <ArticleCardSkeleton key={i} />
+            ))}
+          </section>
+        </div>
       )}
 
       {/* End of feed */}
@@ -209,6 +220,20 @@ const HomePageClient = ({ initialData }: Props) => {
           <p className="mt-2 text-center text-muted-foreground max-w-md">
             That&apos;s all for now. Check back later for more content.
           </p>
+        </div>
+      )}
+
+      {status.note.state !== "loading" && pagination.hasMore && (
+        <div className="flex justify-center">
+          <Button
+            variant={"outline"}
+            size="sm"
+            onClick={() => {
+              getPublicNotes({ page: pagination.currentPage + 1, limit: 24 });
+            }}
+          >
+            Load more <ChevronDown />
+          </Button>
         </div>
       )}
 

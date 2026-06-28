@@ -1,44 +1,60 @@
 import { useEffect, useRef } from "react";
 
-function drawCanvas(canvas: HTMLCanvasElement, cover: HTMLElement): void {
+function hashId(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) & 0xffffffff;
+  }
+  return Math.abs(hash);
+}
+
+function seededRand(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  };
+}
+
+function drawCanvas(
+  canvas: HTMLCanvasElement,
+  cover: HTMLElement,
+  id: string,
+): void {
   const W = cover.offsetWidth;
   const H = cover.offsetHeight;
-  canvas.width = W;
-  canvas.height = H;
+  const dpr = window.devicePixelRatio || 1;
+
+  // set actual pixel dimensions
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+
+  // keep CSS size the same
+  canvas.style.width = `${W}px`;
+  canvas.style.height = `${H}px`;
 
   const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.scale(dpr, dpr);
+  const rand = seededRand(hashId(id));
+
   const CELL = Math.round(W / 14);
   const cols = Math.ceil(W / CELL) + 1;
   const rows = Math.ceil(H / CELL) + 1;
 
-  if(!ctx) return;
-  
   ctx.clearRect(0, 0, W, H);
 
-  const filledCells = [
-    [1, 1],
-    [2, 1],
-    [5, 2],
-    [6, 2],
-    [8, 1],
-    [9, 3],
-    [10, 2],
-    [11, 1],
-    [3, 4],
-    [7, 3],
-    [12, 2],
-    [4, 5],
-    [8, 4],
-    [10, 5],
-    [1, 5],
-    [13, 3],
-  ];
-
-  filledCells.forEach(([c, r]) => {
+  // random filled cells
+  const cellCount = 10 + Math.floor(rand() * 8);
+  for (let i = 0; i < cellCount; i++) {
+    const c = Math.floor(rand() * cols);
+    const r = Math.floor(rand() * rows);
     ctx.fillStyle = "rgba(255,255,255,0.035)";
     ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
-  });
+  }
 
+  // grid lines
   ctx.strokeStyle = "rgba(255,255,255,0.07)";
   ctx.lineWidth = 0.5;
   for (let c = 0; c <= cols; c++) {
@@ -54,40 +70,45 @@ function drawCanvas(canvas: HTMLCanvasElement, cover: HTMLElement): void {
     ctx.stroke();
   }
 
-  function hBeam(x1: number, x2:number, y:number, color:string) : void {
-    if(!ctx) return;
-    
+  function hBeam(x1: number, x2: number, y: number, color: string): void {
+    if (!ctx) return;
     const grad = ctx.createLinearGradient(x1, y, x2, y);
     grad.addColorStop(0, "transparent");
     grad.addColorStop(0.3, color);
     grad.addColorStop(0.7, color);
     grad.addColorStop(1, "transparent");
     ctx.strokeStyle = grad;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 0.5;
     ctx.beginPath();
     ctx.moveTo(x1, y);
     ctx.lineTo(x2, y);
     ctx.stroke();
   }
 
-  function vBeam(x:number, y1:number, y2:number, color: string) : void{
-    if(!ctx) return;
-
+  function vBeam(x: number, y1: number, y2: number, color: string): void {
+    if (!ctx) return;
     const grad = ctx.createLinearGradient(x, y1, x, y2);
     grad.addColorStop(0, "transparent");
     grad.addColorStop(0.3, color);
     grad.addColorStop(0.7, color);
     grad.addColorStop(1, "transparent");
     ctx.strokeStyle = grad;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 0.5;
     ctx.beginPath();
     ctx.moveTo(x, y1);
     ctx.lineTo(x, y2);
     ctx.stroke();
   }
 
-  function lBeam(cornerX: number, cornerY: number, hLen: number, vLen: number, dir: "right" | "left", color: string) : void {
-    if(!ctx) return;
+  function lBeam(
+    cornerX: number,
+    cornerY: number,
+    hLen: number,
+    vLen: number,
+    dir: "right" | "left",
+    color: string,
+  ): void {
+    if (!ctx) return;
 
     const hx1 = dir === "right" ? cornerX - hLen : cornerX;
     const hx2 = dir === "right" ? cornerX : cornerX + hLen;
@@ -96,7 +117,7 @@ function drawCanvas(canvas: HTMLCanvasElement, cover: HTMLElement): void {
     hGrad.addColorStop(0, "transparent");
     hGrad.addColorStop(1, color);
     ctx.strokeStyle = hGrad;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 0.5;
     ctx.beginPath();
     ctx.moveTo(hx1, cornerY);
     ctx.lineTo(hx2, cornerY);
@@ -111,7 +132,7 @@ function drawCanvas(canvas: HTMLCanvasElement, cover: HTMLElement): void {
     vGrad.addColorStop(0, color);
     vGrad.addColorStop(1, "transparent");
     ctx.strokeStyle = vGrad;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 0.5;
     ctx.beginPath();
     ctx.moveTo(cornerX, cornerY);
     ctx.lineTo(cornerX, cornerY + vLen);
@@ -123,59 +144,72 @@ function drawCanvas(canvas: HTMLCanvasElement, cover: HTMLElement): void {
     ctx.fill();
   }
 
-  hBeam(CELL * 2, CELL * 7, CELL * 2, "rgba(194, 194, 194,0.6)");
-  hBeam(CELL * 5, CELL * 13, CELL * 5, "rgba(255,255,255,0.35)");
-  hBeam(CELL * 1, CELL * 5, CELL * 3.5, "rgba(194, 194, 194,0.3)");
-  vBeam(CELL * 9, CELL * 1, CELL * 5, "rgba(255,255,255,0.3)");
-  vBeam(CELL * 3, CELL * 0, CELL * 3, "rgba(194, 194, 194,0.4)");
-  lBeam(
-    CELL * 6,
-    CELL * 1,
-    CELL * 3,
-    CELL * 2.5,
-    "right",
-    "rgba(194, 194, 194,0.7)",
-  );
-  lBeam(
-    CELL * 11,
-    CELL * 3,
-    CELL * 3,
-    CELL * 2,
-    "right",
+  const beamColors = [
+    "rgba(255,255,255,0.35)",
+    "rgba(194,194,194,0.6)",
+    "rgba(194,194,194,0.4)",
+    "rgba(194,194,194,0.3)",
     "rgba(255,255,255,0.5)",
-  );
-  lBeam(
-    CELL * 2,
-    CELL * 4,
-    CELL * 2,
-    CELL * 1.5,
-    "left",
-    "rgba(194, 194, 194,0.4)",
-  );
+    "rgba(255,255,255,0.3)",
+  ];
+
+  const pick = () => beamColors[Math.floor(rand() * beamColors.length)];
+  const rc = (max: number) => Math.floor(rand() * max);
+
+  // random hBeams
+  const hCount = 2 + Math.floor(rand() * 3);
+  for (let i = 0; i < hCount; i++) {
+    const x1 = rc(cols - 4);
+    const x2 = x1 + 3 + Math.floor(rand() * 5);
+    const y = 1 + rc(rows - 1);
+    hBeam(CELL * x1, CELL * x2, CELL * y, pick());
+  }
+
+  // random vBeams
+  const vCount = 1 + Math.floor(rand() * 3);
+  for (let i = 0; i < vCount; i++) {
+    const x = 1 + rc(cols - 1);
+    const y1 = rc(rows - 3);
+    const y2 = y1 + 2 + Math.floor(rand() * 3);
+    vBeam(CELL * x, CELL * y1, CELL * y2, pick());
+  }
+
+  // random lBeams
+  const lCount = 1 + Math.floor(rand() * 3);
+  for (let i = 0; i < lCount; i++) {
+    const cx = 2 + rc(cols - 4);
+    const cy = 1 + rc(rows - 3);
+    const hLen = 2 + Math.floor(rand() * 3);
+    const vLen = 1.5 + rand() * 2;
+    const dir = rand() > 0.5 ? "right" : "left";
+    lBeam(CELL * cx, CELL * cy, CELL * hLen, CELL * vLen, dir, pick());
+  }
 }
 
 export default function BlogCoverCard({
+  id = "default",
   category,
   title,
 }: {
+  id?: string;
   category?: string;
   title?: string;
 }) {
-  const coverRef = useRef(null);
-  const canvasRef = useRef(null);
+  const coverRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const cover = coverRef.current;
     const canvas = canvasRef.current;
     if (!cover || !canvas) return;
 
-    const draw = () => drawCanvas(canvas, cover);
+    const draw = () => drawCanvas(canvas, cover, id);
     draw();
 
     const ro = new ResizeObserver(draw);
     ro.observe(cover);
     return () => ro.disconnect();
-  }, []);
+  }, [id]);
 
   return (
     <div
@@ -183,7 +217,7 @@ export default function BlogCoverCard({
       style={{
         width: "100%",
         aspectRatio: "16/9",
-        background: "#0d0d0f",
+        background: "#0d0d0d",
         position: "relative",
         overflow: "hidden",
         containerType: "inline-size",
@@ -200,7 +234,6 @@ export default function BlogCoverCard({
         }}
       />
 
-      {/* Content */}
       <div
         style={{
           position: "relative",
@@ -212,7 +245,6 @@ export default function BlogCoverCard({
           gap: "4cqi",
         }}
       >
-        {/* Left: pill + title */}
         <div
           style={{
             flex: 1,
@@ -221,33 +253,37 @@ export default function BlogCoverCard({
             gap: "2.5cqi",
           }}
         >
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              border: "0.5px solid rgba(255,255,255,0.25)",
-              borderRadius: "999px",
-              padding: "0.6cqi 2cqi",
-              fontSize: "3cqi",
-              color: "rgba(255,255,255,0.7)",
-              width: "max-content",
-              letterSpacing: "0.02em",
-            }}
-          >
-            {category}
-          </span>
+          {category && (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                border: "0.5px solid rgba(255,255,255,0.25)",
+                borderRadius: "999px",
+                padding: "0.6cqi 2cqi",
+                fontSize: "3cqi",
+                color: "rgba(255,255,255,0.7)",
+                width: "max-content",
+                letterSpacing: "0.02em",
+              }}
+            >
+              {category}
+            </span>
+          )}
 
-          <div
-            style={{
-              fontSize: "7cqi",
-              fontWeight: 600,
-              color: "#ffffff",
-              lineHeight: 1.15,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            {title}
-          </div>
+          {title && (
+            <div
+              style={{
+                fontSize: "7cqi",
+                fontWeight: 600,
+                color: "#ffffff",
+                lineHeight: 1.15,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {title}
+            </div>
+          )}
         </div>
       </div>
     </div>
