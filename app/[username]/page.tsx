@@ -14,38 +14,21 @@ type Props = {
   }>;
 };
 
-const getUser = cache(async (username: string) => {
+const getUserPage = cache(async (username: string) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/user/${username}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/user/page/${username}`,
     { cache: "no-store" }
   );
   if (!response.ok) return null;
   return response.json();
 });
 
-const getGitHubContributions = cache(async (username: string) => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/github/contributions/${username}`,
-      { cache: "no-store" }
-    );
-    if (!response.ok) {
-      console.error(`GitHub fetch failed: ${response.status}`);
-      return null;
-    }
-    const data = await response.json();
-    return data;
-  } catch (err) {
-    console.error("Error fetching GitHub contributions:", err);
-    return null;
-  }
-});
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
 
   try {
-    const user = await getUser(username);
+    const data = await getUserPage(username);
+    const user = data?.user;
 
     if (!user) {
       return getDefaultMetadata({
@@ -55,12 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       });
     }
 
-    // Use bio if available, otherwise a meaningful fallback
     const description = user.bio?.trim()
       ? `${user.bio} — View ${user.fullName}'s notes and collections on NoteHub`
       : `View ${user.fullName}'s notes and collections on NoteHub. Discover curated knowledge, shared openly.`;
 
-    // Build OG image URL with user data
     const ogImageParams = new URLSearchParams({
       fullName: user.fullName || "User",
       userName: `@${user.userName}`,
@@ -118,29 +99,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function UserPage({ params }: Props) {
   const { username } = await params;
 
-  let user;
-  let githubData;
+  let data;
   try {
-    [user, githubData] = await Promise.all([
-      getUser(username),
-      getGitHubContributions(username),
-    ]);
-    console.log("User Page SSR:", {
-      username,
-      hasGithubInUser: !!user?.github,
-      hasGithubData: !!githubData,
-    });
+    data = await getUserPage(username);
   } catch (error) {
     console.error("Error loading user page:", error);
     notFound();
   }
 
-  if (!user) notFound();
+  if (!data?.user) notFound();
+
+  const { user, collections } = data;
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const profileUrl = `${baseUrl}/${username}`;
 
-  // Same description logic as generateMetadata — keep in sync
   const description = user.bio?.trim()
     ? `${user.bio} — View ${user.fullName}'s notes and collections on NoteHub`
     : `View ${user.fullName}'s notes and collections on NoteHub. Discover curated knowledge, shared openly.`;
@@ -168,7 +141,7 @@ export default async function UserPage({ params }: Props) {
     "@type": "ProfilePage",
     name: `${user.fullName} (@${user.userName}) — NoteHub Profile`,
     url: profileUrl,
-    description, // ← now dynamic, matches meta description
+    description,
     mainEntity: personSchema,
     isPartOf: {
       "@type": "WebSite",
@@ -202,7 +175,10 @@ export default async function UserPage({ params }: Props) {
           __html: JSON.stringify([personSchema, profilePageSchema]),
         }}
       />
-      <UserPageClient initialUser={user} githubData={githubData} />
+      <UserPageClient
+        initialUser={user}
+        initialCollections={collections}
+      />
       <Footer className="py-20" />
     </>
   );

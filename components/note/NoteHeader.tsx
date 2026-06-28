@@ -205,7 +205,7 @@ export default function NoteHeader({
   }, [note.name, note.content, copy]);
 
   return (
-    <div className="space-y-10 mb-8 sm:mb-16 px-4 py-12 border-b border-dashed">
+    <div className="space-y-10 mb-8 sm:mb-16 py-12 border-b border-dashed">
       {/* --- TITLE & META --- */}
       <div className="space-y-4">
         <h1 className="font-bold text-foreground text-3xl sm:text-4xl leading-tight tracking-tight">
@@ -300,9 +300,9 @@ export default function NoteHeader({
         <div className="flex justify-between items-center gap-3 w-full">
           <Link
             href={`/${author?.userName}`}
-            className="group flex flex-row items-center gap-4 w-max transition-all"
+            className="group flex flex-row items-center gap-2 sm:gap-4 w-max transition-all"
           >
-            <div className="relative p-1 border-2 border-primary/10 group-hover:border-primary/30 rounded-full size-14 transition-all shrink-0">
+            <div className="relative p-1 border-2 border-primary/10 group-hover:border-primary/30 rounded-full size-12 sm:size-14 transition-all shrink-0">
               <div className="relative rounded-full size-full overflow-hidden">
                 <CloudinaryImage
                   src={author.avatar || "/avatar.svg"}
@@ -316,7 +316,7 @@ export default function NoteHeader({
               </div>
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 font-bold text-foreground text-lg leading-tight">
+              <div className="flex items-center gap-2 text-sm sm:text-lg font-medium text-foreground leading-tight">
                 <span>{author?.fullName}</span>
                 {author?.role === "admin" && (
                   <BadgeIcon className="size-5 text-blue-500" />

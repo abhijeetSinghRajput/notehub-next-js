@@ -44,7 +44,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!data) notFound();
 
-    const { collection, author } = data!;
+    const { collection } = data!;
+    const author = collection.userId;
 
     // Extract first few notes for keywords
     const noteNames =
@@ -152,7 +153,8 @@ export default async function CollectionPage({ params }: Props) {
 
     if (!data) notFound();
 
-    const { collection, author } = data!;
+    const { collection } = data!;
+    const author = collection.userId;
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const profileUrl = `${baseUrl}/${username}`;
@@ -233,7 +235,7 @@ export default async function CollectionPage({ params }: Props) {
             ]),
           }}
         />
-        <CollectionPageClient initialData={data} />
+        <CollectionPageClient initialData={data.collection} />
         <Footer className="py-20" />
       </>
     );

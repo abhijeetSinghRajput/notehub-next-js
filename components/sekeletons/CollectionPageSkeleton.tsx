@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 
 const CollectionPageSkeleton = () => {
   return (
-    <div className="container overflow-y-auto mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col gap-8 animate-pulse">
         {/* Header Section Skeleton */}
         <div className="flex justify-between items-end">
@@ -30,16 +30,32 @@ const CollectionPageSkeleton = () => {
           <div className="h-9 w-9 rounded-xl bg-muted" />
         </div>
 
-        {/* Separator Skeleton */}
-        <div className="h-px w-full bg-border" />
 
         {/* Notes Grid Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[...Array(5)].map((_, index) => (
-            <Card key={index} className="h-20 overflow-hidden shadow-sm">
-              <div className="h-full w-full bg-muted" />
-            </Card>
-          ))}
+        <div className="screen-line-top border-x relative py-6">
+          <div
+            className="pointer-events-none absolute inset-0  grid gap-6 sm:gap-4"
+            style={{
+              gridTemplateColumns:
+                "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
+            }}
+          >
+            <div className="border-r" />
+            <div className="border-x" />
+            <div className="border-l" />
+          </div>
+
+          <section
+            className="scroll-mt-20 grid gap-6 sm:gap-4"
+            style={{
+              gridTemplateColumns:
+                "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
+            }}
+          >
+            {[...Array(12)].map((_, index) => (
+              <ArticleCardSkeleton key={index} />
+            ))}
+          </section>
         </div>
       </div>
     </div>
@@ -47,6 +63,7 @@ const CollectionPageSkeleton = () => {
 };
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArticleCardSkeleton } from "../ArticleCardSkeleton";
 
 const CollaboratorsSkeleton = () => {
   return (

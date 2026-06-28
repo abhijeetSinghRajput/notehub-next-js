@@ -17,14 +17,20 @@ import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import { axiosInstance } from "@/lib/axios";
 
+const skeletonWeeks = Array.from({ length: 53 }, () => ({
+  contributionDays: Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return { date: d.toISOString().split("T")[0], contributionCount: 0 };
+  }),
+}));
+
 const UserPageClient = ({
   initialUser,
   initialCollections = [],
-  githubData,
 }: {
   initialUser: IUser;
   initialCollections?: any[];
-  githubData?: any;
 }) => {
   const { username } = useParams();
   const { authUser, isCheckingAuth } = useAuthStore();
@@ -40,9 +46,7 @@ const UserPageClient = ({
   const searchParams = useSearchParams();
 
   // GitHub contributions state — seed with SSR data if available
-  const [contributions, setContributions] = useState<any | null>(
-    githubData ?? null,
-  );
+  const [contributions, setContributions] = useState<any | null>(null);
   const [isLoadingContributions, setIsLoadingContributions] = useState(false);
   const contributionsFetchedForRef = useRef<string | null>(null);
 
@@ -124,41 +128,15 @@ const UserPageClient = ({
   useEffect(() => {
     const githubUsername = user?.github?.username;
     const profileUsername = user?.userName;
-
-    // Nothing to do if user has no GitHub connected
     if (!githubUsername || !profileUsername) return;
 
-    // Avoid duplicate fetches for the same user
-    if (contributionsFetchedForRef.current === githubUsername) return;
-
-    // If SSR already provided data, mark as fetched and skip
-    if (contributions) {
-      contributionsFetchedForRef.current = githubUsername;
-      return;
-    }
-
-    contributionsFetchedForRef.current = githubUsername;
-
-    const fetchContributions = async () => {
-      setIsLoadingContributions(true);
-      try {
-        const res = await axiosInstance.get(
-          `/auth/github/contributions/${profileUsername}`,
-        );
-        setContributions(res.data);
-      } catch (err: any) {
-        console.error(
-          "Failed to fetch GitHub contributions:",
-          err?.response?.data || err?.message,
-        );
-        // Don't show error toast — just silently fail; the UI has a fallback message
-      } finally {
-        setIsLoadingContributions(false);
-      }
-    };
-
-    fetchContributions();
-  }, [user?.github?.username, user?.userName]);
+    setIsLoadingContributions(true);
+    axiosInstance
+      .get(`/auth/github/contributions/${profileUsername}`)
+      .then((res) => setContributions(res.data))
+      .catch((e) => {console.log(e)})
+      .finally(() => setIsLoadingContributions(false));
+  }, []); 
 
   // ── GitHub action handlers ──────────────────────────────────────────────────
 
@@ -205,11 +183,7 @@ const UserPageClient = ({
 
   if (!mounted) {
     return (
-      <UserPageStatic
-        user={initialUser}
-        collections={initialCollections}
-        githubData={githubData}
-      />
+      <UserPageStatic user={initialUser} collections={initialCollections} />
     );
   }
 
@@ -239,7 +213,7 @@ const UserPageClient = ({
         {/* Admin Dashboard */}
         {isOwner && isAdmin && (
           <>
-            <div className="stripe-divider h-8" />
+            <div className="stripe-divider h-6!" />
             <div className="screen-line-top screen-line-bottom">
               <AdminDashboardCard />
             </div>
@@ -249,35 +223,21 @@ const UserPageClient = ({
         {/* GitHub Contribution */}
         {(isGithubConnected || isOwner) && (
           <>
-            <div className="stripe-divider h-8" />
+            <div className="stripe-divider h-6!" />
             <div className="screen-line-top screen-line-bottom">
               <div className="max-w-3xl mx-auto px-4 py-6">
                 {isGithubConnected && (
-                  <>
-                    {isLoadingContributions ? (
-                      <div className="flex justify-center items-center gap-2 py-8 text-muted-foreground">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Loading contributions…</span>
-                      </div>
-                    ) : contributions?.weeks ? (
-                      <GitHubContribution
-                        weeks={contributions.weeks}
-                        totalContributions={
-                          contributions.totalContributions ?? 0
-                        }
-                        gh_username={
-                          contributions.username || user?.github?.username
-                        }
-                        isOwner={isOwner}
-                        onDisconnect={handleDisconnect}
-                        onRefresh={handleRefetchContributions}
-                      />
-                    ) : (
-                      <p className="py-4 text-muted-foreground text-sm text-center">
-                        Could not load contribution data. Try refreshing.
-                      </p>
-                    )}
-                  </>
+                  <GitHubContribution
+                    weeks={contributions?.weeks ?? skeletonWeeks}
+                    totalContributions={contributions?.totalContributions ?? 0}
+                    gh_username={
+                      contributions?.username || user?.github?.username || ""
+                    }
+                    isOwner={isOwner}
+                    isLoading={isLoadingContributions}
+                    onDisconnect={handleDisconnect}
+                    onRefresh={handleRefetchContributions}
+                  />
                 )}
 
                 {!isGithubConnected && isOwner && (
@@ -314,8 +274,9 @@ const UserPageClient = ({
         )}
 
         {/* Collections */}
-        <div className="stripe-divider h-8" />
-        <div className="max-w-3xl mx-auto">
+
+        <div className="stripe-divider h-6!" />
+        <div className="screen-line-top max-w-3xl mx-auto">
           <CollectionsSection
             collections={collections}
             isOwner={isOwner}

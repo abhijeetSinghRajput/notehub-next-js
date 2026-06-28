@@ -31,15 +31,18 @@ interface GitHubContributionProps {
   isOwner?: boolean;
   onDisconnect?: () => Promise<void>;
   onRefresh?: () => Promise<void>;
+  isLoading?: boolean;
 }
 
 // Accepts contributions from GitHub GraphQL API response
 // shape: [{ date: "2024-05-14", contributionCount: 3 }]
-export default function GitHubContribution({
+
+export default function c({
   weeks,
   totalContributions,
   gh_username = "",
   isOwner = false,
+  isLoading,
   onDisconnect,
   onRefresh,
 }: GitHubContributionProps) {
@@ -142,7 +145,7 @@ export default function GitHubContribution({
         <svg
           width="100%"
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          className="block"
+            className={`block${isLoading ? " animate-pulse" : ""}`}
         >
           {/* Month labels */}
           {monthLabels.map(({ x, label }, i) => (

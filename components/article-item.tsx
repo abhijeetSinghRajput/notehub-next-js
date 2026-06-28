@@ -16,8 +16,6 @@ export function ArticleItem({ note }: { note: INote }) {
 
   if (!author || !collection) return null;
 
-  const isOwner = author.userName === authUser?.userName;
-
   const url = `/${author.userName}/${collection.slug}/${note.slug}`;
 
   const displayTitle = note.seo?.title || note.name;
@@ -48,12 +46,14 @@ export function ArticleItem({ note }: { note: INote }) {
               {/* gradient overlay */}
               <div className="absolute inset-0 bg-linear-to-t from-background via-background/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-60" />
               {/* collection badge — top left */}
-              <div
-                className="absolute top-3 left-3"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Badge variant="secondary">{collection.name}</Badge>
-              </div>
+              {collection.name && (
+                <div
+                  className="absolute top-3 left-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Badge variant="secondary">{collection.name}</Badge>
+                </div>
+              )}
             </>
           ) : (
             <BlogCoverCard

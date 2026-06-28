@@ -31,7 +31,7 @@ function CollectionCard({
     <Link
       href={`${pathname}/${collection.slug}`}
       key={collection._id}
-      className={"group p-4 w-full border-b hover:bg-card flex justify-between"}
+      className={"group p-4 w-full border-b hover:bg-card flex justify-between transition-colors"}
     >
       <div className="relative">
         {isPinned(collection._id) && (

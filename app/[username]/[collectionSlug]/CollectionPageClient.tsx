@@ -9,8 +9,7 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import { axiosInstance } from "@/lib/axios";
 import { Forbidden, NotFound } from "@/components/collection/ErrorStates";
 import { CollectionHeader } from "@/components/CollectionHeader";
-import { ICollection, IUser } from "@/types/model";
-import NoteCard from "@/components/NoteCard";
+import { ICollection, INote, IUser } from "@/types/model";
 import {
   FileText,
   MoreHorizontal,
@@ -24,7 +23,6 @@ import {
   X,
   Loader2,
   Share2,
-  Plus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -45,21 +43,88 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { validateSlug } from "@/lib/validator";
 import { BaseCollaboratorsDialog } from "@/components/CollaboratorsDialog";
 import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SortSelector from "@/components/SortSelector";
+import { ArticleItem } from "@/components/article-item";
+
+interface User {
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface CollectionPageClientProps {
   initialData?: {
-    collection: ICollection;
-    author: IUser;
-    message?: string;
+    _id: string;
+    name: string;
+    slug: string;
+    visibility: "public" | "private";
+    createdAt: string;
+    updatedAt: string;
+    userId: User;
+    collaborators: User[];
+    notes: INote[];
+    noteCount: number;
   };
   error?: number;
 }
+
+const RenderScoreRing = ({
+  score,
+  className,
+}: {
+  score: number;
+  className?: string;
+}) => {
+  const r = 14;
+  const c = 2 * Math.PI * r;
+  const off = c - (score / 100) * c;
+
+  let strokeColor = "stroke-emerald-500";
+
+  if (score < 50) strokeColor = "stroke-rose-500";
+  else if (score < 90) strokeColor = "stroke-amber-500";
+
+  return (
+    <svg
+      className={cn("size-8 shrink-0", className)}
+      viewBox="0 0 36 36"
+      aria-label={`${score} out of 100`}
+    >
+      <circle
+        cx="18"
+        cy="18"
+        r={r}
+        fill="var(--background)"
+        className="stroke-border"
+        strokeWidth="3"
+      />
+      <circle
+        cx="18"
+        cy="18"
+        r={r}
+        fill="var(--background)"
+        className={`${strokeColor} transition-all duration-500`}
+        strokeWidth="3"
+        strokeDasharray={c}
+        strokeDashoffset={off}
+        strokeLinecap="round"
+        transform="rotate(-90 18 18)"
+      />
+      <text
+        x="18"
+        y="22"
+        textAnchor="middle"
+        className="fill-foreground text-[9px] font-medium"
+      >
+        {score}
+      </text>
+    </svg>
+  );
+};
 
 const CollectionPageClient = ({
   initialData,
@@ -69,16 +134,15 @@ const CollectionPageClient = ({
     username: string;
     collectionSlug: string;
   }>();
-
   const username = params?.username ?? "";
   const collectionSlug = params?.collectionSlug?.toLowerCase() ?? "";
 
-  const [collectionData, setCollectionData] = useState(initialData);
+  const [collection, setCollection] = useState(initialData);
   const [isLoading, setIsLoading] = useState(!initialData);
   const [errorStatus, setErrorStatus] = useState<number | null>(
     initialError || null,
   );
-  const [sortBy, setSortBy] = useState("name");
+  const [sortBy, setSortBy] = useState("created");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [collectionShareLink, setCollectionShareLink] = useState("");
 
@@ -89,12 +153,10 @@ const CollectionPageClient = ({
 
   const {
     status,
-    collections: ownerCollections,
     renameCollection,
     updateCollectionVisibility,
     deleteCollection,
     updateCollectionCollaborators,
-    createNote,
   } = useNoteStore();
   const { authUser } = useAuthStore();
   const router = useRouter();
@@ -104,19 +166,8 @@ const CollectionPageClient = ({
   const isAdmin = authUser?.role === "admin";
   const hasManagementAccess = isOwner || isAdmin;
 
-  // For owner, use store data
-  const ownerCollection = useMemo(() => {
-    if (isOwner) {
-      return ownerCollections.find(
-        (c: ICollection) => c.slug === collectionSlug,
-      );
-    }
-    return null;
-  }, [isOwner, ownerCollections, collectionSlug]);
-
   // Use either owner data from store or fetched data for guests
-  const collection = isOwner ? ownerCollection : collectionData?.collection;
-  const author = isOwner ? authUser : collectionData?.author;
+  const author = isOwner ? authUser : collection?.userId;
 
   const notes = useMemo(() => collection?.notes || [], [collection]);
 
@@ -275,7 +326,7 @@ const CollectionPageClient = ({
 
   // Fetch data if not provided via props (client-side navigation)
   useEffect(() => {
-    const fetchCollectionData = async () => {
+    const fetchCollection = async () => {
       // Skip if we already have data or if owner (use store)
       if (initialData || isOwner) {
         setIsLoading(false);
@@ -287,23 +338,22 @@ const CollectionPageClient = ({
         setErrorStatus(null);
 
         // ✅ SINGLE API CALL - gets collection + author + notes + collaborators
-        const response = await axiosInstance.get(
+        const { data } = await axiosInstance.get(
           `/collection/${username}/${collectionSlug}`,
         );
-
-        setCollectionData(response.data);
+        setCollection(data.collection);
       } catch (error: any) {
         console.error("Error fetching collection:", error);
         if (error.response) {
           setErrorStatus(error.response.status);
         }
-        setCollectionData(undefined);
+        setCollection(undefined);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchCollectionData();
+    fetchCollection();
   }, [username, collectionSlug, initialData, isOwner]);
 
   // Loading state
@@ -321,7 +371,7 @@ const CollectionPageClient = ({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <CollectionHeader
             user={author as IUser}
-            collection={collection}
+            collection={collection as unknown as ICollection}
             isOwner={isOwner}
             isAdmin={isAdmin}
             shareLink={collectionShareLink}
@@ -388,24 +438,51 @@ const CollectionPageClient = ({
         </div>
 
         <div className="screen-line-top border-x relative py-6">
-          <div className="pointer-events-none absolute inset-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div
+            className="pointer-events-none absolute inset-0  grid gap-6 sm:gap-4"
+            style={{
+              gridTemplateColumns:
+                "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
+            }}
+          >
             <div className="border-r" />
             <div className="border-x" />
             <div className="border-l" />
           </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sortedNotes.map((note) => (
-                <NoteCard
-                  key={note._id}
-                  note={note}
-                  isOwner={isOwner}
-                  isAdmin={isAdmin}
-                  username={username}
-                  collectionSlug={collectionSlug}
-                />
-              ))}
-          </div>
+          <section
+            className="scroll-mt-20 grid gap-6 sm:gap-4"
+            style={{
+              gridTemplateColumns:
+                "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
+            }}
+          >
+            {sortedNotes.map((note) => {
+              const canViewSeoScore = isOwner || isAdmin;
+              const seoScore = note.seo?.score;
+
+              return (
+                <article key={note._id} className="relative flex flex-1">
+                  {canViewSeoScore && typeof seoScore === "number" && (
+                    <RenderScoreRing
+                      score={seoScore}
+                      className="absolute top-4 right-4 z-10 rounded-full p-0"
+                    />
+                  )}
+
+                  <ArticleItem
+                    note={{
+                      ...note,
+                      userId: author as unknown as IUser,
+                      collectionId: {
+                        slug: collectionSlug,
+                      } as unknown as ICollection,
+                    }}
+                  />
+                </article>
+              );
+            })}
+          </section>
         </div>
 
         {notes.length === 0 && (
