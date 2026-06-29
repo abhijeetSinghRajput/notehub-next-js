@@ -5,7 +5,6 @@ import { useAdminStore } from "@/app/stores/useAdminStore";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { Session } from "@/types/model";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "boneyard-js/react";
 import { toast } from "sonner";
 import {
   Ban,
