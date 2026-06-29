@@ -207,7 +207,7 @@ export default function AdminUserEditPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4">
-      <div className="border-x">
+      <div className="border-x pb-8">
         <ProfileCard
           user={user}
           onPhotoClick={setSelectedLightboxImage}

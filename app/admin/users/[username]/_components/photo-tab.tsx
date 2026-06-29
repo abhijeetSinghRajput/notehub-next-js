@@ -246,7 +246,7 @@ const PhotoTab = ({
           )}
         </button>
 
-        <div className="space-y-4 border px-4 py-6">
+        <div className="space-y-4 screen-line-bottom px-4 py-6">
           <div className="space-y-1">
             <p className="font-semibold text-sm">
               Cover banner · 767 × 192 px (auto-cropped)

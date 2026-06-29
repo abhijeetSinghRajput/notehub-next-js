@@ -142,7 +142,7 @@ const SecurityTab = ({ sessions, setSessions, userId }: SecurityTabProps) => {
 
         <div className="space-y-4">
           {sessions.length === 0 ? (
-            <div className="bg-muted/20 py-12 border border-dashed rounded-xl text-center">
+            <div className="bg-muted/20 py-12 border border-dashed text-center">
               <div className="inline-flex justify-center items-center bg-muted mb-3 rounded-full size-12">
                 <Monitor className="size-6 text-muted-foreground/50" />
               </div>
