@@ -33,7 +33,7 @@ const ProfileCard = ({
   const canEdit = isOwner || isAdmin;
   const editHref = isOwner
     ? "/settings/profile"
-    : `/settings/profile?username=${user.userName}`;
+    : `/admin/users/${user.userName}`;
 
   const hasBio = Boolean(user.bio?.trim());
   const hasSocials = Boolean(user.socials?.length);

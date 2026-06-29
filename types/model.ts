@@ -135,3 +135,13 @@ export interface IGetAllUsersResponse {
   users: IUser[];
   pagination: IPagination;
 }
+
+export interface Session {
+  sessionId: string;
+  deviceName: string;
+  ip: string;
+  location: string;
+  createdAt: string;
+  lastActiveAt: string;
+  isCurrent?: boolean;
+}

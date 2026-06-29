@@ -1,52 +1,27 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Alert,
+  AlertDescription,
+} from "@/components/ui/alert";
 import { LabeledInput } from "@/components/labeled-input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Plus, Trash2, UserRoundPen, LinkIcon } from "lucide-react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
-import UpdateEmailCard from "@/components/UpdateEmailCard";
 import { UpdateUserProfileData } from "@/types/auth";
 import { getPlatformIcon } from "@/lib/platform";
 import { validateUsername } from "@/lib/validator";
-import { axiosInstance } from "@/lib/axios";
 
 import axios from "axios";
 import ProfileTag from "@/components/profile-tag";
 import SectionDivider from "@/components/ui/section-divider";
 
-type EditableUser = {
-  _id: string;
-  fullName?: string;
-  userName?: string;
-  bio?: string;
-  socials?: { url: string }[];
-  email?: string;
-  role?: string;
-  skills?: string[];
-};
-
 const ProfileSettingsClient = () => {
-  const searchParams = useSearchParams();
-  const username = searchParams.get("username");
-
   const { authUser, updateProfile, isUpdatingProfile } = useAuthStore();
-
-  const [targetUser, setTargetUser] = useState<EditableUser | null>(null);
-  const [isFetchingTargetUser, setIsFetchingTargetUser] = useState(false);
-  const [isSavingAsAdmin, setIsSavingAsAdmin] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [userName, setUserName] = useState("");
@@ -56,98 +31,37 @@ const ProfileSettingsClient = () => {
   const [skills, setSkills] = useState<string[]>([]);
   const [formError, setFormError] = useState("");
 
-  const isAdmin = authUser?.role === "admin";
-  const isEditingOtherUser = Boolean(
-    isAdmin && username && authUser?._id && username !== authUser._id,
-  );
-
-  const currentProfile = useMemo<EditableUser | null>(() => {
-    if (isEditingOtherUser) return targetUser;
-    return authUser as EditableUser | null;
-  }, [isEditingOtherUser, targetUser, authUser]);
-
   useEffect(() => {
-    const loadTargetUser = async () => {
-      if (!authUser) return;
-
-      if (!isEditingOtherUser) {
-        setTargetUser(null);
-        return;
-      }
-
-      try {
-        setFormError("");
-        setIsFetchingTargetUser(true);
-
-        const { data } = await axiosInstance.get(`/user/${username}`);
-        const user = data?.user || data?.data || data;
-
-        setTargetUser(user);
-      } catch (error) {
-        let message = "Failed to load target user profile.";
-
-        if (axios.isAxiosError(error)) {
-          message = error.response?.data?.message || message;
-        }
-
-        setFormError(message);
-        console.error("Failed to load target user profile:", error);
-      } finally {
-        setIsFetchingTargetUser(false);
-      }
-    };
-
-    loadTargetUser();
-  }, [authUser, isEditingOtherUser, username]);
-
-  useEffect(() => {
-    if (!currentProfile) return;
-
-    setFullName(currentProfile.fullName || "");
-    setUserName(currentProfile.userName || "");
-    setBio(currentProfile.bio || "");
-    setSocials(currentProfile.socials || []);
-    setSkills(currentProfile.skills || []);
+    if (!authUser) return;
+    setFullName(authUser.fullName || "");
+    setUserName(authUser.userName || "");
+    setBio(authUser.bio || "");
+    setSocials(authUser.socials || []);
+    setSkills(authUser.skills || []);
     setUserNameError("");
     setFormError("");
-  }, [currentProfile]);
-
-  // Local validateUsername wrapper removed in favor of utility
-
-  const sanitizeSocials = (items: { url: string }[]) => {
-    return items
-      .map((item) => ({ url: item.url.trim() }))
-      .filter((item) => item.url !== "");
-  };
+  }, [authUser]);
 
   if (!authUser) return null;
 
-  if (isEditingOtherUser && isFetchingTargetUser) {
-    return (
-      <div className="flex items-center justify-center py-10">
-        <Loader2 className="size-5 animate-spin" />
-      </div>
-    );
-  }
+  const originalSocials = authUser.socials || [];
 
-  if (!currentProfile) return null;
+  const sanitizeSocials = (items: { url: string }[]) =>
+    items.map((item) => ({ url: item.url.trim() })).filter((item) => item.url !== "");
 
-  const originalSocials = currentProfile.socials || [];
   const cleanedSocials = sanitizeSocials(socials);
   const cleanedOriginalSocials = sanitizeSocials(originalSocials);
 
-  const normalizedCurrentUserName = currentProfile.userName || "";
-  const normalizedCurrentFullName = currentProfile.fullName || "";
-  const normalizedCurrentBio = currentProfile.bio || "";
+  const normalizedCurrentFullName = authUser.fullName || "";
+  const normalizedCurrentUserName = authUser.userName || "";
+  const normalizedCurrentBio = authUser.bio || "";
 
   const isDirty =
     fullName.trim() !== normalizedCurrentFullName ||
     userName.trim() !== normalizedCurrentUserName ||
     bio.trim() !== normalizedCurrentBio ||
     JSON.stringify(cleanedSocials) !== JSON.stringify(cleanedOriginalSocials) ||
-    JSON.stringify(skills) !== JSON.stringify(currentProfile.skills || []);
-
-  const isSaving = isUpdatingProfile || isSavingAsAdmin;
+    JSON.stringify(skills) !== JSON.stringify(authUser.skills || []);
 
   const handleSave = async () => {
     setFormError("");
@@ -160,67 +74,26 @@ const ProfileSettingsClient = () => {
 
     const data: UpdateUserProfileData = {};
 
-    if (fullName.trim() !== normalizedCurrentFullName) {
-      data.fullName = fullName.trim();
-    }
-
-    if (userName.trim() !== normalizedCurrentUserName) {
-      data.userName = userName.trim();
-    }
-
-    if (bio.trim() !== normalizedCurrentBio) {
-      data.bio = bio.trim();
-    }
-
-    if (
-      JSON.stringify(cleanedSocials) !== JSON.stringify(cleanedOriginalSocials)
-    ) {
+    if (fullName.trim() !== normalizedCurrentFullName) data.fullName = fullName.trim();
+    if (userName.trim() !== normalizedCurrentUserName) data.userName = userName.trim();
+    if (bio.trim() !== normalizedCurrentBio) data.bio = bio.trim();
+    if (JSON.stringify(cleanedSocials) !== JSON.stringify(cleanedOriginalSocials))
       data.socials = cleanedSocials;
-    }
-
-    if (
-      JSON.stringify(skills) !== JSON.stringify(currentProfile.skills || [])
-    ) {
+    if (JSON.stringify(skills) !== JSON.stringify(authUser.skills || []))
       data.skills = skills;
-    }
 
     if (!Object.keys(data).length) return;
 
     try {
-      if (isEditingOtherUser && targetUser) {
-        setIsSavingAsAdmin(true);
-
-        const { data: response } = await axiosInstance.patch(
-          `/admin/users/${targetUser._id}`,
-          data,
-        );
-
-        const updatedUser = response?.user ||
-          response?.updatedUser ||
-          response?.data || { ...currentProfile, ...data };
-
-        setTargetUser((prev) => ({
-          ...(prev || currentProfile),
-          ...updatedUser,
-        }));
-      } else {
-        await updateProfile(data);
-      }
-
+      await updateProfile(data);
       setSocials(cleanedSocials);
-      setSkills(skills);
       setFormError("");
     } catch (error) {
       let message = "Failed to update profile.";
-
       if (axios.isAxiosError(error)) {
         message = error.response?.data?.message || message;
       }
-
       setFormError(message);
-      console.error("Failed to update profile:", error);
-    } finally {
-      setIsSavingAsAdmin(false);
     }
   };
 
@@ -229,7 +102,7 @@ const ProfileSettingsClient = () => {
     setUserName(normalizedCurrentUserName);
     setBio(normalizedCurrentBio);
     setSocials(originalSocials);
-    setSkills(currentProfile.skills || []);
+    setSkills(authUser.skills || []);
     setUserNameError("");
     setFormError("");
   };
@@ -247,7 +120,7 @@ const ProfileSettingsClient = () => {
   };
 
   return (
-    <div className=" space-y-6">
+    <div className="space-y-6">
       <h1 className="sr-only">Profile Settings</h1>
 
       {formError && (
@@ -293,10 +166,9 @@ const ProfileSettingsClient = () => {
             <div className="flex justify-between items-center">
               <Label htmlFor="bio">Bio</Label>
               <p className="text-xs text-muted-foreground text-right">
-                {bio.length}/250
+                {bio.length}/160
               </p>
             </div>
-
             <Textarea
               id="bio"
               placeholder="Tell people a little about yourself..."
@@ -305,7 +177,7 @@ const ProfileSettingsClient = () => {
                 setBio(e.target.value);
                 setFormError("");
               }}
-              maxLength={250}
+              maxLength={160}
               rows={3}
               className="resize-none"
             />
@@ -361,16 +233,16 @@ const ProfileSettingsClient = () => {
             Add social link
           </Button>
         </div>
-
       </div>
-        {/* ── SAVE BAR ── */}
+
+      {/* ── SAVE BAR ── */}
       {isDirty && (
         <div className="flex items-center bg-background/80 backdrop-blur-sm sticky bottom-0 z-10 justify-end gap-3 p-3 px-4 border-t">
-          <Button variant="ghost" onClick={handleReset} disabled={isSaving}>
+          <Button variant="ghost" onClick={handleReset} disabled={isUpdatingProfile}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
+          <Button onClick={handleSave} disabled={isUpdatingProfile}>
+            {isUpdatingProfile ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
               "Save changes"

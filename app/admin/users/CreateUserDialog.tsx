@@ -222,7 +222,7 @@ export function CreateUserDialog() {
           Create User
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] p-0 overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-150 max-h-[90vh] p-0 overflow-hidden flex flex-col">
         <DialogHeader className="p-6 pb-2 sticky top-0 bg-background z-10 border-b">
           <DialogTitle>Create New User Account</DialogTitle>
         </DialogHeader>
@@ -330,8 +330,8 @@ export function CreateUserDialog() {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label htmlFor="bio">Bio (Optional)</Label>
-              <span className={`text-[10px] ${formData.bio.length >= 250 ? "text-destructive" : "text-muted-foreground"}`}>
-                {formData.bio.length}/250
+              <span className={`text-[10px] ${formData.bio.length >= 160 ? "text-destructive" : "text-muted-foreground"}`}>
+                {formData.bio.length}/160
               </span>
             </div>
             <Textarea
@@ -339,7 +339,7 @@ export function CreateUserDialog() {
               placeholder="Tell us a little about the user..."
               className="resize-none"
               rows={3}
-              maxLength={250}
+              maxLength={160}
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
             />
