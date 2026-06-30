@@ -61,7 +61,7 @@ const CollectionsSection = ({
   if (!collections.length) {
     return (
       <div className="flex flex-col items-center gap-6">
-        <Card className="py-16 w-full">
+        <Card className="py-16 w-full rounded-none">
           <CardContent className="flex flex-col items-center text-center gap-4 p-6">
             <div className="rounded-full bg-muted p-4">
               <Library className="h-10 w-10 text-muted-foreground" />
