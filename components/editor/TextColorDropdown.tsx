@@ -131,7 +131,7 @@ export const ColorPickerDropdown: React.FC<ColorPickerProps> = ({ editor }) => {
               {recentColors.map((color, index) => (
                 <DropdownMenuItem
                   key={index}
-                  className="w-8 h-8 p-0 rounded flex items-center justify-center text-sm font-semibold cursor-pointer focus:ring-2 focus:ring-primary"
+                  className="aspect-1 p-0 rounded! flex items-center justify-center text-sm font-semibold cursor-pointer focus:ring-2 focus:ring-primary"
                   style={{
                     color: color.type === "text" ? color.textColor : selectedTextColor.textColor,
                     backgroundColor:
@@ -161,7 +161,7 @@ export const ColorPickerDropdown: React.FC<ColorPickerProps> = ({ editor }) => {
           {TEXT_COLORS.map((color) => (
             <DropdownMenuItem
               key={color.name}
-              className={`w-8 h-8 p-0 rounded flex items-center justify-center text-sm font-semibold cursor-pointer border focus:ring-2 focus:ring-primary ${
+              className={`aspect-1 p-0 rounded! flex items-center justify-center text-sm font-semibold cursor-pointer border focus:ring-2 focus:ring-primary ${
                 editor.isActive("textStyle", { color: color.textColor }) ||
                 (color.name === "Default" && !editor.isActive("textStyle"))
                   ? "ring-2 ring-primary"
@@ -185,7 +185,7 @@ export const ColorPickerDropdown: React.FC<ColorPickerProps> = ({ editor }) => {
           {BACKGROUND_COLORS.map((color) => (
             <DropdownMenuItem
               key={color.name}
-              className={`w-8 h-8 p-0 rounded cursor-pointer focus:ring-2 focus:ring-primary ${
+              className={`aspect-1 p-0 rounded! cursor-pointer focus:ring-2 focus:ring-primary ${
                 editor.isActive("highlight", { color: color.bgColor }) ||
                 (color.name === "Default" && !editor.isActive("highlight"))
                   ? "ring-2 ring-primary"

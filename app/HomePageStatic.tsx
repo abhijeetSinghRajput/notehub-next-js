@@ -33,10 +33,10 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
   if (!notes?.length) return null;
 
   return (
-    <div id="static-feed" className="p-4 pt-0 max-w-6xl mx-auto">
+    <div id="static-feed" className="p-4 pt-0">
       <h1 className="sr-only">NoteHub — Explore Public Notes</h1>
 
-      <div className="border-x py-8">
+      <div className="border-x py-8 max-w-6xl mx-auto">
         <section className="screen-line-bottom">
           <div className="relative py-8 sm:py-16 flex flex-col-reverse sm:flex-row items-center gap-8 sm:gap-12">
             {/* Hero image — full width on mobile, absolute on sm+ */}
@@ -98,7 +98,7 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
         <p className="p-4 text-base text-balance text-muted-foreground">
           A collection of articles on development, design, ideas, and tech news.
         </p>
-        <div className="screen-line-top relative py-4">
+        <div className="screen-line-top relative py-6">
           <div
             className="pointer-events-none absolute inset-0  grid gap-6 sm:gap-4"
             style={{

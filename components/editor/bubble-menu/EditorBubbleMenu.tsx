@@ -9,7 +9,6 @@
  * only one can be visible at any given time.
  */
 import ImageBubbleMenu from "./ImageBubbleMenu";
-import ListBubbleMenu from "./ListBubbleMenu";
 import TextBubbleMenu from "./TextBubbleMenu";
 
 export default function EditorBubbleMenu() {
@@ -17,9 +16,6 @@ export default function EditorBubbleMenu() {
     <>
       {/* Priority 1 – Image node selected */}
       <ImageBubbleMenu />
-
-      {/* Priority 2 – Cursor inside list, no text selected */}
-      <ListBubbleMenu />
 
       {/* Priority 3 – Non-empty text selection (works inside lists too) */}
       <TextBubbleMenu />

@@ -243,7 +243,7 @@ export const MenuBar = ({ noteId }: { noteId: string }) => {
 
   return (
     <div className="controll-group top-16 z-10 sticky bg-background border-input border-b">
-      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+      <div className=" scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
         <div className="Button-group flex gap-1 mx-auto p-2 w-max">
           <Button
             tooltip={"Ctrl + S"}
