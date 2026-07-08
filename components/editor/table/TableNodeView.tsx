@@ -66,10 +66,10 @@ export const TableNodeView: React.FC<NodeViewProps> = ({
 
   const measure = useCallback(() => {
     const tableEl = tableRef.current;
-    const wrapperEl = wrapperRef.current;
-    if (!tableEl || !wrapperEl) return;
+    const stageEl = stageRef.current;
+    if (!tableEl || !stageEl) return;
 
-    const wrapperBox = wrapperEl.getBoundingClientRect();
+    const stageBox = stageEl.getBoundingClientRect();
 
     const firstRow = tableEl.querySelector("tr");
     const colRects: GripRect[] = [];
@@ -79,7 +79,7 @@ export const TableNodeView: React.FC<NodeViewProps> = ({
         const box = (cell as HTMLElement).getBoundingClientRect();
         colRects.push({
           index: i,
-          offset: box.left - wrapperBox.left,
+          offset: box.left - stageBox.left,
           size: box.width,
         });
         i += 1;
@@ -88,10 +88,6 @@ export const TableNodeView: React.FC<NodeViewProps> = ({
     setCols(colRects);
 
     const rowRects: GripRect[] = [];
-    // NodeViewContent (as="tbody") injects its own wrapper div inside the
-    // tbody, so <tr> ends up as a grandchild, not a direct child. That
-    // breaks tableEl.rows (spec requires direct-child trs), so walk the DOM
-    // with querySelectorAll instead — same approach already used for columns.
     const allRows = Array.from(
       tableEl.querySelectorAll<HTMLTableRowElement>("tr"),
     );
@@ -101,7 +97,7 @@ export const TableNodeView: React.FC<NodeViewProps> = ({
       const box = (firstCell as HTMLElement).getBoundingClientRect();
       rowRects.push({
         index: i,
-        offset: box.top - wrapperBox.top - 16,
+        offset: box.top - stageBox.top,
         size: box.height,
       });
     });

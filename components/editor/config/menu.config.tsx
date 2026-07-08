@@ -237,16 +237,6 @@ export const TABLE_COLUMN_CONTROLS = [
         tooltip: "Add column after",
     },
     {
-        icon: <ArrowDownAZ />,
-        command: "sortColumnAsc",
-        tooltip: "Sort column A-Z",
-    },
-    {
-        icon: <ArrowUpAZ />,
-        command: "sortColumnDesc",
-        tooltip: "Sort column Z-A",
-    },
-    {
         icon: <Trash />,
         command: "deleteColumn",
         tooltip: "Delete column",
