@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { ArticleItem } from "@/components/article-item";
+import VSCodeInstallDemo from "@/components/VSCodeInstallDemo";
+import VSCodeInstallDemoStatic from "@/components/VSCodeInstallDemoStatic";
 
 function buildOgImageUrl(note: any) {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
@@ -80,6 +82,88 @@ export default function HomePageStatic({ notes }: { notes: any[] }) {
                   </Button>
                   <Button variant="outline" asChild>
                     <Link href="/contact">Contact us</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* VSCode Extension Section */}
+        <section className="screen-line-bottom">
+          <div className="relative py-8 md:py-16 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            {/* VSCode Demo - Left side, absolute positioning */}
+            <div className="w-full lg:absolute lg:left-0 lg:top-0 lg:bottom-0 flex lg:justify-start lg:items-center">
+              <div className="mx-auto lg:mx-0 w-full md:max-w-xl lg:max-w-lg xl:max-w-xl">
+                <VSCodeInstallDemoStatic />
+              </div>
+            </div>
+
+            {/* Text content - Right side */}
+            <div className="relative mx-4 text-center lg:text-left z-10 flex-1 min-w-0 lg:ml-auto max-w-max">
+              {/* Gradient backdrop - only on md+ when image overlaps */}
+              <div
+                className="hidden lg:block absolute inset-0 right-0 -top-4 -bottom-4
+                      bg-linear-to-l from-background via-background/90 to-transparent
+                      pointer-events-none"
+              />
+
+              <div className="relative">
+                <h2 className="text-3xl lg:text-4xl font-bold tracking-tight text-foreground mb-5 max-w-2xl leading-tight">
+                  Take Notes Where You Code.
+                </h2>
+
+                <p className="lg:text-lg text-muted-foreground max-w-xl leading-relaxed">
+                  Access your NoteHub collections and notes directly in{" "}
+                  <Badge
+                    variant="secondary"
+                    className="rounded-sm gap-1.5 px-2 py-1"
+                  >
+                    <Image
+                      src="/vs-code.svg"
+                      height={16}
+                      width={16}
+                      alt="VS Code"
+                      className="w-4 h-4"
+                    />
+                    VS Code
+                  </Badge>
+                  .
+                  <br />
+                  <span className="hidden lg:inline">
+                    Browse, search, and manage your knowledge without leaving
+                    your editor.
+                  </span>
+                </p>
+
+                <div className="flex flex-wrap gap-3 mt-8 justify-center lg:justify-start">
+                  <Button
+                    asChild
+                    className="gap-2 bg-[#007acc] text-white hover:bg-[#007acc]/90"
+                  >
+                    <a
+                      // href="https://marketplace.visualstudio.com/items?itemName=mrcodium.notehub-vscode"
+                      href="vscode:extension/mrcodium.notehub-vscode"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="w-4 h-4"
+                        fill="currentColor"
+                      >
+                        <path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.494 1.494 0 0 0 1.705.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.94a1.5 1.5 0 0 0-.85-1.353zm-5.94 13.834L9.7 12.001l7.51-4.42v8.84z" />
+                      </svg>
+                      Install Extension
+                    </a>
+                  </Button>
+                  <Button variant="outline" asChild className="border-dashed">
+                    <a
+                      target="_blank"
+                      href="https://marketplace.visualstudio.com/search?term=mrcodium&target=VSCode&category=All%20categories&sortBy=Relevance"
+                    >
+                      View All Extensions
+                    </a>
                   </Button>
                 </div>
               </div>
