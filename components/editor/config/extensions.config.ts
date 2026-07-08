@@ -52,6 +52,7 @@ import markdown from "highlight.js/lib/languages/markdown";
 import rust from "highlight.js/lib/languages/rust";
 import go from "highlight.js/lib/languages/go";
 import plaintext from "highlight.js/lib/languages/plaintext";
+import { TableNodeView } from "../table/TableNodeView";
 
 
 declare module "@tiptap/core" {
@@ -393,6 +394,13 @@ function DebouncedLowlightPlugin({
 }
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+// ─── CustomTable ──────────────────────────────────────────────────────────
+const CustomTable = Table.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(TableNodeView);
+  },
+});
 
 // ─── CustomCodeBlock ──────────────────────────────────────────────────────────
 
@@ -983,7 +991,7 @@ export const extensions = [
   ListKeymap,
   TaskList,
   TaskItem.configure({ nested: true }),
-  Table.configure({ 
+  CustomTable.configure({ 
     resizable: true,
     cellMinWidth: 90,
   }),

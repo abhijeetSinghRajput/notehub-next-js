@@ -23,6 +23,7 @@ interface TablePopoverProps {
   triggerDisabled?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onTriggerPointerDown?: (e: React.PointerEvent) => void;
 }
 
 export const TablePopover = ({
@@ -30,16 +31,16 @@ export const TablePopover = ({
   controllers,
   triggerIcon,
   triggerClassName,
-  triggerTooltip,
   triggerSize = "icon",
   triggerVariant = "ghost",
   triggerDisabled = false,
   open,
   onOpenChange,
+  onTriggerPointerDown,
 }: TablePopoverProps) => {
   const canRun = (ctrl: TableController) => {
     try {
-      const chain = (editor.can().chain().focus() as any);
+      const chain = editor.can().chain().focus() as any;
       const cmd = chain[ctrl.command];
       if (typeof cmd !== "function") return false;
       return ctrl.params ? cmd(ctrl.params).run() : cmd().run();
@@ -50,7 +51,7 @@ export const TablePopover = ({
 
   const run = (ctrl: TableController) => {
     try {
-      const chain = (editor.chain().focus() as any);
+      const chain = editor.chain().focus() as any;
       const cmd = chain[ctrl.command];
       if (typeof cmd !== "function") return;
       ctrl.params ? cmd(ctrl.params).run() : cmd().run();
@@ -66,10 +67,11 @@ export const TablePopover = ({
         <Button
           variant={triggerVariant}
           size={triggerSize}
-          tooltip={triggerTooltip}
           className={triggerClassName}
           disabled={triggerDisabled}
-          // CRITICAL: prevent mousedown from stealing focus from the editor
+          onPointerDown={(e) => {
+            onTriggerPointerDown?.(e as any);
+          }}
           onMouseDown={(e) => e.preventDefault()}
         >
           {triggerIcon}
@@ -85,7 +87,8 @@ export const TablePopover = ({
         <RadixPopover.Content
           align="start"
           sideOffset={6}
-          // Prevent the popover from stealing focus from the editor
+          collisionPadding={8}
+          updatePositionStrategy="always"
           onOpenAutoFocus={(e) => e.preventDefault()}
           onCloseAutoFocus={(e) => e.preventDefault()}
           style={{ zIndex: 9999 }}

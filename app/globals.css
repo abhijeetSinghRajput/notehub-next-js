@@ -329,3 +329,138 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   );
   background-size: 10px 10px;
 }
+
+.tableWrapper {
+  position: relative;
+  margin: 1rem 0;
+}
+
+.react-renderer.node-table,
+.tableWrapper,
+.tableScroll {
+  display: block;
+  width: 100%;
+}
+
+.tableWrapper table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.tableWrapper td,
+.tableWrapper th {
+  border: 1px solid var(--border);
+  padding: 6px 9px;
+  vertical-align: top;
+  position: relative;
+}
+
+.selectedCell {
+  background-color: color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+/* ── Column grip track (sits above the table) ─────────────────────── */
+.table-grip-col-track {
+  position: absolute;
+  top: -14px;
+  left: 0;
+  right: 0;
+  height: 14px;
+  z-index: 2;
+}
+.table-grip-col-track .table-grip-anchor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+/* ── Row grip track (sits left of the table) ──────────────────────── */
+.table-grip-row-track {
+  position: absolute;
+  top: 0;
+  left: -14px;
+  bottom: 0;
+  width: 14px;
+  z-index: 2;
+}
+.table-grip-row-track .table-grip-anchor {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+/* ── The actual trigger buttons — force them to FILL their anchor ──── */
+.table-grip-trigger {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border-radius: 3px !important;
+  background: var(--muted) !important;
+  opacity: 0.6;
+}
+.table-grip-trigger:hover {
+  opacity: 1;
+}
+.table-grip-trigger svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.table-grip-active {
+  background: var(--primary) !important;
+  color: var(--primary-foreground);
+  opacity: 1;
+}
+
+/* ── Corner selector (top-right of table) ─────────────────────── */
+.table-corner-select {
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  z-index: 5;
+}
+.table-corner-btn {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border-radius: 4px !important;
+}
+.table-corner-dot {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+
+.table-add-col-btn {
+  position: absolute !important;
+  top: 0 !important;
+  height: 100% !important;
+  width: 16px !important;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  z-index: 1;
+  transition: none !important;
+}
+
+.table-add-row-btn {
+  position: absolute !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 16px !important;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  z-index: 1;
+  transition: none !important;
+}
+
+.table-stage {
+  position: relative;
+  display: inline-block; /* shrink to table's actual content width */
+}

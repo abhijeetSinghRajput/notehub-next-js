@@ -12,6 +12,7 @@ import {
   ImagePlusIcon,
   Plus,
   Sigma,
+  TableIcon,
 } from "lucide-react";
 import BlockquoteIcon from "../icons/BlockquoteIcon";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ type AddNodeCommandItem = {
   icon: React.ReactNode;
   tooltip: string;
   command: string;
+  params?: Record<string, unknown>;
   dialog?: never;
 };
 
@@ -37,6 +39,13 @@ type AddNodeItem = AddNodeCommandItem | AddNodeDialogItem;
 
 const ITEMS: AddNodeItem[] = [
   {
+    name: "Table",
+    icon: <TableIcon />,
+    command: "insertTable",
+    params: { rows: 3, cols: 3, withHeaderRow: true },
+    tooltip: "Table",
+  },
+  {
     name: "Code Block",
     icon: <CodeSquare />,
     command: "toggleCodeBlock",
@@ -49,28 +58,34 @@ const ITEMS: AddNodeItem[] = [
     tooltip: "Blockquote",
   },
   {
-    name: "Math Equation",
-    icon: <Sigma />,
-    dialog: "openMathDialog",
-    tooltip: "Math Equation",
-  },
-  {
     name: "Image",
     icon: <ImagePlusIcon />,
     dialog: "openImageDialog",
     tooltip: "Add image",
   },
+  {
+    name: "Math Equation",
+    icon: <Sigma />,
+    dialog: "openMathDialog",
+    tooltip: "Math Equation",
+  },
 ];
 
-const AddNodeDropdown = ({ editor, className }: { editor: Editor; className?: string }) => {
+const AddNodeDropdown = ({
+  editor,
+  className,
+}: {
+  editor: Editor;
+  className?: string;
+}) => {
   const { openDialog } = useEditorStore();
 
-  const canRunCommand = (command?: string) => {
-    if (!command) return true;
+  const canRunCommand = (item: AddNodeItem) => {
+    if (!item.command) return true;
     const chain = editor.can().chain().focus() as any;
-    const fn = chain?.[command];
+    const fn = chain?.[item.command];
     if (typeof fn !== "function") return false;
-    return fn().run();
+    return item.params ? fn(item.params).run() : fn().run();
   };
 
   const handleItemClick = (item: AddNodeItem) => {
@@ -78,7 +93,7 @@ const AddNodeDropdown = ({ editor, className }: { editor: Editor; className?: st
       const chain = editor.chain().focus() as any;
       const fn = chain?.[item.command];
       if (typeof fn === "function") {
-        fn().run();
+        item.params ? fn(item.params).run() : fn().run();
       }
       return;
     }
@@ -96,7 +111,12 @@ const AddNodeDropdown = ({ editor, className }: { editor: Editor; className?: st
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="icon" variant={"ghost"} className={cn("", className)} aria-label="Add node">
+        <Button
+          size="icon"
+          variant={"ghost"}
+          className={cn("", className)}
+          aria-label="Add node"
+        >
           <Plus />
         </Button>
       </DropdownMenuTrigger>
@@ -104,10 +124,10 @@ const AddNodeDropdown = ({ editor, className }: { editor: Editor; className?: st
         {ITEMS.map((item) => (
           <DropdownMenuItem
             key={item.name}
-            disabled={!canRunCommand(item.command)}
+            disabled={!canRunCommand(item)}
             onSelect={(event) => {
               event.preventDefault();
-              if (!canRunCommand(item.command)) return;
+              if (!canRunCommand(item)) return;
               handleItemClick(item);
             }}
           >
@@ -121,26 +141,3 @@ const AddNodeDropdown = ({ editor, className }: { editor: Editor; className?: st
 };
 
 export default AddNodeDropdown;
-
-// <div className="flex gap-0.5 border-x px-1">
-//           {BLOCK_BUTTONS.map(({ icon, command, tooltip, name }, index) => (
-//             <Button
-//               tooltip={tooltip}
-//               aria-label={tooltip}
-//               key={index}
-//               size="icon"
-//               onClick={() => (editor.chain().focus() as any)[command]().run()}
-//               variant={editor.isActive(name) ? "secondary" : "ghost"}
-//               disabled={
-//                 name === "code" &&
-//                 !(editor.can().chain().focus() as any)[command]().run()
-//               }
-//             >
-//               {icon}
-//             </Button>
-//           ))}
-//           <AddImageDialog editor={editor} />
-//           <Suspense fallback={null}>
-//             <MathDialog editor={editor} />
-//           </Suspense>
-//         </div>

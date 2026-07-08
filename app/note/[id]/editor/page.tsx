@@ -177,7 +177,6 @@ const Tiptap = () => {
       editorProps={editorProps}
     >
       <EditorBubbleMenu />
-      <TableHandles />
       <SeoIndicator noteId={noteId || ""} />
     </EditorProvider>
   );

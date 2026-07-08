@@ -189,7 +189,6 @@ const Tiptap = ({ params }: Props) => {
       editorProps={editorProps}
     >
       <EditorBubbleMenu />
-      <TableHandles />
       <SeoSidebar note={note} />
     </EditorProvider>
   );

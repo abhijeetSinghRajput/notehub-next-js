@@ -400,11 +400,22 @@ to reserver the h1 for page title
 }
 
 /* ── Scrollable table wrapper ── */
-.tiptap .tableWrapper,
-.tiptap [data-node-view-content] > div:has(> table) {
+.tiptap .tableScroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  margin: -16px;
+}
+
+.tableScroll table {
+  width: 100%;
+  min-width: 100%; /* overrides/matches the inline min-width: 360px */
+  table-layout: fixed;
+}
+
+.tiptap .tableWrapper {
   margin: 0 0 1.5rem 0;
+  position: relative;   /* grips/corner anchor to this, and it must NOT clip */
 }
 
 .tiptap .tableWrapper table {
@@ -431,7 +442,7 @@ to reserver the h1 for page title
   border: 1px solid var(--border);
   vertical-align: top;
   text-align: start;
-  min-width: 90;
+  min-width: 90px;
   min-height: 32px;
   padding: 8px 12px;
   position: relative;
