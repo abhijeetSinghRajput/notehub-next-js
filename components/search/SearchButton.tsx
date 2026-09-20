@@ -234,9 +234,8 @@ export function SearchButton() {
               />
 
               <Button
-                disabled={searchQuery.trim() === ""}
                 variant="ghost"
-                className="h-full rounded-none absolute right-0 top-1/2 -translate-y-1/2"
+                className={`${searchQuery ? "block" : "hidden"} h-full rounded-none absolute right-0 top-1/2 -translate-y-1/2`}
                 onClick={() => {
                   setSearchQuery("");
                   inputRef.current?.focus();
