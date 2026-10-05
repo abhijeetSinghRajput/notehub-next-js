@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useAdminStore, type HealthFilter } from "@/app/stores/useAdminStore";
 import GscIndexingCard from "./_components/gsc-indexing-card";
 import HealthSummaryCard from "./_components/health-summary-card";
@@ -9,22 +10,54 @@ import BlogsControlBar from "./_components/blogs-control-bar";
 import BlogsTable from "./_components/blogs-table";
 import { axiosInstance } from "@/lib/axios";
 
-export default function AdminOverviewPage() {
+function AdminOverviewContent() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const { fetchBlogs, getBlogStats, isLoadingBlogs, isLoadingBlogStats } =
     useAdminStore();
 
+  const getInitialHealth = (): HealthFilter => {
+    const val = searchParams.get("health");
+    if (val === "good" || val === "warning" || val === "critical") return val;
+    return "all";
+  };
+
+  const getInitialIndexed = (): boolean | undefined => {
+    const val = searchParams.get("indexed");
+    if (val === "true") return true;
+    if (val === "false") return false;
+    return undefined;
+  };
+
+  const getInitialSortBy = (): string => {
+    const val = searchParams.get("sortBy");
+    if (val === "created" || val === "seo" || val === "updated") return val;
+    return "updated";
+  };
+
+  const getInitialSortDir = (): "asc" | "desc" => {
+    const val = searchParams.get("sortDirection");
+    if (val === "asc" || val === "desc") return val;
+    return "desc";
+  };
+
+  const initialSearch = searchParams.get("search") || "";
+
   const [blogs, setBlogs] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
-  const [health, setHealth] = useState<HealthFilter>("all");
+  const [search, setSearch] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
+  const [health, setHealth] = useState<HealthFilter>(getInitialHealth);
   const [indexFilter, setIndexFilter] = useState<boolean | undefined>(
-    undefined,
+    getInitialIndexed,
+  );
+  const [sortBy, setSortBy] = useState(getInitialSortBy);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
+    getInitialSortDir,
   );
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [totalItems, setTotalItems] = useState(0);
-  const [sortBy, setSortBy] = useState("updated");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [gscSyncing, setGscSyncing] = useState(false);
 
@@ -45,10 +78,63 @@ export default function AdminOverviewPage() {
     lastSynced: null,
   });
 
+  const isInitialMount = useRef(true);
+
+  // Sync state if searchParams change externally (e.g. browser back / forward navigation)
+  useEffect(() => {
+    const h = getInitialHealth();
+    const i = getInitialIndexed();
+    const sb = getInitialSortBy();
+    const sd = getInitialSortDir();
+    const s = searchParams.get("search") || "";
+
+    if (h !== health) setHealth(h);
+    if (i !== indexFilter) setIndexFilter(i);
+    if (sb !== sortBy) setSortBy(sb);
+    if (sd !== sortDirection) setSortDirection(sd);
+    if (s !== search) {
+      setSearch(s);
+      setDebouncedSearch(s);
+    }
+  }, [searchParams]);
+
+  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(timer);
   }, [search]);
+
+  // Update query parameters in URL when filter state changes
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (health && health !== "all") {
+      params.set("health", health);
+    }
+    if (debouncedSearch.trim()) {
+      params.set("search", debouncedSearch.trim());
+    }
+    if (indexFilter === true) {
+      params.set("indexed", "true");
+    } else if (indexFilter === false) {
+      params.set("indexed", "false");
+    }
+    if (sortBy && sortBy !== "updated") {
+      params.set("sortBy", sortBy);
+    }
+    if (sortDirection && sortDirection !== "desc") {
+      params.set("sortDirection", sortDirection);
+    }
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+    window.history.replaceState(null, "", newUrl);
+  }, [health, debouncedSearch, sortBy, sortDirection, indexFilter, pathname]);
 
   useEffect(() => {
     setPage(1);
@@ -254,3 +340,12 @@ export default function AdminOverviewPage() {
     </div>
   );
 }
+
+export default function AdminOverviewPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminOverviewContent />
+    </Suspense>
+  );
+}
+

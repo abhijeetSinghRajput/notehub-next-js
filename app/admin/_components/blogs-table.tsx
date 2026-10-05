@@ -11,6 +11,8 @@ import {
   Download,
   FileJson,
   FileSpreadsheet,
+  Copy,
+  Check,
 } from "lucide-react";
 import {
   Table,
@@ -31,6 +33,7 @@ import { useRouter } from "nextjs-toploader/app";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +63,17 @@ const getScoreLabelClass = (score: number) => {
   if (score >= 80) return "text-emerald-600 dark:text-emerald-500";
   if (score >= 50) return "text-amber-600 dark:text-amber-500";
   return "text-rose-600 dark:text-rose-500";
+};
+
+const getBlogUrl = (blog: any) => {
+  const username = blog.userId?.userName || "user";
+  const collectionSlug = blog.collectionId?.slug || "collection";
+  const noteSlug = blog.slug || "note";
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_BASE_URL || "https://notehub-official.vercel.app";
+  return `${origin}/${username}/${collectionSlug}/${noteSlug}`;
 };
 
 const renderScoreRing = (score: number) => {
@@ -118,6 +132,7 @@ export default function BlogsTable({
 }: Props) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === blogs.length && blogs.length > 0) {
@@ -136,6 +151,35 @@ export default function BlogsTable({
   const clearSelection = () => setSelectedIds([]);
   const getSelectedBlogs = () =>
     blogs.filter((blog) => selectedIds.includes(blog._id));
+
+  const handleCopyBlogUrl = async (e: React.MouseEvent, blog: any) => {
+    e.stopPropagation();
+    const url = getBlogUrl(blog);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(blog._id);
+      toast.success("Blog URL copied to clipboard");
+      setTimeout(() => {
+        setCopiedId((prev) => (prev === blog._id ? null : prev));
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy URL:", err);
+      toast.error("Failed to copy URL");
+    }
+  };
+
+  const copySelectedUrls = async () => {
+    const selectedBlogs = getSelectedBlogs();
+    if (!selectedBlogs.length) return;
+    const urls = selectedBlogs.map(getBlogUrl).join("\n");
+    try {
+      await navigator.clipboard.writeText(urls);
+      toast.success(`${selectedBlogs.length} URL(s) copied to clipboard`);
+    } catch (err) {
+      console.error("Failed to copy URLs:", err);
+      toast.error("Failed to copy URLs");
+    }
+  };
 
   const downloadFile = (
     content: string,
@@ -168,7 +212,7 @@ export default function BlogsTable({
 
     const rows = selectedBlogs.map((blog) => ({
       title: blog.name,
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/${blog.userId?.userName}/${blog.collectionId?.slug}/${blog.slug}`,
+      url: getBlogUrl(blog),
       slug: blog.slug,
       author: blog.userId?.fullName,
       username: blog.userId?.userName,
@@ -222,7 +266,7 @@ export default function BlogsTable({
               <TableHead>
                 {sortBy === "updated" ? "Updated" : "Created"}
               </TableHead>
-              <TableHead />
+              <TableHead className="w-20 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -252,7 +296,7 @@ export default function BlogsTable({
                     }}
                     tabIndex={0}
                     role="link"
-                    className={cn("cursor-pointer", isChecked && "bg-muted/50")}
+                    className={cn("cursor-pointer group", isChecked && "bg-muted/50")}
                   >
                     <TableCell
                       className="text-center"
@@ -390,16 +434,62 @@ export default function BlogsTable({
                       </div>
                     </TableCell>
 
-                    {/* Action */}
+                    {/* Actions */}
                     <TableCell className="px-3.5 py-3 text-right align-middle pr-4">
-                      <ArrowUpRight className="inline-block size-3.5 text-muted-foreground/50 transition-all duration-150 group-hover:text-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <div
+                        className="flex items-center justify-end gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 text-muted-foreground/60 hover:text-foreground hover:bg-secondary cursor-pointer"
+                              onClick={(e) => handleCopyBlogUrl(e, blog)}
+                              aria-label="Copy blog URL"
+                            >
+                              {copiedId === blog._id ? (
+                                <Check className="size-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="size-3.5" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <p className="text-xs">
+                              {copiedId === blog._id ? "Copied!" : "Copy blog URL"}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 text-muted-foreground/60 hover:text-foreground hover:bg-secondary cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(blogPath);
+                              }}
+                              aria-label="Open blog"
+                            >
+                              <ArrowUpRight className="size-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <p className="text-xs">Open blog</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={6} className="py-12 align-middle">
+                <td colSpan={7} className="py-12 align-middle">
                   <div className="text-center text-muted-foreground">
                     {isLoading ? (
                       <div className="flex flex-col items-center justify-center gap-2">
@@ -449,11 +539,20 @@ export default function BlogsTable({
 
       {/* ── BATCH ACTIONS BAR ── */}
       {selectedIds.length > 0 && (
-        <div className="border-t min-h-16 z-50 sticky bottom-0 slide-in-from-bottom-2 bg-card px-4 py-3  transition-all animate-in fade-in">
+        <div className="border-t min-h-16 z-50 sticky bottom-0 slide-in-from-bottom-2 bg-card px-4 py-3 transition-all animate-in fade-in">
           <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-2">
             <span className="mr-auto pl-2 font-medium text-sm">
               {selectedIds.length} Blog(s) selected
             </span>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={copySelectedUrls}
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Copy URLs
+            </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
